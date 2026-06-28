@@ -1,0 +1,99 @@
+import { useState } from 'react';
+import { CheckCircle, CreditCard } from 'lucide-react';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useStore } from '../../lib/store';
+
+interface RecordFulizaRepaidProps {
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRepaidProps) {
+  const { t } = useTranslation();
+  const addTransaction = useStore((s) => s.addTransaction);
+  const [amount, setAmount] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [flash, setFlash] = useState(false);
+
+  async function handleSave() {
+    const num = parseFloat(amount);
+    if (isNaN(num) || num <= 0) return;
+
+    setSaving(true);
+    await addTransaction({
+      local_id: crypto.randomUUID(),
+      type: 'debt_repaid',
+      category: 'fuliza',
+      source: 'manual',
+      amount: num,
+      description: 'Fuliza debt repaid',
+      recorded_at: new Date().toISOString(),
+      synced: 0,
+    });
+    setSaving(false);
+    setFlash(true);
+    setTimeout(() => {
+      setFlash(false);
+      onSave();
+    }, 800);
+  }
+
+  if (flash) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4">
+        <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
+          <CheckCircle className="w-8 h-8 text-primary-600" />
+        </div>
+        <p className="text-base font-semibold text-ink">{t('recorded')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 px-4 pt-2 pb-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+          <CreditCard className="w-5 h-5 text-green-600" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-ink">{t('lipa_fuliza')}</p>
+          <p className="text-xs text-muted">{t('fuliza')}</p>
+        </div>
+      </div>
+
+      {/* Amount */}
+      <div>
+        <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+        <input
+          type="number"
+          inputMode="decimal"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+          className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-2xl font-bold text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          autoFocus
+        />
+      </div>
+
+      {/* Buttons */}
+      <div className="flex gap-3 pt-1">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+        >
+          {t('cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !amount || parseFloat(amount) <= 0}
+          className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+        >
+          {saving ? t('saving') : t('save')}
+        </button>
+      </div>
+    </div>
+  );
+}

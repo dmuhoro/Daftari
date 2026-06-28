@@ -1,0 +1,117 @@
+import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
+
+type SubView = 'add/sale' | 'add/expense' | 'add/withdrawal' | 'add/sms' | 'add/fuliza-debt' | 'add/fuliza-repaid';
+
+interface AddScreenProps {
+  onNavigate: (view: SubView) => void;
+}
+
+export default function AddScreen({ onNavigate }: AddScreenProps) {
+  const { t } = useTranslation();
+
+  const cards = [
+    {
+      view: 'add/sale' as SubView,
+      label: t('add_sale'),
+      sublabel: t('income'),
+      icon: TrendingUp,
+      bg: 'bg-primary-600',
+      iconBg: 'bg-primary-700',
+      textColor: 'text-white',
+      subColor: 'text-primary-200',
+    },
+    {
+      view: 'add/sms' as SubView,
+      label: t('bandika_sms'),
+      sublabel: 'M-Pesa',
+      icon: MessageSquare,
+      bg: 'bg-white',
+      iconBg: 'bg-purple-50',
+      textColor: 'text-ink',
+      subColor: 'text-muted',
+      iconColor: 'text-purple-600',
+      border: 'border border-border',
+    },
+    {
+      view: 'add/expense' as SubView,
+      label: t('add_expense'),
+      sublabel: t('expenses'),
+      icon: TrendingDown,
+      bg: 'bg-white',
+      iconBg: 'bg-red-50',
+      textColor: 'text-ink',
+      subColor: 'text-muted',
+      iconColor: 'text-danger',
+      border: 'border border-border',
+    },
+    {
+      view: 'add/withdrawal' as SubView,
+      label: t('add_withdrawal'),
+      sublabel: t('withdrawal'),
+      icon: ArrowDownCircle,
+      bg: 'bg-white',
+      iconBg: 'bg-amber-50',
+      textColor: 'text-ink',
+      subColor: 'text-muted',
+      iconColor: 'text-amber-500',
+      border: 'border border-border',
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-3 px-4 pt-4 pb-6">
+      <p className="text-xs font-medium text-muted uppercase tracking-widest mb-1">
+        {t('quick_add')}
+      </p>
+
+      {cards.map(({ view, label, sublabel, icon: Icon, bg, iconBg, textColor, subColor, iconColor, border }) => (
+        <button
+          key={view}
+          onClick={() => onNavigate(view)}
+          className={`${bg} ${border ?? ''} rounded-2xl p-5 flex items-center gap-4 shadow-card active:scale-[0.98] transition-transform`}
+        >
+          <div className={`w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+            <Icon className={`w-6 h-6 ${iconColor ?? 'text-white'}`} strokeWidth={2} />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className={`text-base font-semibold ${textColor}`}>{label}</span>
+            <span className={`text-xs ${subColor}`}>{sublabel}</span>
+          </div>
+          <div className="ml-auto">
+            <svg className={`w-4 h-4 ${subColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </button>
+      ))}
+
+      {/* Fuliza Section */}
+      <div className="mt-4">
+        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2">
+          {t('fuliza')}
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => onNavigate('add/fuliza-debt')}
+            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-amber-600" strokeWidth={2} />
+            </div>
+            <span className="text-sm font-medium text-amber-800 text-center">{t('chukua_fuliza')}</span>
+          </button>
+          <button
+            onClick={() => onNavigate('add/fuliza-repaid')}
+            className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
+          >
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <CreditCard className="w-5 h-5 text-green-600" strokeWidth={2} />
+            </div>
+            <span className="text-sm font-medium text-green-800 text-center">{t('lipa_fuliza')}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,242 @@
+import { useState, useEffect } from 'react';
+import { Home, PlusCircle, ClipboardList, Settings, ChevronLeft } from 'lucide-react';
+import { useTranslation } from '../hooks/useTranslation';
+import type { TranslationKey } from '../hooks/useTranslation';
+import { useSync } from '../hooks/useSync';
+import { useStore } from '../lib/store';
+import DashboardScreen from '../screens/DashboardScreen';
+import AddScreen from '../screens/AddScreen';
+import HistoryScreen from '../screens/HistoryScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import RecordSale from '../features/transactions/RecordSale';
+import RecordExpense from '../features/transactions/RecordExpense';
+import RecordWithdrawal from '../features/transactions/RecordWithdrawal';
+import RecordFulizaDebt from '../features/transactions/RecordFulizaDebt';
+import RecordFulizaRepaid from '../features/transactions/RecordFulizaRepaid';
+import SMSParser from '../features/sms/SMSParser';
+import DailyClose from '../features/close/DailyClose';
+import OfflineBanner from './OfflineBanner';
+
+type View =
+  | 'dashboard'
+  | 'add'
+  | 'add/sale'
+  | 'add/expense'
+  | 'add/withdrawal'
+  | 'add/sms'
+  | 'add/fuliza-debt'
+  | 'add/fuliza-repaid'
+  | 'history'
+  | 'settings';
+
+type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
+
+interface AppShellProps {
+  onSignOut: () => void;
+}
+
+function activeTab(view: View): BottomTab {
+  if (view.startsWith('add')) return 'add';
+  return view as BottomTab;
+}
+
+function viewTitle(view: View, t: (k: TranslationKey) => string): string {
+  switch (view) {
+    case 'dashboard': return t('dashboard');
+    case 'add': return t('add');
+    case 'add/sale': return t('add_sale');
+    case 'add/expense': return t('add_expense');
+    case 'add/withdrawal': return t('add_withdrawal');
+    case 'add/sms': return t('mpesa_income');
+    case 'add/fuliza-debt': return t('chukua_fuliza');
+    case 'add/fuliza-repaid': return t('lipa_fuliza');
+    case 'history': return t('history');
+    case 'settings': return t('settings');
+  }
+}
+
+export default function AppShell({ onSignOut }: AppShellProps) {
+  const { t } = useTranslation();
+  const { isOnline } = useSync();
+  const transactions = useStore((s) => s.transactions);
+  const lastCloseDate = useStore((s) => s.lastCloseDate);
+  const closePromptDismissedAt = useStore((s) => s.closePromptDismissedAt);
+  const dismissClosePrompt = useStore((s) => s.dismissClosePrompt);
+  const [view, setView] = useState<View>('dashboard');
+  const [showDailyClose, setShowDailyClose] = useState(false);
+
+  const tab = activeTab(view);
+  const isSubView = view.includes('/');
+
+  const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
+    { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
+    { key: 'add', icon: PlusCircle, labelKey: 'add' },
+    { key: 'history', icon: ClipboardList, labelKey: 'history' },
+    { key: 'settings', icon: Settings, labelKey: 'settings' },
+  ];
+
+  function handleTabPress(key: BottomTab) {
+    if (key === 'add') setView('add');
+    else setView(key as View);
+  }
+
+  // Daily Close prompt logic
+  useEffect(() => {
+    function checkDailyClose() {
+      const now = new Date();
+      const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
+      const todayStr = nairobi.toISOString().slice(0, 10);
+      const hours = nairobi.getHours();
+
+      // Check if it's 8pm or later
+      if (hours < 20) return;
+
+      // Check if already closed today
+      if (lastCloseDate === todayStr) return;
+
+      // Check if dismissed less than 2 hours ago
+      if (closePromptDismissedAt && Date.now() - closePromptDismissedAt < 2 * 60 * 60 * 1000) return;
+
+      // Check if there are transactions today
+      const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
+      if (todayTxs.length === 0) return;
+
+      setShowDailyClose(true);
+    }
+
+    // Check on mount
+    checkDailyClose();
+
+    // Check on visibility change
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkDailyClose();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [transactions, lastCloseDate, closePromptDismissedAt]);
+
+  return (
+    <div className="min-h-dvh flex flex-col bg-background">
+      {/* Offline banner */}
+      {!isOnline && <OfflineBanner />}
+
+      {/* Header (hidden on dashboard since it has its own) */}
+      {view !== 'dashboard' && (
+        <header className="bg-white border-b border-border px-4 pt-safe-top">
+          <div className="flex items-center h-14 gap-2">
+            {isSubView ? (
+              <button
+                onClick={() => setView('add')}
+                className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors -ml-1"
+              >
+                <ChevronLeft className="w-5 h-5 text-ink" />
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">D</span>
+                </div>
+                <span className="font-bold text-ink text-base tracking-tight">{t('app_name')}</span>
+              </div>
+            )}
+            <span className={`text-sm font-semibold text-muted ${isSubView ? '' : 'ml-auto'}`}>
+              {viewTitle(view, t)}
+            </span>
+          </div>
+        </header>
+      )}
+
+      {/* Content */}
+      <main className="flex-1 overflow-y-auto">
+        {view === 'dashboard' && <DashboardScreen />}
+        {view === 'add' && (
+          <AddScreen onNavigate={(v) => setView(v)} />
+        )}
+        {view === 'add/sale' && (
+          <RecordSale onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+        )}
+        {view === 'add/expense' && (
+          <RecordExpense onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+        )}
+        {view === 'add/withdrawal' && (
+          <RecordWithdrawal onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+        )}
+        {view === 'add/sms' && (
+          <SMSParser
+            onSave={() => setView('dashboard')}
+            onCancel={() => setView('add')}
+            onManualEntry={() => setView('add/sale')}
+          />
+        )}
+        {view === 'add/fuliza-debt' && (
+          <RecordFulizaDebt onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+        )}
+        {view === 'add/fuliza-repaid' && (
+          <RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+        )}
+        {view === 'history' && <HistoryScreen />}
+        {view === 'settings' && <SettingsScreen onSignOut={onSignOut} />}
+      </main>
+
+      {/* Bottom nav */}
+      <nav
+        className="bg-white border-t border-border safe-bottom"
+        style={{ boxShadow: '0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)' }}
+      >
+        <div className="flex items-stretch">
+          {tabs.map(({ key, icon: Icon, labelKey }) => {
+            const isActive = tab === key;
+            const isAdd = key === 'add';
+            return (
+              <button
+                key={key}
+                onClick={() => handleTabPress(key)}
+                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
+                  isActive ? 'text-primary-600' : 'text-muted hover:text-ink'
+                }`}
+              >
+                {isAdd ? (
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isActive ? 'bg-primary-600' : 'bg-primary-100'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary-600'}`}
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                    <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : ''}`}>
+                      {t(labelKey)}
+                    </span>
+                    {isActive && (
+                      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-600 rounded-full" />
+                    )}
+                  </>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Daily Close Prompt */}
+      <DailyClose
+        visible={showDailyClose}
+        onClose={() => setShowDailyClose(false)}
+        onDismiss={() => {
+          dismissClosePrompt();
+          setShowDailyClose(false);
+        }}
+      />
+    </div>
+  );
+}
