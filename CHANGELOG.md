@@ -5,6 +5,24 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.1.0] — 2026-07-18
+
+### Added
+- Language toggle restored to Settings (chip-style: Kiswahili / English) and Auth screen (SW | EN)
+- Dark mode system with 3 options: Light, Dark, System — instant switching
+- Theme persistence across app restarts (stored in Zustand)
+- Transaction success flash (animated 1.2s overlay after recording a sale/expense/withdrawal)
+- Sync status dot indicator on Dashboard header (green/amber/grey/red)
+- Recording streak counter (consecutive days of use) with Flame chip on Dashboard
+- History date filter tabs: This Week / This Month / All
+- Onboarding gate verification: new users always see category selection flow
+- CSS custom properties for dark mode surface/card/ink/muted/border colors
+
+### Fixed
+- Language toggle was overwritten during phase build — restored with improved UI
+- Onboarding flow wiring verified in App.tsx (loading state, Dexie lookup, gate logic)
+- Input font-size set to 16px to prevent iOS auto-zoom
+
 ## [1.0.0] — 2026-06-18
 
 ### Added

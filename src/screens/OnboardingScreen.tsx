@@ -95,7 +95,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   }
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col">
+    <div className="min-h-dvh bg-background dark:bg-stone-950 flex flex-col">
       {/* Progress bar */}
       <div className="h-1 bg-gray-200">
         <div className="h-full bg-green-600 transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -109,7 +109,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <div className="w-16 h-16 rounded-2xl bg-green-600 flex items-center justify-center mx-auto mb-3">
                 <span className="text-white text-2xl font-black">D</span>
               </div>
-              <h1 className="text-2xl font-bold text-ink">{t('welcome_daftari')}</h1>
+              <h1 className="text-2xl font-bold text-ink dark:text-stone-100">{t('welcome_daftari')}</h1>
             </div>
 
             {/* Language toggle */}
@@ -117,7 +117,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <button
                 onClick={() => setLanguage('sw')}
                 className={`flex-1 py-4 rounded-2xl text-base font-semibold border-2 transition-colors ${
-                  language === 'sw' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-ink border-border'
+                  language === 'sw' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-stone-900 text-ink dark:text-stone-100 border-border dark:border-stone-700'
                 }`}
               >
                 Kiswahili
@@ -125,14 +125,14 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               <button
                 onClick={() => setLanguage('en')}
                 className={`flex-1 py-4 rounded-2xl text-base font-semibold border-2 transition-colors ${
-                  language === 'en' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-ink border-border'
+                  language === 'en' ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-stone-900 text-ink dark:text-stone-100 border-border dark:border-stone-700'
                 }`}
               >
                 English
               </button>
             </div>
 
-            <p className="text-sm text-muted text-center">{t('what_business')}</p>
+            <p className="text-sm text-muted dark:text-stone-400 text-center">{t('what_business')}</p>
 
             {/* Category grid */}
             <div className="grid grid-cols-2 gap-3">
@@ -144,15 +144,15 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                     key={key}
                     onClick={() => { setSelectedCategory(key); setStep(1); }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                      isSelected ? 'bg-green-50 border-green-600' : 'bg-white border-border hover:border-green-300'
+                      isSelected ? 'bg-green-50 border-green-600' : 'bg-white dark:bg-stone-900 border-border dark:border-stone-700 hover:border-green-300'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      isSelected ? 'bg-green-600' : 'bg-gray-100'
+                      isSelected ? 'bg-green-600' : 'bg-stone-100 dark:bg-stone-800'
                     }`}>
-                      <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-muted'}`} />
+                      <Icon className={`w-6 h-6 ${isSelected ? 'text-white' : 'text-muted dark:text-stone-400'}`} />
                     </div>
-                    <span className={`text-xs font-medium text-center ${isSelected ? 'text-green-700' : 'text-ink'}`}>
+                    <span className={`text-xs font-medium text-center ${isSelected ? 'text-green-700' : 'text-ink dark:text-stone-100'}`}>
                       {language === 'sw' ? cat.label.sw : cat.label.en}
                     </span>
                   </button>
@@ -165,20 +165,20 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* Step 1: Subcategory */}
         {step === 1 && selectedCategory && (
           <div className="flex flex-col gap-4">
-            <button onClick={() => setStep(0)} className="flex items-center gap-1 text-sm text-muted mb-1">
+            <button onClick={() => setStep(0)} className="flex items-center gap-1 text-sm text-muted dark:text-stone-400 mb-1">
               <ChevronLeft className="w-4 h-4" /> {t('continue')}
             </button>
-            <h2 className="text-lg font-bold text-ink">{t('choose_subcategory')}</h2>
+            <h2 className="text-lg font-bold text-ink dark:text-stone-100">{t('choose_subcategory')}</h2>
             <div className="flex flex-col gap-2">
               {Object.entries(BUSINESS_CATEGORIES[selectedCategory].subcategories).map(([key, sub]) => (
                 <button
                   key={key}
                   onClick={() => setSelectedSubcategory(key)}
                   className={`w-full text-left px-4 py-4 rounded-2xl border-2 transition-colors ${
-                    selectedSubcategory === key ? 'bg-green-50 border-green-600' : 'bg-white border-border'
+                    selectedSubcategory === key ? 'bg-green-50 border-green-600' : 'bg-white dark:bg-stone-900 border-border dark:border-stone-700'
                   }`}
                 >
-                  <span className={`text-sm font-medium ${selectedSubcategory === key ? 'text-green-700' : 'text-ink'}`}>
+                  <span className={`text-sm font-medium ${selectedSubcategory === key ? 'text-green-700' : 'text-ink dark:text-stone-100'}`}>
                     {language === 'sw' ? sub.sw : sub.en}
                   </span>
                 </button>
@@ -198,10 +198,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* Step 2: Payment Methods */}
         {step === 2 && (
           <div className="flex flex-col gap-4">
-            <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-muted mb-1">
+            <button onClick={() => setStep(1)} className="flex items-center gap-1 text-sm text-muted dark:text-stone-400 mb-1">
               <ChevronLeft className="w-4 h-4" /> {t('continue')}
             </button>
-            <h2 className="text-lg font-bold text-ink">{t('accept_payment')}</h2>
+            <h2 className="text-lg font-bold text-ink dark:text-stone-100">{t('accept_payment')}</h2>
             <div className="grid grid-cols-2 gap-3">
               {PAYMENT_OPTIONS.map((pm) => {
                 const Icon = PAYMENT_ICONS[pm.icon] || Banknote;
@@ -215,15 +215,15 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                       );
                     }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                      isSelected ? 'bg-green-50 border-green-600' : 'bg-white border-border hover:border-green-300'
+                      isSelected ? 'bg-green-50 border-green-600' : 'bg-white dark:bg-stone-900 border-border dark:border-stone-700 hover:border-green-300'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      isSelected ? 'bg-green-600' : 'bg-gray-100'
+                      isSelected ? 'bg-green-600' : 'bg-stone-100 dark:bg-stone-800'
                     }`}>
-                      <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-muted'}`} />
+                      <Icon className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-muted dark:text-stone-400'}`} />
                     </div>
-                    <span className={`text-xs font-medium text-center ${isSelected ? 'text-green-700' : 'text-ink'}`}>
+                    <span className={`text-xs font-medium text-center ${isSelected ? 'text-green-700' : 'text-ink dark:text-stone-100'}`}>
                       {language === 'sw' ? pm.sw : pm.en}
                     </span>
                     {isSelected && <Check className="w-4 h-4 text-green-600" />}
@@ -245,17 +245,17 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         {/* Step 3: Business Name */}
         {step === 3 && (
           <div className="flex flex-col gap-4">
-            <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-muted mb-1">
+            <button onClick={() => setStep(2)} className="flex items-center gap-1 text-sm text-muted dark:text-stone-400 mb-1">
               <ChevronLeft className="w-4 h-4" /> {t('continue')}
             </button>
-            <h2 className="text-lg font-bold text-ink">{t('your_business_name')}</h2>
+            <h2 className="text-lg font-bold text-ink dark:text-stone-100">{t('your_business_name')}</h2>
             <div>
               <input
                 type="text"
                 value={businessName}
                 onChange={(e) => { setBusinessName(e.target.value); setNameError(''); }}
                 placeholder={t('business_name_placeholder')}
-                className="w-full rounded-xl border border-border bg-white px-4 py-4 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
+                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-4 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition"
                 autoFocus
               />
               {nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}

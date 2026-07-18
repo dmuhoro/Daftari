@@ -82,18 +82,18 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
   }
 
   return (
-    <div className="flex flex-col min-h-dvh bg-background">
+    <div className="flex flex-col min-h-dvh bg-background dark:bg-stone-950">
       {/* Header */}
-      <header className="bg-white border-b border-border px-4">
+      <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4">
         <div className="flex items-center h-14 gap-2">
-          <button onClick={onBack} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 -ml-1">
-            <ChevronLeft className="w-5 h-5 text-ink" />
+          <button onClick={onBack} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 -ml-1">
+            <ChevronLeft className="w-5 h-5 text-ink dark:text-stone-100" />
           </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-green-600 flex items-center justify-center">
               <Package className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-ink text-base">{t('my_products')}</span>
+            <span className="font-bold text-ink dark:text-stone-100 text-base">{t('my_products')}</span>
           </div>
         </div>
       </header>
@@ -105,7 +105,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
             <p className="text-sm font-medium text-blue-800 mb-2">{t('add_from_templates')}</p>
             <div className="flex flex-wrap gap-2 mb-3">
               {templateProducts.map((tp, i) => (
-                <span key={i} className="text-xs bg-white rounded-full px-3 py-1 text-blue-700 border border-blue-200">
+                <span key={i} className="text-xs bg-white dark:bg-stone-900 rounded-full px-3 py-1 text-blue-700 border border-blue-200">
                   {tp.name} — KES {tp.price}
                 </span>
               ))}
@@ -122,24 +122,24 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
         {/* Product list */}
         {products.length === 0 && !templateProducts ? (
           <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <Package className="w-7 h-7 text-muted" />
+            <div className="w-14 h-14 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+              <Package className="w-7 h-7 text-muted dark:text-stone-400" />
             </div>
-            <p className="text-sm text-muted">{t('no_products_settings')}</p>
+            <p className="text-sm text-muted dark:text-stone-400">{t('no_products_settings')}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-2xl border border-border shadow-sm px-4 py-3.5 flex items-center gap-3">
+              <div key={product.id} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5 flex items-center gap-3">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-ink">{product.name}</p>
-                  <p className="text-xs text-muted">KES {product.price}{product.unit ? ` / ${product.unit}` : ''}</p>
+                  <p className="text-sm font-medium text-ink dark:text-stone-100">{product.name}</p>
+                  <p className="text-xs text-muted dark:text-stone-400">KES {product.price}{product.unit ? ` / ${product.unit}` : ''}</p>
                 </div>
                 {deleteConfirm === product.id ? (
                   <div className="flex gap-2">
                     <button
                       onClick={() => setDeleteConfirm(null)}
-                      className="text-xs text-muted px-2 py-1"
+                      className="text-xs text-muted dark:text-stone-400 px-2 py-1"
                     >
                       {t('cancel')}
                     </button>
@@ -155,7 +155,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
                     onClick={() => setDeleteConfirm(product.id)}
                     className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center"
                   >
-                    <Trash2 className="w-4 h-4 text-muted hover:text-red-500" />
+                    <Trash2 className="w-4 h-4 text-muted dark:text-stone-400 hover:text-red-500" />
                   </button>
                 )}
               </div>
@@ -165,14 +165,14 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
 
         {/* Add product form */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-border shadow-sm p-4 mt-4">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm p-4 mt-4">
             <div className="flex flex-col gap-3">
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t('add_product')}
-                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                 autoFocus
               />
               <div className="flex gap-2">
@@ -181,20 +181,20 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   placeholder="KES"
-                  className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="flex-1 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                 />
                 <input
                   type="text"
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value)}
                   placeholder="pc/kg"
-                  className="w-24 rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="w-24 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                 />
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={() => { setShowForm(false); setNewName(''); setNewPrice(''); setNewUnit(''); }}
-                  className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted"
+                  className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400"
                 >
                   {t('cancel')}
                 </button>
@@ -219,7 +219,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="w-full py-4 rounded-2xl border-2 border-dashed border-border text-sm font-medium text-muted hover:text-green-600 hover:border-green-300 transition-colors mt-4 flex items-center justify-center gap-2"
+            className="w-full py-4 rounded-2xl border-2 border-dashed border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:text-green-600 hover:border-green-300 transition-colors mt-4 flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" /> {t('add_product')}
           </button>

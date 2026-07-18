@@ -36,42 +36,42 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
       label: t('bandika_sms'),
       sublabel: 'M-Pesa',
       icon: MessageSquare,
-      bg: 'bg-white',
+      bg: 'bg-white dark:bg-stone-900',
       iconBg: 'bg-purple-50',
-      textColor: 'text-ink',
-      subColor: 'text-muted',
+      textColor: 'text-ink dark:text-stone-100',
+      subColor: 'text-muted dark:text-stone-400',
       iconColor: 'text-purple-600',
-      border: 'border border-border',
+      border: 'border border-border dark:border-stone-700',
     },
     {
       view: 'add/expense' as SubView,
       label: t('add_expense'),
       sublabel: t('expenses'),
       icon: TrendingDown,
-      bg: 'bg-white',
+      bg: 'bg-white dark:bg-stone-900',
       iconBg: 'bg-red-50',
-      textColor: 'text-ink',
-      subColor: 'text-muted',
+      textColor: 'text-ink dark:text-stone-100',
+      subColor: 'text-muted dark:text-stone-400',
       iconColor: 'text-danger',
-      border: 'border border-border',
+      border: 'border border-border dark:border-stone-700',
     },
     {
       view: 'add/withdrawal' as SubView,
       label: t('add_withdrawal'),
       sublabel: t('withdrawal'),
       icon: ArrowDownCircle,
-      bg: 'bg-white',
+      bg: 'bg-white dark:bg-stone-900',
       iconBg: 'bg-amber-50',
-      textColor: 'text-ink',
-      subColor: 'text-muted',
+      textColor: 'text-ink dark:text-stone-100',
+      subColor: 'text-muted dark:text-stone-400',
       iconColor: 'text-amber-500',
-      border: 'border border-border',
+      border: 'border border-border dark:border-stone-700',
     },
   ];
 
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-6">
-      <p className="text-xs font-medium text-muted uppercase tracking-widest mb-1">
+      <p className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-widest mb-1">
         {t('quick_add')}
       </p>
 
@@ -105,7 +105,7 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
 
       {/* Fuliza Section */}
       <div className="mt-4">
-        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2">
+        <p className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-widest mb-2">
           {t('fuliza')}
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -133,18 +133,18 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
       {/* Products link */}
       <button
         onClick={() => onNavigate('catalog')}
-        className="w-full flex items-center justify-between bg-white rounded-2xl border border-border p-4 shadow-card mt-2 active:scale-[0.98] transition-transform"
+        className="w-full flex items-center justify-between bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 p-4 shadow-card mt-2 active:scale-[0.98] transition-transform"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
             <Package className="w-5 h-5 text-green-600" />
           </div>
           <div className="text-left">
-            <span className="text-sm font-semibold text-ink">{t('my_products')}</span>
-            <p className="text-xs text-muted">{products.length > 0 ? `${products.length} items` : t('no_products_settings')}</p>
+            <span className="text-sm font-semibold text-ink dark:text-stone-100">{t('my_products')}</span>
+            <p className="text-xs text-muted dark:text-stone-400">{products.length > 0 ? `${products.length} items` : t('no_products_settings')}</p>
           </div>
         </div>
-        <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-muted dark:text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>

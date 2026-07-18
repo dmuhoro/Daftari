@@ -64,7 +64,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
       />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-md bg-white rounded-t-3xl shadow-xl animate-slide-up">
+      <div className="relative w-full max-w-md bg-white dark:bg-stone-900 rounded-t-3xl shadow-xl animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />
@@ -73,38 +73,38 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
         {/* Content */}
         <div className="px-6 pb-8 pt-2">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-ink">{t('funga_siku')}</h2>
+            <h2 className="text-lg font-bold text-ink dark:text-stone-100">{t('funga_siku')}</h2>
             <button
               onClick={onDismiss}
-              className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"
+              className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"
             >
-              <X className="w-4 h-4 text-muted" />
+              <X className="w-4 h-4 text-muted dark:text-stone-400" />
             </button>
           </div>
 
           {/* Summary */}
-          <div className="bg-gray-50 rounded-2xl p-4 mb-4">
-            <p className="text-xs text-muted mb-3">{t('funga_summary')}</p>
+          <div className="bg-gray-50 dark:bg-stone-900 rounded-2xl p-4 mb-4">
+            <p className="text-xs text-muted dark:text-stone-400 mb-3">{t('funga_summary')}</p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-primary-600" />
-                  <span className="text-sm text-muted">{t('revenue')}</span>
+                  <span className="text-sm text-muted dark:text-stone-400">{t('revenue')}</span>
                 </div>
                 <span className="text-base font-semibold text-primary-600">{fmtKES(revenue)}</span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <TrendingDown className="w-4 h-4 text-danger" />
-                  <span className="text-sm text-muted">{t('expenses')}</span>
+                  <span className="text-sm text-muted dark:text-stone-400">{t('expenses')}</span>
                 </div>
                 <span className="text-base font-semibold text-danger">{fmtKES(expenses)}</span>
               </div>
               <div className="h-px bg-border" />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-ink" />
-                  <span className="text-sm font-medium text-ink">{t('profit')}</span>
+                  <Wallet className="w-4 h-4 text-ink dark:text-stone-100" />
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('profit')}</span>
                 </div>
                 <span className={`text-lg font-bold ${profit >= 0 ? 'text-primary-600' : 'text-danger'}`}>
                   {fmtKES(profit)}
@@ -117,7 +117,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
           <div className="flex gap-3">
             <button
               onClick={onDismiss}
-              className="flex-1 py-3.5 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+              className="flex-1 py-3.5 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
             >
               {t('baadaye')}
             </button>

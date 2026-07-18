@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import SyncDot from '../components/SyncDot';
+import { useRecordingStreak } from '../hooks/useRecordingStreak';
 
 const SW_DAYS = ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi'];
 const SW_DAYS_SHORT = ['Jpl', 'Jt', 'Jn', 'Jt', 'Al', 'Ij', 'Jm'];
@@ -38,6 +40,7 @@ export default function DashboardScreen() {
   const business = useStore((s) => s.business);
   const setLanguage = useStore((s) => s.setLanguage);
   const [tab, setTab] = useState<Tab>('leo');
+  const { streak } = useRecordingStreak();
 
   const todayStr = getTodayNairobi();
   const todayDate = new Date();
@@ -107,31 +110,47 @@ export default function DashboardScreen() {
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-border px-4 py-4">
+      <div className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 py-4">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-lg font-bold text-ink">{businessName}</h1>
-            <p className="text-sm text-muted mt-0.5">{formattedDate}</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-ink dark:text-stone-100">{businessName}</h1>
+              <SyncDot />
+            </div>
+            <p className="text-sm text-muted dark:text-stone-400 mt-0.5">{formattedDate}</p>
           </div>
           <button
             onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-gray-200 dark:hover:bg-stone-700 transition-colors"
           >
-            <span className={`text-xs font-semibold ${language === 'sw' ? 'text-primary-600' : 'text-muted'}`}>SW</span>
-            <span className="text-xs text-muted">/</span>
-            <span className={`text-xs font-semibold ${language === 'en' ? 'text-primary-600' : 'text-muted'}`}>EN</span>
+            <span className={`text-xs font-semibold ${language === 'sw' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>SW</span>
+            <span className="text-xs text-muted dark:text-stone-400">/</span>
+            <span className={`text-xs font-semibold ${language === 'en' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>EN</span>
           </button>
         </div>
+
+        {/* Streak chip */}
+        {streak >= 2 && streak < 30 && (
+          <div className="inline-flex items-center gap-1 bg-orange-50 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-full px-3 py-1 text-sm mt-2">
+            <Flame className="w-4 h-4 text-orange-500" />
+            <span className="text-xs font-medium">{t('streak_days_label', { count: streak })}</span>
+          </div>
+        )}
+        {streak >= 30 && (
+          <div className="inline-flex items-center gap-1 bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 rounded-full px-3 py-1 text-sm mt-2">
+            <span className="text-xs font-medium">{t('streak_milestone', { count: streak })}</span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="flex flex-col gap-4 px-4 py-5">
         {/* Tab Switcher */}
-        <div className="flex bg-gray-100 rounded-xl p-1">
+        <div className="flex bg-stone-100 dark:bg-stone-800 rounded-xl p-1">
           <button
             onClick={() => setTab('leo')}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'leo' ? 'bg-white text-ink shadow-sm' : 'text-muted'
+              tab === 'leo' ? 'bg-white dark:bg-stone-900 text-ink dark:text-stone-100 shadow-sm' : 'text-muted dark:text-stone-400'
             }`}
           >
             {t('today')}
@@ -139,7 +158,7 @@ export default function DashboardScreen() {
           <button
             onClick={() => setTab('wiki')}
             className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'wiki' ? 'bg-white text-ink shadow-sm' : 'text-muted'
+              tab === 'wiki' ? 'bg-white dark:bg-stone-900 text-ink dark:text-stone-100 shadow-sm' : 'text-muted dark:text-stone-400'
             }`}
           >
             {t('this_week')}
@@ -165,12 +184,12 @@ export default function DashboardScreen() {
               </div>
 
               {hasFulizaDebt && (
-                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900 flex items-center justify-center flex-shrink-0">
                     <AlertTriangle className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-amber-800">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                       {t('fuliza_alert', { amount: fulizaDebt.toLocaleString('en-KE') })}
                     </p>
                   </div>
@@ -178,41 +197,41 @@ export default function DashboardScreen() {
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-2xl p-4 shadow-card border border-border">
-                  <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-3">
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                  <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900 flex items-center justify-center mb-3">
                     <TrendingUp className="w-5 h-5 text-primary-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs text-muted">{t('mapato')}</p>
+                  <p className="text-xs text-muted dark:text-stone-400">{t('mapato')}</p>
                   <p className="text-lg font-bold text-primary-600 mt-0.5">{fmtKES(revenue)}</p>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-card border border-border">
-                  <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center mb-3">
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                  <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900 flex items-center justify-center mb-3">
                     <TrendingDown className="w-5 h-5 text-danger" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs text-muted">{t('matumizi')}</p>
+                  <p className="text-xs text-muted dark:text-stone-400">{t('matumizi')}</p>
                   <p className="text-lg font-bold text-danger mt-0.5">{fmtKES(expenses)}</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 shadow-card border border-border">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900 flex items-center justify-center">
                     <Wallet className="w-5 h-5 text-info" strokeWidth={2.5} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs text-muted">{t('pesa_iliyobaki')}</p>
-                    <p className="text-xl font-bold text-ink mt-0.5">{fmtKES(cashAvailable)}</p>
+                    <p className="text-xs text-muted dark:text-stone-400">{t('pesa_iliyobaki')}</p>
+                    <p className="text-xl font-bold text-ink dark:text-stone-100 mt-0.5">{fmtKES(cashAvailable)}</p>
                   </div>
                 </div>
               </div>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                <ClipboardList className="w-8 h-8 text-muted" />
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                <ClipboardList className="w-8 h-8 text-muted dark:text-stone-400" />
               </div>
-              <p className="text-base font-semibold text-ink">{t('no_today_transactions')}</p>
-              <p className="text-sm text-muted">{t('tap_plus_to_start')}</p>
+              <p className="text-base font-semibold text-ink dark:text-stone-100">{t('no_today_transactions')}</p>
+              <p className="text-sm text-muted dark:text-stone-400">{t('tap_plus_to_start')}</p>
               <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
                 <Plus className="w-6 h-6 text-primary-600" strokeWidth={2.5} />
               </div>
@@ -234,10 +253,10 @@ export default function DashboardScreen() {
                 )}
               </div>
 
-              <div className="bg-white rounded-2xl p-4 shadow-card border border-border">
+              <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
                 <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-4 h-4 text-muted" />
-                  <span className="text-xs font-medium text-muted uppercase tracking-wider">7 {language === 'sw' ? 'Siku' : 'Days'}</span>
+                  <BarChart3 className="w-4 h-4 text-muted dark:text-stone-400" />
+                  <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">7 {language === 'sw' ? 'Siku' : 'Days'}</span>
                 </div>
                 <div className="h-40">
                   <ResponsiveContainer width="100%" height="100%">
@@ -255,16 +274,16 @@ export default function DashboardScreen() {
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-white rounded-2xl p-3 shadow-card border border-border">
-                  <p className="text-xs text-muted">{t('revenue')}</p>
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+                  <p className="text-xs text-muted dark:text-stone-400">{t('revenue')}</p>
                   <p className="text-sm font-bold text-primary-600 mt-0.5">{fmtKES(weekRevenue)}</p>
                 </div>
-                <div className="bg-white rounded-2xl p-3 shadow-card border border-border">
-                  <p className="text-xs text-muted">{t('expenses')}</p>
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+                  <p className="text-xs text-muted dark:text-stone-400">{t('expenses')}</p>
                   <p className="text-sm font-bold text-danger mt-0.5">{fmtKES(weekExpenses)}</p>
                 </div>
-                <div className="bg-white rounded-2xl p-3 shadow-card border border-border">
-                  <p className="text-xs text-muted">{t('profit')}</p>
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+                  <p className="text-xs text-muted dark:text-stone-400">{t('profit')}</p>
                   <p className={`text-sm font-bold mt-0.5 ${weekProfit >= 0 ? 'text-primary-600' : 'text-danger'}`}>
                     {fmtKES(weekProfit)}
                   </p>
@@ -273,11 +292,11 @@ export default function DashboardScreen() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                <ClipboardList className="w-8 h-8 text-muted" />
+              <div className="w-16 h-16 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                <ClipboardList className="w-8 h-8 text-muted dark:text-stone-400" />
               </div>
-              <p className="text-base font-semibold text-ink">{t('no_transactions_history')}</p>
-              <p className="text-sm text-muted">{t('transactions_will_appear')}</p>
+              <p className="text-base font-semibold text-ink dark:text-stone-100">{t('no_transactions_history')}</p>
+              <p className="text-sm text-muted dark:text-stone-400">{t('transactions_will_appear')}</p>
             </div>
           )
         )}

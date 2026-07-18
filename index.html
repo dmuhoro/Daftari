@@ -10,6 +10,21 @@
     <meta name="apple-mobile-web-app-title" content="Daftari" />
     <meta name="description" content="Daftari — daftari ya biashara kwa wafanyabiashara wa mitaani Kenya" />
     <title>Daftari</title>
+    <script>
+      (function() {
+        var theme = localStorage.getItem('daftari-store');
+        if (theme) {
+          try {
+            var parsed = JSON.parse(theme);
+            var t = parsed?.state?.theme;
+            if (t === 'dark' || (t === 'system' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              document.documentElement.classList.add('dark');
+            }
+          } catch(e) {}
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { CheckCircle, Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
+import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import SuccessFlash from '../../components/SuccessFlash';
 
 interface RecordSaleProps {
   onSave: () => void;
@@ -38,13 +39,12 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const [category, setCategory] = useState<string>('product_sale');
   const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [saving, setSaving] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [flashAmount, setFlashAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState('');
 
   const products = business?.products ?? [];
   const userPaymentMethods = (business?.payment_methods as string[]) ?? [];
 
-  // Auto-select first payment method if only one
   if (!paymentMethod && userPaymentMethods.length === 1) {
     setPaymentMethod(userPaymentMethods[0]);
   }
@@ -63,8 +63,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
       payment_method: paymentMethod || undefined,
     });
     setSaving(false);
-    setFlash(true);
-    setTimeout(() => { setFlash(false); onSave(); }, 800);
+    setFlashAmount(product.price);
   }
 
   function validateAmount(val: string): boolean {
@@ -93,23 +92,15 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
       payment_method: paymentMethod || undefined,
     });
     setSaving(false);
-    onSave();
+    setFlashAmount(Number(amount));
   }
 
-  if (flash) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4">
-        <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-primary-600" />
-        </div>
-        <p className="text-base font-semibold text-ink">{t('recorded')}</p>
-      </div>
-    );
+  if (flashAmount !== null) {
+    return <SuccessFlash amount={flashAmount} type="income" onDismiss={onSave} />;
   }
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-6">
-      {/* Product chips (dynamic quick-add) */}
       {products.length > 0 ? (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {products.map((product) => (
@@ -130,7 +121,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         <a
           href="#"
           onClick={(e) => { e.preventDefault(); onCancel(); }}
-          className="block text-center text-sm text-muted bg-gray-50 rounded-2xl py-4 border border-dashed border-border"
+          className="block text-center text-sm text-muted dark:text-stone-400 bg-gray-50 dark:bg-stone-900 rounded-2xl py-4 border border-dashed border-border dark:border-stone-700"
         >
           {t('no_products_settings')}
         </a>
@@ -138,14 +129,13 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
-        <span className="text-xs text-muted">au / or</span>
+        <span className="text-xs text-muted dark:text-stone-400">au / or</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      {/* Manual form */}
       <form onSubmit={handleSave} className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+          <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
           <input
             type="number"
             inputMode="decimal"
@@ -155,15 +145,14 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
             placeholder="0"
             min="1"
             required
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           />
           {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
         </div>
 
-        {/* Payment method selector */}
         {userPaymentMethods.length > 1 && (
           <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">{t('payment_method_label')}</label>
+            <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('payment_method_label')}</label>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {userPaymentMethods.map((pm) => {
                 const Icon = PAYMENT_ICONS[pm] || Banknote;
@@ -174,7 +163,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
                     type="button"
                     onClick={() => setPaymentMethod(pm)}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium whitespace-nowrap transition-colors ${
-                      isSelected ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted border-border hover:border-green-300'
+                      isSelected ? 'bg-green-600 text-white border-green-600' : 'bg-white dark:bg-stone-900 text-muted dark:text-stone-400 border-border dark:border-stone-700 hover:border-green-300'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -187,7 +176,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         )}
 
         <div>
-          <label className="block text-xs font-medium text-muted mb-1.5">{t('category')}</label>
+          <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('category')}</label>
           <div className="grid grid-cols-3 gap-2">
             {(['product_sale', 'service', 'other'] as const).map((cat) => (
               <button
@@ -197,7 +186,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
                 className={`py-2.5 rounded-xl text-xs font-medium border transition-colors ${
                   category === cat
                     ? 'bg-primary-600 text-white border-primary-600'
-                    : 'bg-white text-muted border-border hover:border-primary-300 hover:text-primary-700'
+                    : 'bg-white dark:bg-stone-900 text-muted dark:text-stone-400 border-border dark:border-stone-700 hover:border-primary-300 hover:text-primary-700'
                 }`}
               >
                 {t(cat === 'product_sale' ? 'cat_product_sale' : cat === 'service' ? 'cat_service' : 'cat_other')}
@@ -207,15 +196,15 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-muted mb-1.5">
-            {t('description')} <span className="text-muted font-normal">({t('optional')})</span>
+          <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
+            {t('description')} <span className="text-muted dark:text-stone-400 font-normal">({t('optional')})</span>
           </label>
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('description')}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           />
         </div>
 
@@ -223,7 +212,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
           >
             {t('cancel')}
           </button>

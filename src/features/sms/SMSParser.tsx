@@ -82,7 +82,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-primary-600" />
         </div>
-        <p className="text-base font-semibold text-ink">{t('recorded')}</p>
+        <p className="text-base font-semibold text-ink dark:text-stone-100">{t('recorded')}</p>
       </div>
     );
   }
@@ -94,8 +94,8 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
           <MessageSquare className="w-5 h-5 text-purple-600" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-ink">{t('mpesa_income')}</p>
-          <p className="text-xs text-muted">{t('bandika_sms')}</p>
+          <p className="text-sm font-semibold text-ink dark:text-stone-100">{t('mpesa_income')}</p>
+          <p className="text-xs text-muted dark:text-stone-400">{t('bandika_sms')}</p>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
           }}
           placeholder={t('bandika_sms')}
           rows={6}
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition resize-none"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition resize-none"
         />
       </div>
 
@@ -123,58 +123,58 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       )}
 
       {parsed && (
-        <div className="bg-white rounded-2xl border border-border shadow-card p-4 space-y-4">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-4 space-y-4">
           <div className="flex items-center gap-2 text-primary-600">
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm font-medium">{t('mpesa_income')}</span>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+            <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
             <input
               type="number"
               inputMode="decimal"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full rounded-xl border border-border bg-background px-4 py-3 text-lg font-bold text-ink focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+              className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-lg font-bold text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
             />
           </div>
 
           <div className="flex items-center gap-3 py-2">
-            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-              <User className="w-4 h-4 text-muted" />
+            <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+              <User className="w-4 h-4 text-muted dark:text-stone-400" />
             </div>
             <div>
-              <p className="text-xs text-muted">{t('sender')}</p>
-              <p className="text-sm font-medium text-ink">{parsed.sender}</p>
+              <p className="text-xs text-muted dark:text-stone-400">{t('sender')}</p>
+              <p className="text-sm font-medium text-ink dark:text-stone-100">{parsed.sender}</p>
             </div>
           </div>
 
           {parsed.code && (
-            <div className="flex items-center gap-3 py-2 border-t border-border pt-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Hash className="w-4 h-4 text-muted" />
+            <div className="flex items-center gap-3 py-2 border-t border-border dark:border-stone-700 pt-3">
+              <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                <Hash className="w-4 h-4 text-muted dark:text-stone-400" />
               </div>
               <div>
-                <p className="text-xs text-muted">{t('mpesa_code')}</p>
-                <p className="text-sm font-mono font-medium text-ink">{parsed.code}</p>
+                <p className="text-xs text-muted dark:text-stone-400">{t('mpesa_code')}</p>
+                <p className="text-sm font-mono font-medium text-ink dark:text-stone-100">{parsed.code}</p>
               </div>
             </div>
           )}
 
           {parsed.payment_method && (
-            <div className="flex items-center gap-3 py-2 border-t border-border pt-3">
+            <div className="flex items-center gap-3 py-2 border-t border-border dark:border-stone-700 pt-3">
               <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
                 <Banknote className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-muted">{t('payment_method_label')}</p>
+                <p className="text-xs text-muted dark:text-stone-400">{t('payment_method_label')}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   {(() => {
                     const Icon = PAYMENT_ICONS[parsed.payment_method!] || Banknote;
                     return <Icon className="w-3.5 h-3.5 text-green-600" />;
                   })()}
-                  <p className="text-sm font-medium text-ink">
+                  <p className="text-sm font-medium text-ink dark:text-stone-100">
                     {language === 'sw' ? PAYMENT_LABELS[parsed.payment_method]?.sw : PAYMENT_LABELS[parsed.payment_method]?.en ?? parsed.payment_method}
                   </p>
                 </div>
@@ -188,7 +188,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+          className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
         >
           {t('cancel')}
         </button>

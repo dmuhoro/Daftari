@@ -126,5 +126,19 @@
   "try_free": "Try Daftari Free Today",
   "ready_account": "Already have an account?",
   "no_internet_title": "No Internet",
-  "no_internet_sub": "Daftari works without internet"
+  "no_internet_sub": "Daftari works without internet",
+  "appearance_settings": "App Settings",
+  "theme_light": "Light",
+  "theme_dark": "Dark",
+  "theme_system": "System",
+  "appearance": "Appearance",
+  "sale_recorded": "Sale Recorded!",
+  "expense_recorded": "Expense Recorded!",
+  "withdrawal_recorded": "Withdrawal Recorded!",
+  "streak_days_label": "{{count}} day streak",
+  "streak_milestone": "🏆 {{count}} day streak!",
+  "filter_this_week": "This Week",
+  "filter_this_month": "This Month",
+  "filter_all": "All",
+  "loading": "Loading..."
 }

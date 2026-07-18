@@ -32,7 +32,7 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
   const { t, language } = useTranslation();
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col">
+    <div className="min-h-dvh bg-background dark:bg-stone-950 flex flex-col">
       {/* HERO */}
       <div className="bg-stone-900 text-white py-16 px-6">
         <div className="flex flex-col items-center text-center">
@@ -59,9 +59,9 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
       </div>
 
       {/* WHO IT'S FOR */}
-      <div className="bg-white py-10 px-6">
-        <h2 className="text-xl font-bold text-ink text-center mb-1">{t('built_for_every_business')}</h2>
-        <p className="text-sm text-muted text-center mb-5">{t('from_veggie_to_carpenter')}</p>
+      <div className="bg-white dark:bg-stone-900 py-10 px-6">
+        <h2 className="text-xl font-bold text-ink dark:text-stone-100 text-center mb-1">{t('built_for_every_business')}</h2>
+        <p className="text-sm text-muted dark:text-stone-400 text-center mb-5">{t('from_veggie_to_carpenter')}</p>
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-6 px-6">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
@@ -76,18 +76,18 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
       </div>
 
       {/* PROBLEM */}
-      <div className="bg-stone-50 py-10 px-6">
+      <div className="bg-stone-50 dark:bg-stone-950 py-10 px-6">
         <div className="max-w-sm mx-auto flex flex-col gap-4">
           {[
             language === 'sw' ? "Hujui faida yako ya leo" : "You don't know today's profit",
             language === 'sw' ? 'Daftari ya karatasi inachukua muda' : 'Paper records are exhausting',
             language === 'sw' ? 'Fuliza inakula pesa bila kujua' : 'Fuliza eats profit silently',
           ].map((text, i) => (
-            <div key={i} className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm">
+            <div key={i} className="flex items-center gap-3 bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-sm">
               <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                 <X className="w-4 h-4 text-red-500" />
               </div>
-              <span className="text-sm text-ink">{text}</span>
+              <span className="text-sm text-ink dark:text-stone-100">{text}</span>
             </div>
           ))}
         </div>
@@ -112,8 +112,8 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
       </div>
 
       {/* PAYMENT METHODS */}
-      <div className="bg-white py-10 px-6">
-        <h2 className="text-xl font-bold text-ink text-center mb-6">
+      <div className="bg-white dark:bg-stone-900 py-10 px-6">
+        <h2 className="text-xl font-bold text-ink dark:text-stone-100 text-center mb-6">
           {language === 'sw' ? 'Inakubali malipo yote' : 'Accepts all payments'}
         </h2>
         <div className="grid grid-cols-3 gap-4 max-w-sm mx-auto">
@@ -121,10 +121,10 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
             const Icon = pm.icon;
             return (
               <div key={pm.en} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                  <Icon className="w-6 h-6 text-muted" />
+                <div className="w-12 h-12 rounded-xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-muted dark:text-stone-400" />
                 </div>
-                <span className="text-xs text-muted text-center">{language === 'sw' ? pm.sw : pm.en}</span>
+                <span className="text-xs text-muted dark:text-stone-400 text-center">{language === 'sw' ? pm.sw : pm.en}</span>
               </div>
             );
           })}
@@ -132,12 +132,12 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
       </div>
 
       {/* QUOTE */}
-      <div className="bg-stone-50 py-10 px-6">
-        <div className="bg-white rounded-2xl shadow-sm p-5 max-w-sm mx-auto">
-          <p className="text-sm text-ink italic">
+      <div className="bg-stone-50 dark:bg-stone-950 py-10 px-6">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm p-5 max-w-sm mx-auto">
+          <p className="text-sm text-ink dark:text-stone-100 italic">
             "The manual process of going through transaction records to track sales profits and the money to keep the business running is tiring."
           </p>
-          <p className="text-xs text-muted mt-3 font-medium">— Chapati vendor, Nairobi</p>
+          <p className="text-xs text-muted dark:text-stone-400 mt-3 font-medium">— Chapati vendor, Nairobi</p>
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
         <h2 className="text-2xl font-bold text-white mb-6">{t('try_free')}</h2>
         <button
           onClick={onSignUp}
-          className="w-full max-w-xs py-4 rounded-2xl bg-white text-green-700 text-lg font-bold transition-colors hover:bg-stone-100"
+          className="w-full max-w-xs py-4 rounded-2xl bg-white dark:bg-stone-900 text-green-700 text-lg font-bold transition-colors hover:bg-stone-100 dark:hover:bg-stone-800"
         >
           {t('start_free')}
         </button>

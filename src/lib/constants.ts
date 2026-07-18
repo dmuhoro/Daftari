@@ -31,6 +31,7 @@ export const STORAGE_KEYS = {
   BUSINESS:             'daftari-business'              as const,
   LAST_CLOSE_DATE:      'daftari-last-close-date'       as const,
   CLOSE_DISMISSED_AT:   'daftari-close-dismissed-at'    as const,
+  THEME:                'daftari-theme'                 as const,
 } as const
 
 /** Daily close prompt timing */

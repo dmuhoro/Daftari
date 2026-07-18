@@ -126,5 +126,19 @@
   "try_free": "Jaribu Daftari Bure Leo",
   "ready_account": "Tayari una akaunti?",
   "no_internet_title": "Huna mtandao",
-  "no_internet_sub": "Daftari inafanya kazi bila mtandao"
+  "no_internet_sub": "Daftari inafanya kazi bila mtandao",
+  "appearance_settings": "Mipangilio ya Programu",
+  "theme_light": "Mwanga",
+  "theme_dark": "Giza",
+  "theme_system": "Mfumo",
+  "appearance": "Mandhari",
+  "sale_recorded": "Mauzo Imehifadhiwa!",
+  "expense_recorded": "Matumizi Imehifadhiwa!",
+  "withdrawal_recorded": "Kutoa Imehifadhiwa!",
+  "streak_days_label": "Siku {{count}} mfululizo",
+  "streak_milestone": "🏆 Siku {{count}} mfululizo!",
+  "filter_this_week": "Wiki Hii",
+  "filter_this_month": "Mwezi Huu",
+  "filter_all": "Yote",
+  "loading": "Inasubiri..."
 }

@@ -55,7 +55,7 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-primary-600" />
         </div>
-        <p className="text-base font-semibold text-ink">{t('recorded')}</p>
+        <p className="text-base font-semibold text-ink dark:text-stone-100">{t('recorded')}</p>
       </div>
     );
   }
@@ -67,8 +67,8 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
           <AlertTriangle className="w-5 h-5 text-amber-600" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-ink">{t('chukua_fuliza')}</p>
-          <p className="text-xs text-muted">{t('fuliza')}</p>
+          <p className="text-sm font-semibold text-ink dark:text-stone-100">{t('chukua_fuliza')}</p>
+          <p className="text-xs text-muted dark:text-stone-400">{t('fuliza')}</p>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
         <input
           type="number"
           inputMode="decimal"
@@ -85,7 +85,7 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
           onChange={(e) => { setAmount(e.target.value); setAmountError(''); }}
           onBlur={() => { if (amount) validateAmount(amount); }}
           placeholder="0"
-          className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-2xl font-bold text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3.5 text-2xl font-bold text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           autoFocus
         />
         {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
@@ -95,7 +95,7 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+          className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
         >
           {t('cancel')}
         </button>

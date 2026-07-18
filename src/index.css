@@ -4,16 +4,34 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-surface: #fafaf5;
+  --color-card: #ffffff;
+  --color-ink: #1c1917;
+  --color-muted: #78716c;
+  --color-border: #e7e5e4;
+  --color-shadow: rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --color-surface: #0c0a09;
+  --color-card: #1c1917;
+  --color-ink: #fafaf9;
+  --color-muted: #a8a29e;
+  --color-border: #292524;
+  --color-shadow: rgba(0, 0, 0, 0.4);
+}
+
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
-    background-color: #fafaf5;
+    background-color: var(--color-surface);
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    background-color: #fafaf5;
-    color: #1a1a1a;
+    background-color: var(--color-surface);
+    color: var(--color-ink);
     min-height: 100dvh;
   }
 

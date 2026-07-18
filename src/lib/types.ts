@@ -141,6 +141,7 @@ export interface SyncQueueEntry {
 // ─── i18n Types ───────────────────────────────────────────────────────────
 
 export type Language = 'sw' | 'en'
+export type Theme = 'light' | 'dark' | 'system'
 
 export interface I18nString {
   readonly sw: string

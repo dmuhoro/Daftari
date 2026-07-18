@@ -120,29 +120,29 @@ export default function AppShell({ onSignOut }: AppShellProps) {
   const hideNav = view === 'catalog';
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background">
+    <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950">
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
       {view !== 'dashboard' && view !== 'catalog' && (
-        <header className="bg-white border-b border-border px-4 pt-safe-top">
+        <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
               <button
                 onClick={() => setView('add')}
-                className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 transition-colors -ml-1"
+                className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 transition-colors -ml-1"
               >
-                <ChevronLeft className="w-5 h-5 text-ink" />
+                <ChevronLeft className="w-5 h-5 text-ink dark:text-stone-100" />
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">D</span>
                 </div>
-                <span className="font-bold text-ink text-base tracking-tight">{t('app_name')}</span>
+                <span className="font-bold text-ink dark:text-stone-100 text-base tracking-tight">{t('app_name')}</span>
               </div>
             )}
-            <span className={`text-sm font-semibold text-muted ${isSubView ? '' : 'ml-auto'}`}>
+            <span className={`text-sm font-semibold text-muted dark:text-stone-400 ${isSubView ? '' : 'ml-auto'}`}>
               {viewTitle(view, t)}
             </span>
           </div>
@@ -185,7 +185,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {/* Bottom nav */}
       {!hideNav && (
         <nav
-          className="bg-white border-t border-border safe-bottom"
+          className="bg-white dark:bg-stone-900 border-t border-border dark:border-stone-800 safe-bottom"
           style={{ boxShadow: '0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)' }}
         >
           <div className="flex items-stretch">
@@ -197,7 +197,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
                   key={key}
                   onClick={() => handleTabPress(key)}
                   className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
-                    isActive ? 'text-primary-600' : 'text-muted hover:text-ink'
+                    isActive ? 'text-primary-600' : 'text-muted dark:text-stone-400 hover:text-ink dark:text-stone-100'
                   }`}
                 >
                   {isAdd ? (

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { BUSINESS_CATEGORIES } from '../../lib/businessCategories';
+import SuccessFlash from '../../components/SuccessFlash';
 
 interface RecordExpenseProps {
   onSave: () => void;
@@ -17,6 +18,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
+  const [flashAmount, setFlashAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState('');
 
   const catKey = business?.category as keyof typeof BUSINESS_CATEGORIES | undefined;
@@ -24,7 +26,6 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
     ? [...BUSINESS_CATEGORIES[catKey].expenseCategories, { key: 'other', sw: 'Nyingine', en: 'Other' }]
     : [{ key: 'ingredients', sw: 'Vifaa', en: 'Ingredients' }, { key: 'transport', sw: 'Usafiri', en: 'Transport' }, { key: 'other', sw: 'Nyingine', en: 'Other' }];
 
-  // Set initial category
   if (!category && expenseCats.length > 0) {
     setCategory(expenseCats[0].key);
   }
@@ -54,13 +55,17 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
       synced: 0,
     });
     setSaving(false);
-    onSave();
+    setFlashAmount(Number(amount));
+  }
+
+  if (flashAmount !== null) {
+    return <SuccessFlash amount={flashAmount} type="expense" onDismiss={onSave} />;
   }
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-4 px-4 pt-2 pb-6">
       <div>
-        <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
         <input
           type="number"
           inputMode="decimal"
@@ -70,13 +75,13 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
           placeholder="0"
           min="1"
           required
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
         />
         {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-muted mb-2">{t('category')}</label>
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-2">{t('category')}</label>
         <div className="grid grid-cols-2 gap-2">
           {expenseCats.map((cat) => (
             <button
@@ -86,7 +91,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
               className={`py-2.5 rounded-xl text-xs font-medium border transition-colors ${
                 category === cat.key
                   ? 'bg-red-500 text-white border-red-500'
-                  : 'bg-white text-muted border-border hover:border-red-300 hover:text-red-600'
+                  : 'bg-white dark:bg-stone-900 text-muted dark:text-stone-400 border-border dark:border-stone-700 hover:border-red-300 hover:text-red-600'
               }`}
             >
               {language === 'sw' ? cat.sw : cat.en}
@@ -96,7 +101,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-muted mb-1.5">
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
           {t('description')} <span className="font-normal">({t('optional')})</span>
         </label>
         <input
@@ -104,7 +109,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t('description')}
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
         />
       </div>
 
@@ -112,7 +117,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+          className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
         >
           {t('cancel')}
         </button>

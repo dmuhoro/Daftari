@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import SuccessFlash from '../../components/SuccessFlash';
 
 interface RecordWithdrawalProps {
   onSave: () => void;
@@ -15,6 +16,7 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [flashAmount, setFlashAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState('');
 
   function validateAmount(val: string): boolean {
@@ -42,20 +44,24 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
       synced: 0,
     });
     setSaving(false);
-    onSave();
+    setFlashAmount(Number(amount));
+  }
+
+  if (flashAmount !== null) {
+    return <SuccessFlash amount={flashAmount} type="withdrawal" onDismiss={onSave} />;
   }
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-4 px-4 pt-2 pb-6">
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
+      <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-2xl px-4 py-3.5">
         <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-        <p className="text-xs font-medium text-amber-800 leading-relaxed">
+        <p className="text-xs font-medium text-amber-800 dark:text-amber-300 leading-relaxed">
           {t('withdrawal_warning')}
         </p>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
         <input
           type="number"
           inputMode="decimal"
@@ -65,13 +71,13 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
           placeholder="0"
           min="1"
           required
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
         />
         {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-muted mb-1.5">
+        <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
           {t('note')} <span className="font-normal">({t('optional')})</span>
         </label>
         <input
@@ -79,7 +85,7 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={t('note')}
-          className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
         />
       </div>
 
@@ -87,7 +93,7 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-3 rounded-xl border border-border text-sm font-medium text-muted hover:bg-gray-50 transition-colors"
+          className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
         >
           {t('cancel')}
         </button>

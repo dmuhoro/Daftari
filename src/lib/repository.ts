@@ -73,6 +73,23 @@ export const getRecentTransactions = async (
   }
 }
 
+/** Read all transactions for the current month (from 1st of month to now) */
+export const getTransactionsForMonth = async (): Promise<Result<Transaction[], AppError>> => {
+  try {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const transactions = await db.transactions
+      .where('recorded_at')
+      .above(startOfMonth.toISOString())
+      .reverse()
+      .toArray()
+    return ok(transactions as Transaction[])
+  } catch (cause) {
+    logger.error('repository:get_month_failed', cause)
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read month transactions', cause))
+  }
+}
+
 /** Read all transactions (for history screen) */
 export const getAllTransactions = async (): Promise<Result<Transaction[], AppError>> => {
   try {

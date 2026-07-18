@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { db, Transaction, type TransactionType } from './db';
 import { supabase } from './supabase';
 import { addToQueue, type QueuePayload } from '../features/sync/syncQueue';
+import type { Theme } from './types';
 
 interface Business {
   id: string;
@@ -21,6 +22,7 @@ interface AppStore {
   transactions: Transaction[];
   lastCloseDate: string | null;
   closePromptDismissedAt: number | null;
+  theme: Theme;
   setLanguage: (language: 'sw' | 'en') => void;
   setBusiness: (business: Business | null) => void;
   updateBusiness: (partial: Partial<Business>) => void;
@@ -28,6 +30,7 @@ interface AppStore {
   addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<void>;
   setLastCloseDate: (date: string) => void;
   dismissClosePrompt: () => void;
+  setTheme: (theme: Theme) => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -38,6 +41,7 @@ export const useStore = create<AppStore>()(
       transactions: [],
       lastCloseDate: null,
       closePromptDismissedAt: null,
+      theme: 'system',
       setLanguage: (language) => set({ language }),
       setBusiness: (business) => set({ business }),
       updateBusiness: (partial) => set((state) => ({
@@ -70,6 +74,7 @@ export const useStore = create<AppStore>()(
       },
       setLastCloseDate: (date) => set({ lastCloseDate: date, closePromptDismissedAt: null }),
       dismissClosePrompt: () => set({ closePromptDismissedAt: Date.now() }),
+      setTheme: (theme) => set({ theme }),
     }),
     {
       name: 'daftari-store',
@@ -78,6 +83,7 @@ export const useStore = create<AppStore>()(
         business: state.business,
         lastCloseDate: state.lastCloseDate,
         closePromptDismissedAt: state.closePromptDismissedAt,
+        theme: state.theme,
       }),
     }
   )
