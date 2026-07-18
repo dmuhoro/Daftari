@@ -31,3 +31,4 @@ Format: [Semantic Versioning](https://semver.org)
 - Vitest unit tests for money, SMS parser, profit calculations
 - GitHub Actions CI: typecheck, lint, test, build on every PR
 - Architecture Decision Records (docs/adr/)
+- AI-context engineering agents: 10 specialist SDLC agents (ai-context/)
