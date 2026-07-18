@@ -21,8 +21,8 @@ function parseDateDMYHM(dateStr: string, timeStr: string): Date | null {
 
   if (!dateMatch || !timeMatch) return null;
 
-  let day = parseInt(dateMatch[1], 10);
-  let month = parseInt(dateMatch[2], 10) - 1;
+  const day = parseInt(dateMatch[1], 10);
+  const month = parseInt(dateMatch[2], 10) - 1;
   let year = parseInt(dateMatch[3], 10);
   if (year < 100) year += 2000;
 
