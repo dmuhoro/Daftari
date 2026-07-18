@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MessageSquare, CheckCircle, AlertCircle, User, Hash } from 'lucide-react';
+import { MessageSquare, CheckCircle, AlertCircle, User, Hash, Banknote, Smartphone, Wallet, Store, Building2, Wifi } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { parseMpesaSMS } from './parseMpesa';
@@ -10,8 +10,24 @@ interface SMSParserProps {
   onManualEntry: () => void;
 }
 
+const PAYMENT_ICONS: Record<string, typeof Smartphone> = {
+  mpesa_send_money: Smartphone,
+  pochi_la_biashara: Wallet,
+  till_number: Store,
+  paybill: Building2,
+  airtel_money: Wifi,
+};
+
+const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
+  mpesa_send_money: { sw: 'M-Pesa', en: 'M-Pesa' },
+  pochi_la_biashara: { sw: 'Pochi', en: 'Pochi' },
+  till_number: { sw: 'Till', en: 'Till' },
+  paybill: { sw: 'Paybill', en: 'Paybill' },
+  airtel_money: { sw: 'Airtel', en: 'Airtel' },
+};
+
 export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParserProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
 
   const [smsText, setSmsText] = useState('');
@@ -50,6 +66,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       synced: 0,
       mpesa_code: parsed.code,
       mpesa_sender: parsed.sender,
+      payment_method: parsed.payment_method,
     });
     setSaving(false);
     setFlash(true);
@@ -72,7 +89,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-2 pb-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
           <MessageSquare className="w-5 h-5 text-purple-600" />
@@ -83,7 +99,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         </div>
       </div>
 
-      {/* SMS Textarea */}
       <div>
         <textarea
           value={smsText}
@@ -98,7 +113,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         />
       </div>
 
-      {/* Parse Error */}
       {parseError && (
         <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3.5">
           <AlertCircle className="w-4 h-4 text-danger flex-shrink-0 mt-0.5" />
@@ -108,7 +122,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         </div>
       )}
 
-      {/* Parsed Result Card */}
       {parsed && (
         <div className="bg-white rounded-2xl border border-border shadow-card p-4 space-y-4">
           <div className="flex items-center gap-2 text-primary-600">
@@ -116,7 +129,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
             <span className="text-sm font-medium">{t('mpesa_income')}</span>
           </div>
 
-          {/* Amount */}
           <div>
             <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
             <input
@@ -128,7 +140,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
             />
           </div>
 
-          {/* Sender */}
           <div className="flex items-center gap-3 py-2">
             <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
               <User className="w-4 h-4 text-muted" />
@@ -139,7 +150,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
             </div>
           </div>
 
-          {/* M-Pesa Code */}
           {parsed.code && (
             <div className="flex items-center gap-3 py-2 border-t border-border pt-3">
               <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
@@ -151,10 +161,29 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
               </div>
             </div>
           )}
+
+          {parsed.payment_method && (
+            <div className="flex items-center gap-3 py-2 border-t border-border pt-3">
+              <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                <Banknote className="w-4 h-4 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted">{t('payment_method_label')}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  {(() => {
+                    const Icon = PAYMENT_ICONS[parsed.payment_method!] || Banknote;
+                    return <Icon className="w-3.5 h-3.5 text-green-600" />;
+                  })()}
+                  <p className="text-sm font-medium text-ink">
+                    {language === 'sw' ? PAYMENT_LABELS[parsed.payment_method]?.sw : PAYMENT_LABELS[parsed.payment_method]?.en ?? parsed.payment_method}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Action Buttons */}
       <div className="flex gap-3 pt-1">
         <button
           type="button"
@@ -185,7 +214,6 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         )}
       </div>
 
-      {/* Manual entry link */}
       {parseError && (
         <button
           type="button"

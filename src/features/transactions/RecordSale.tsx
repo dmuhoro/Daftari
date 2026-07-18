@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle, Zap } from 'lucide-react';
+import { CheckCircle, Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 
@@ -8,38 +8,78 @@ interface RecordSaleProps {
   onCancel: () => void;
 }
 
-const SALE_CATEGORIES = ['chapati', 'bulk_order', 'other'] as const;
+const PAYMENT_ICONS: Record<string, typeof Smartphone> = {
+  cash: Banknote,
+  mpesa_send_money: Smartphone,
+  pochi_la_biashara: Wallet,
+  till_number: Store,
+  paybill: Building2,
+  airtel_money: Wifi,
+  bank_transfer: Landmark,
+};
+
+const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
+  cash: { sw: 'Taslimu', en: 'Cash' },
+  mpesa_send_money: { sw: 'M-Pesa', en: 'M-Pesa' },
+  pochi_la_biashara: { sw: 'Pochi', en: 'Pochi' },
+  till_number: { sw: 'Till', en: 'Till' },
+  paybill: { sw: 'Paybill', en: 'Paybill' },
+  airtel_money: { sw: 'Airtel', en: 'Airtel' },
+  bank_transfer: { sw: 'Benki', en: 'Bank' },
+};
 
 export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
+  const business = useStore((s) => s.business);
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState<string>('chapati');
+  const [category, setCategory] = useState<string>('product_sale');
+  const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [amountError, setAmountError] = useState('');
 
-  async function handleQuickSale() {
+  const products = business?.products ?? [];
+  const userPaymentMethods = (business?.payment_methods as string[]) ?? [];
+
+  // Auto-select first payment method if only one
+  if (!paymentMethod && userPaymentMethods.length === 1) {
+    setPaymentMethod(userPaymentMethods[0]);
+  }
+
+  async function handleQuickSale(product: { name: string; price: number; unit: string }) {
     setSaving(true);
     await addTransaction({
       local_id: crypto.randomUUID(),
       type: 'income',
-      category: 'chapati',
+      category: 'product_sale',
       source: 'manual',
-      amount: 20,
-      description: 'Chapati',
+      amount: product.price,
+      description: product.name,
       recorded_at: new Date().toISOString(),
       synced: 0,
+      payment_method: paymentMethod || undefined,
     });
     setSaving(false);
     setFlash(true);
     setTimeout(() => { setFlash(false); onSave(); }, 800);
   }
 
+  function validateAmount(val: string): boolean {
+    const num = Number(val);
+    if (!val || isNaN(num) || num <= 0) {
+      setAmountError(t('please_enter_valid_amount'));
+      return false;
+    }
+    setAmountError('');
+    return true;
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    if (!amount || Number(amount) <= 0) return;
+    if (!validateAmount(amount)) return;
     setSaving(true);
     await addTransaction({
       local_id: crypto.randomUUID(),
@@ -50,6 +90,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
       description: description || undefined,
       recorded_at: new Date().toISOString(),
       synced: 0,
+      payment_method: paymentMethod || undefined,
     });
     setSaving(false);
     onSave();
@@ -68,20 +109,32 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-6">
-      {/* Quick sale chip */}
-      <button
-        onClick={handleQuickSale}
-        disabled={saving}
-        className="flex items-center gap-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-2xl px-5 py-4 shadow-lg transition-colors disabled:opacity-60"
-      >
-        <div className="w-9 h-9 rounded-xl bg-primary-700 flex items-center justify-center flex-shrink-0">
-          <Zap className="w-4 h-4 text-white" strokeWidth={2.5} />
+      {/* Product chips (dynamic quick-add) */}
+      {products.length > 0 ? (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {products.map((product) => (
+            <button
+              key={product.id}
+              onClick={() => handleQuickSale(product)}
+              disabled={saving}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white rounded-2xl px-4 py-3 shadow-md transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              <Zap className="w-4 h-4" strokeWidth={2.5} />
+              <span className="text-sm font-semibold whitespace-nowrap">
+                {product.name} — KES {product.price}
+              </span>
+            </button>
+          ))}
         </div>
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-medium text-primary-200">{t('quick_sale')}</span>
-          <span className="text-sm font-bold">{t('quick_sale_label')}</span>
-        </div>
-      </button>
+      ) : (
+        <a
+          href="#"
+          onClick={(e) => { e.preventDefault(); onCancel(); }}
+          className="block text-center text-sm text-muted bg-gray-50 rounded-2xl py-4 border border-dashed border-border"
+        >
+          {t('no_products_settings')}
+        </a>
+      )}
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
@@ -97,18 +150,46 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
             type="number"
             inputMode="decimal"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => { setAmount(e.target.value); setAmountError(''); }}
+            onBlur={() => { if (amount) validateAmount(amount); }}
             placeholder="0"
             min="1"
             required
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           />
+          {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
         </div>
+
+        {/* Payment method selector */}
+        {userPaymentMethods.length > 1 && (
+          <div>
+            <label className="block text-xs font-medium text-muted mb-1.5">{t('payment_method_label')}</label>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {userPaymentMethods.map((pm) => {
+                const Icon = PAYMENT_ICONS[pm] || Banknote;
+                const isSelected = paymentMethod === pm;
+                return (
+                  <button
+                    key={pm}
+                    type="button"
+                    onClick={() => setPaymentMethod(pm)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium whitespace-nowrap transition-colors ${
+                      isSelected ? 'bg-green-600 text-white border-green-600' : 'bg-white text-muted border-border hover:border-green-300'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {language === 'sw' ? PAYMENT_LABELS[pm]?.sw : PAYMENT_LABELS[pm]?.en ?? pm}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-medium text-muted mb-1.5">{t('category')}</label>
           <div className="grid grid-cols-3 gap-2">
-            {SALE_CATEGORIES.map((cat) => (
+            {(['product_sale', 'service', 'other'] as const).map((cat) => (
               <button
                 key={cat}
                 type="button"
@@ -119,7 +200,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
                     : 'bg-white text-muted border-border hover:border-primary-300 hover:text-primary-700'
                 }`}
               >
-                {t(`cat_${cat}` as 'cat_chapati' | 'cat_bulk_order' | 'cat_other')}
+                {t(cat === 'product_sale' ? 'cat_product_sale' : cat === 'service' ? 'cat_service' : 'cat_other')}
               </button>
             ))}
           </div>
@@ -134,7 +215,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('description')}
-            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            className="w-full rounded-xl border border-border bg-background px-4 py-3 text-base text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           />
         </div>
 
@@ -148,7 +229,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
           </button>
           <button
             type="submit"
-            disabled={saving || !amount}
+            disabled={saving || !amount || !!amountError}
             className="flex-1 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
           >
             {saving ? t('saving') : t('save')}

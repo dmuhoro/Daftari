@@ -1,17 +1,20 @@
-import { Globe, LogOut, ChevronRight, User, Building2 } from 'lucide-react';
+import { Globe, LogOut, ChevronRight, User, Building2, Package, Download } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { supabase } from '../lib/supabase';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
+  onNavigate?: (view: string) => void;
 }
 
-export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
+export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreenProps) {
   const { t } = useTranslation();
   const language = useStore((s) => s.language);
   const setLanguage = useStore((s) => s.setLanguage);
   const business = useStore((s) => s.business);
+  const { canInstall, install } = usePWAInstall();
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -25,13 +28,37 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 mt-2">
           {t('business_name')}
         </p>
-        <div className="bg-white rounded-2xl border border-border shadow-card px-4 py-4">
-          <div className="flex items-center gap-3">
+        <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-4">
             <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center">
               <Building2 className="w-4 h-4 text-primary-600" />
             </div>
-            <span className="text-sm font-medium text-ink">{business?.name ?? 'Daftari'}</span>
+            <div className="flex-1">
+              <span className="text-sm font-medium text-ink">{business?.name ?? 'Daftari'}</span>
+              {business?.category && (
+                <p className="text-xs text-muted">{business.category}{business.subcategory ? ` / ${business.subcategory}` : ''}</p>
+              )}
+            </div>
           </div>
+
+          {/* Products link */}
+          {onNavigate && (
+            <>
+              <div className="h-px bg-border mx-4" />
+              <button
+                onClick={() => onNavigate('catalog')}
+                className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center">
+                    <Package className="w-4 h-4 text-green-600" />
+                  </div>
+                  <span className="text-sm font-medium text-ink">{t('my_products')}</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted" />
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -87,6 +114,34 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
         </div>
       </div>
 
+      {/* PWA Install section */}
+      {canInstall && (
+        <div>
+          <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2">
+            {t('install_daftari')}
+          </p>
+          <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden">
+            <button
+              onClick={install}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-blue-50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <Download className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink">{t('install_daftari')}</span>
+                  <p className="text-xs text-muted">{t('open_without_browser')}</p>
+                </div>
+              </div>
+              <div className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                {t('install')}
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Account section */}
       <div>
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2">
@@ -116,6 +171,9 @@ export default function SettingsScreen({ onSignOut }: SettingsScreenProps) {
           </button>
         </div>
       </div>
+
+      {/* Branding */}
+      <p className="text-center text-xs text-muted pb-4">{t('made_in_kenya')}</p>
     </div>
   );
 }

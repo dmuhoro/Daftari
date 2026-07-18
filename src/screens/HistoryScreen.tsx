@@ -1,9 +1,29 @@
 import { useState, useRef, useEffect } from 'react';
-import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2, Smartphone, Wallet, Store, Building2, Wifi, Banknote } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { flushQueue } from '../features/sync/syncQueue';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+
+const PAYMENT_ICONS: Record<string, typeof Smartphone> = {
+  cash: Banknote,
+  mpesa_send_money: Smartphone,
+  pochi_la_biashara: Wallet,
+  till_number: Store,
+  paybill: Building2,
+  airtel_money: Wifi,
+  bank_transfer: Wallet,
+};
+
+const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
+  cash: { sw: 'Taslimu', en: 'Cash' },
+  mpesa_send_money: { sw: 'M-Pesa', en: 'M-Pesa' },
+  pochi_la_biashara: { sw: 'Pochi', en: 'Pochi' },
+  till_number: { sw: 'Till', en: 'Till' },
+  paybill: { sw: 'Paybill', en: 'Paybill' },
+  airtel_money: { sw: 'Airtel', en: 'Airtel' },
+  bank_transfer: { sw: 'Benki', en: 'Bank' },
+};
 
 function fmt(n: number) {
   return `KES ${n.toLocaleString('en-KE')}`;
@@ -86,8 +106,8 @@ export default function HistoryScreen() {
           <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center">
             <ClipboardList className="w-7 h-7 text-primary-400" />
           </div>
-          <p className="text-base font-semibold text-ink">{t('history')}</p>
-          <p className="text-sm text-muted text-center">{t('hakuna_miamala')}</p>
+          <p className="text-base font-semibold text-ink">{t('no_transactions_history')}</p>
+          <p className="text-sm text-muted text-center">{t('transactions_will_appear')}</p>
         </div>
       </div>
     );
@@ -138,7 +158,6 @@ export default function HistoryScreen() {
       className="flex flex-col min-h-full"
       style={{ transform: `translateY(${pullY * 0.3}px)` }}
     >
-      {/* Pull indicator */}
       {(pullY > 20 || refreshing) && (
         <div className="flex items-center justify-center py-3 text-primary-600">
           {refreshing ? (
@@ -164,6 +183,7 @@ export default function HistoryScreen() {
                 const color = typeColor(tx.type);
                 const bg = typeBg(tx.type);
                 const isLast = i === arr.length - 1;
+                const PayIcon = tx.payment_method ? PAYMENT_ICONS[tx.payment_method] : null;
                 return (
                   <div key={tx.local_id}>
                     <div className="flex items-center gap-3 px-4 py-3.5">
@@ -174,8 +194,17 @@ export default function HistoryScreen() {
                         <p className="text-sm font-medium text-ink truncate">
                           {tx.description || typeLabel(tx.type)}
                         </p>
-                        <p className="text-xs text-muted">
-                          {tx.category} · {new Date(tx.recorded_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+                        <p className="text-xs text-muted flex items-center gap-1">
+                          {tx.category}
+                          {PayIcon && tx.payment_method && (
+                            <>
+                              <span>·</span>
+                              <PayIcon className="w-3 h-3" />
+                              <span>{(language === 'sw' ? PAYMENT_LABELS[tx.payment_method]?.sw : PAYMENT_LABELS[tx.payment_method]?.en) ?? tx.payment_method}</span>
+                            </>
+                          )}
+                          <span>·</span>
+                          {new Date(tx.recorded_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
                       <p className={`text-sm font-semibold ${color} flex-shrink-0`}>

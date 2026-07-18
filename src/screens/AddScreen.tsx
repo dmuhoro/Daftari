@@ -1,14 +1,23 @@
-import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { useStore } from '../lib/store';
 
-type SubView = 'add/sale' | 'add/expense' | 'add/withdrawal' | 'add/sms' | 'add/fuliza-debt' | 'add/fuliza-repaid';
+type SubView =
+  | 'add/sale'
+  | 'add/expense'
+  | 'add/withdrawal'
+  | 'add/sms'
+  | 'add/fuliza-debt'
+  | 'add/fuliza-repaid';
 
 interface AddScreenProps {
-  onNavigate: (view: SubView) => void;
+  onNavigate: (view: SubView | 'catalog') => void;
 }
 
 export default function AddScreen({ onNavigate }: AddScreenProps) {
   const { t } = useTranslation();
+  const business = useStore((s) => s.business);
+  const products = business?.products ?? [];
 
   const cards = [
     {
@@ -20,6 +29,7 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
       iconBg: 'bg-primary-700',
       textColor: 'text-white',
       subColor: 'text-primary-200',
+      chip: products.length > 0 ? `${products.length} ${t('my_products').toLowerCase()}` : undefined,
     },
     {
       view: 'add/sms' as SubView,
@@ -65,7 +75,7 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
         {t('quick_add')}
       </p>
 
-      {cards.map(({ view, label, sublabel, icon: Icon, bg, iconBg, textColor, subColor, iconColor, border }) => (
+      {cards.map(({ view, label, sublabel, icon: Icon, bg, iconBg, textColor, subColor, iconColor, border, chip }) => (
         <button
           key={view}
           onClick={() => onNavigate(view)}
@@ -75,7 +85,14 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
             <Icon className={`w-6 h-6 ${iconColor ?? 'text-white'}`} strokeWidth={2} />
           </div>
           <div className="flex flex-col items-start">
-            <span className={`text-base font-semibold ${textColor}`}>{label}</span>
+            <div className="flex items-center gap-2">
+              <span className={`text-base font-semibold ${textColor}`}>{label}</span>
+              {chip && (
+                <span className="text-[10px] font-medium bg-white/20 text-white rounded-full px-2 py-0.5">
+                  {chip}
+                </span>
+              )}
+            </div>
             <span className={`text-xs ${subColor}`}>{sublabel}</span>
           </div>
           <div className="ml-auto">
@@ -112,6 +129,25 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
           </button>
         </div>
       </div>
+
+      {/* Products link */}
+      <button
+        onClick={() => onNavigate('catalog')}
+        className="w-full flex items-center justify-between bg-white rounded-2xl border border-border p-4 shadow-card mt-2 active:scale-[0.98] transition-transform"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+            <Package className="w-5 h-5 text-green-600" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-semibold text-ink">{t('my_products')}</span>
+            <p className="text-xs text-muted">{products.length > 0 ? `${products.length} items` : t('no_products_settings')}</p>
+          </div>
+        </div>
+        <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
   );
 }

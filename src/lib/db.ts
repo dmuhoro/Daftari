@@ -15,6 +15,7 @@ export interface Transaction {
   user_id?: string;
   mpesa_code?: string;
   mpesa_sender?: string;
+  payment_method?: string;
 }
 
 export interface SyncQueueItem {
@@ -34,6 +35,10 @@ export interface Business {
   currency: string;
   user_id?: string;
   created_at: string;
+  category?: string;
+  subcategory?: string;
+  payment_methods?: string;
+  products?: string;
 }
 
 export interface DailyClose {
@@ -53,7 +58,7 @@ class DaftariDB extends Dexie {
 
   constructor() {
     super('DaftariDB');
-    this.version(2).stores({
+    this.version(3).stores({
       transactions: '++id, &local_id, type, category, source, recorded_at, synced',
       sync_queue: '++id, operation, synced, created_at',
       business: '++id',

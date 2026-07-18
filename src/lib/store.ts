@@ -9,6 +9,10 @@ interface Business {
   name: string;
   owner_name?: string;
   currency: string;
+  category?: string;
+  subcategory?: string;
+  payment_methods?: string[];
+  products?: Array<{ id: string; name: string; price: number; unit: string }>;
 }
 
 interface AppStore {
@@ -19,6 +23,7 @@ interface AppStore {
   closePromptDismissedAt: number | null;
   setLanguage: (language: 'sw' | 'en') => void;
   setBusiness: (business: Business | null) => void;
+  updateBusiness: (partial: Partial<Business>) => void;
   setTransactions: (transactions: Transaction[]) => void;
   addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<void>;
   setLastCloseDate: (date: string) => void;
@@ -35,6 +40,9 @@ export const useStore = create<AppStore>()(
       closePromptDismissedAt: null,
       setLanguage: (language) => set({ language }),
       setBusiness: (business) => set({ business }),
+      updateBusiness: (partial) => set((state) => ({
+        business: state.business ? { ...state.business, ...partial } : null,
+      })),
       setTransactions: (transactions) => set({ transactions }),
       addTransaction: async (tx) => {
         const { data: { user } } = await supabase.auth.getUser();
@@ -54,6 +62,7 @@ export const useStore = create<AppStore>()(
           user_id: txWithUser.user_id,
           mpesa_code: txWithUser.mpesa_code,
           mpesa_sender: txWithUser.mpesa_sender,
+          payment_method: txWithUser.payment_method,
         };
         await addToQueue('upsert', 'daftari_transactions', txWithUser.local_id, queuePayload);
 

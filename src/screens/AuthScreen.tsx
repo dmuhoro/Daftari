@@ -34,10 +34,12 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
       onAuth();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
-      if (msg.includes('Invalid') || msg.includes('credentials') || msg.includes('password')) {
+      if (msg.includes('not confirmed') || msg.includes('Email not confirmed')) {
+        setError(t('auth_error_email_not_confirmed'));
+      } else if (msg.includes('Invalid') || msg.includes('credentials') || msg.includes('password')) {
         setError(t('error_invalid'));
       } else {
-        setError(t('error_generic'));
+        setError(msg || t('error_generic'));
       }
     } finally {
       setLoading(false);

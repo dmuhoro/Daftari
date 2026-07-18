@@ -8,6 +8,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import AddScreen from '../screens/AddScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import ProductCatalogScreen from '../screens/ProductCatalogScreen';
 import RecordSale from '../features/transactions/RecordSale';
 import RecordExpense from '../features/transactions/RecordExpense';
 import RecordWithdrawal from '../features/transactions/RecordWithdrawal';
@@ -27,7 +28,8 @@ type View =
   | 'add/fuliza-debt'
   | 'add/fuliza-repaid'
   | 'history'
-  | 'settings';
+  | 'settings'
+  | 'catalog';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -37,6 +39,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
+  if (view === 'catalog') return 'settings';
   return view as BottomTab;
 }
 
@@ -52,6 +55,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'add/fuliza-repaid': return t('lipa_fuliza');
     case 'history': return t('history');
     case 'settings': return t('settings');
+    case 'catalog': return t('my_products');
   }
 }
 
@@ -88,26 +92,18 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       const todayStr = nairobi.toISOString().slice(0, 10);
       const hours = nairobi.getHours();
 
-      // Check if it's 8pm or later
       if (hours < 20) return;
-
-      // Check if already closed today
       if (lastCloseDate === todayStr) return;
-
-      // Check if dismissed less than 2 hours ago
       if (closePromptDismissedAt && Date.now() - closePromptDismissedAt < 2 * 60 * 60 * 1000) return;
 
-      // Check if there are transactions today
       const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
       if (todayTxs.length === 0) return;
 
       setShowDailyClose(true);
     }
 
-    // Check on mount
     checkDailyClose();
 
-    // Check on visibility change
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         checkDailyClose();
@@ -120,13 +116,15 @@ export default function AppShell({ onSignOut }: AppShellProps) {
     };
   }, [transactions, lastCloseDate, closePromptDismissedAt]);
 
+  // Hide bottom nav on catalog
+  const hideNav = view === 'catalog';
+
   return (
     <div className="min-h-dvh flex flex-col bg-background">
-      {/* Offline banner */}
       {!isOnline && <OfflineBanner />}
 
-      {/* Header (hidden on dashboard since it has its own) */}
-      {view !== 'dashboard' && (
+      {/* Header */}
+      {view !== 'dashboard' && view !== 'catalog' && (
         <header className="bg-white border-b border-border px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -180,53 +178,56 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           <RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
         )}
         {view === 'history' && <HistoryScreen />}
-        {view === 'settings' && <SettingsScreen onSignOut={onSignOut} />}
+        {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
+        {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
       </main>
 
       {/* Bottom nav */}
-      <nav
-        className="bg-white border-t border-border safe-bottom"
-        style={{ boxShadow: '0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)' }}
-      >
-        <div className="flex items-stretch">
-          {tabs.map(({ key, icon: Icon, labelKey }) => {
-            const isActive = tab === key;
-            const isAdd = key === 'add';
-            return (
-              <button
-                key={key}
-                onClick={() => handleTabPress(key)}
-                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
-                  isActive ? 'text-primary-600' : 'text-muted hover:text-ink'
-                }`}
-              >
-                {isAdd ? (
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isActive ? 'bg-primary-600' : 'bg-primary-100'
-                    }`}
-                  >
-                    <Icon
-                      className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary-600'}`}
-                      strokeWidth={2.5}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                    <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : ''}`}>
-                      {t(labelKey)}
-                    </span>
-                    {isActive && (
-                      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-600 rounded-full" />
-                    )}
-                  </>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {!hideNav && (
+        <nav
+          className="bg-white border-t border-border safe-bottom"
+          style={{ boxShadow: '0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)' }}
+        >
+          <div className="flex items-stretch">
+            {tabs.map(({ key, icon: Icon, labelKey }) => {
+              const isActive = tab === key;
+              const isAdd = key === 'add';
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleTabPress(key)}
+                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
+                    isActive ? 'text-primary-600' : 'text-muted hover:text-ink'
+                  }`}
+                >
+                  {isAdd ? (
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                        isActive ? 'bg-primary-600' : 'bg-primary-100'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary-600'}`}
+                        strokeWidth={2.5}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                      <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : ''}`}>
+                        {t(labelKey)}
+                      </span>
+                      {isActive && (
+                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-600 rounded-full" />
+                      )}
+                    </>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
 
       {/* Daily Close Prompt */}
       <DailyClose

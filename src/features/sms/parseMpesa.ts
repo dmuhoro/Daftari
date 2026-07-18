@@ -3,6 +3,7 @@ export interface ParsedMpesa {
   sender: string;
   code: string;
   timestamp: Date;
+  payment_method?: string;
 }
 
 const AMOUNT_REGEX = /KSh?\s*([\d,]+(?:\.\d{2})?)/i;
@@ -36,7 +37,6 @@ export function parseMpesaSMS(text: string): ParsedMpesa | null {
   const cleanText = text.trim().replace(/\s+/g, ' ');
 
   // Pattern A: "You have received KSh X from NAME PHONECODE on DD/MM/YY at HH:MM"
-  // Example: "You have received KSh 1,500 from John Doe QW12RT34 on 05/06/26 at 14:30"
   const patternA = /You have received KSh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})\s+on\s+(\d{1,2}\/\d{1,2}\/\d{2,4})\s+at\s+(\d{1,2}:\d{2})/i;
   let match = cleanText.match(patternA);
   if (match) {
@@ -49,11 +49,11 @@ export function parseMpesaSMS(text: string): ParsedMpesa | null {
       sender: match[2].trim(),
       code: match[3],
       timestamp,
+      payment_method: 'mpesa_send_money',
     };
   }
 
   // Pattern B: "Confirmed. KSh X received from NAME PHONECODE"
-  // Example: "Confirmed. KSh 2,000 received from Jane Smith XY98ZT12"
   const patternB = /Confirmed\.?\s+KSh?\s*([\d,]+(?:\.\d{2})?)\s+received\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})/i;
   match = cleanText.match(patternB);
   if (match) {
@@ -64,11 +64,11 @@ export function parseMpesaSMS(text: string): ParsedMpesa | null {
       sender: match[2].trim(),
       code: match[3],
       timestamp: new Date(),
+      payment_method: 'mpesa_send_money',
     };
   }
 
   // Pattern C: "Umepokea KSh X kutoka kwa NAME"
-  // Example: "Umepokea KSh 500 kutoka kwa Ali Hassan"
   const patternC = /Umepokea\s+KSh?\s*([\d,]+(?:\.\d{2})?)\s+kutoka\s+kwa\s+([A-Za-z\s]+)/i;
   match = cleanText.match(patternC);
   if (match) {
@@ -79,11 +79,78 @@ export function parseMpesaSMS(text: string): ParsedMpesa | null {
       sender: match[2].trim(),
       code: '',
       timestamp: new Date(),
+      payment_method: 'mpesa_send_money',
     };
   }
 
-  // Simpler fallback patterns
-  // "received KSh X from NAME"
+  // Pattern D: Pochi La Biashara
+  // "You have received KSh X from NAME PHONE to Pochi la Biashara on DD/MM/YY"
+  const patternD = /You have received KSh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})\s+to\s+Pochi la Biashara/i;
+  match = cleanText.match(patternD);
+  if (match) {
+    const amount = parseAmount(`KSh ${match[1]}`);
+    if (amount === null) return null;
+    return {
+      amount,
+      sender: match[2].trim(),
+      code: '',
+      timestamp: new Date(),
+      payment_method: 'pochi_la_biashara',
+    };
+  }
+
+  // Pattern E: Till Number (Buy Goods)
+  // "BUSINESS_NAME has received KSh X from NAME PHONE. Trans ID CODE"
+  const patternE = /has received KSh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})/i;
+  match = cleanText.match(patternE);
+  if (match) {
+    const amount = parseAmount(`KSh ${match[1]}`);
+    if (amount === null) return null;
+    return {
+      amount,
+      sender: match[2].trim(),
+      code: '',
+      timestamp: new Date(),
+      payment_method: 'till_number',
+    };
+  }
+
+  // Pattern F: Paybill
+  // "BUSINESS_NAME received KSh X from NAME PHONE. Account ACC. Trans CODE"
+  const patternF = /received KSh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})\.?\s+Account/i;
+  match = cleanText.match(patternF);
+  if (match) {
+    const amount = parseAmount(`KSh ${match[1]}`);
+    if (amount === null) return null;
+    return {
+      amount,
+      sender: match[2].trim(),
+      code: '',
+      timestamp: new Date(),
+      payment_method: 'paybill',
+    };
+  }
+
+  // Pattern G: Airtel Money
+  // "You have received Ksh X from NAME PHONE via Airtel Money. Ref: CODE"
+  const patternG = /via Airtel Money/i;
+  const matchG = cleanText.match(patternG);
+  if (matchG) {
+    const baseMatch = cleanText.match(/received\s+Ksh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+?)\s+([A-Z0-9]{6,10})/i);
+    if (baseMatch) {
+      const amount = parseAmount(`KSh ${baseMatch[1]}`);
+      if (amount === null) return null;
+      return {
+        amount,
+        sender: baseMatch[2].trim(),
+        code: '',
+        timestamp: new Date(),
+        payment_method: 'airtel_money',
+      };
+    }
+  }
+
+  // Simpler fallback pattern
   const fallback = /received\s+KSh?\s*([\d,]+(?:\.\d{2})?)\s+from\s+([A-Za-z\s]+)/i;
   match = cleanText.match(fallback);
   if (match) {

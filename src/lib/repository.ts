@@ -108,7 +108,11 @@ export const saveBusiness = async (
     const existing = await db.business.toCollection().first()
     let id: number
     if (existing?.id) {
-      await db.business.update(existing.id, business)
+      await db.business.update(existing.id, {
+        ...business,
+        payment_methods: business.payment_methods ? JSON.stringify(business.payment_methods) : undefined,
+        products: business.products ? JSON.stringify(business.products) : undefined,
+      })
       id = existing.id
     } else {
       id = await db.business.add(business as unknown as import('./db').Business) as number

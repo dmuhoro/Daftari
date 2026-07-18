@@ -14,10 +14,21 @@ export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRep
   const [amount, setAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [amountError, setAmountError] = useState('');
+
+  function validateAmount(val: string): boolean {
+    const num = Number(val);
+    if (!val || isNaN(num) || num <= 0) {
+      setAmountError(t('please_enter_valid_amount'));
+      return false;
+    }
+    setAmountError('');
+    return true;
+  }
 
   async function handleSave() {
-    const num = parseFloat(amount);
-    if (isNaN(num) || num <= 0) return;
+    if (!validateAmount(amount)) return;
+    const num = Number(amount);
 
     setSaving(true);
     await addTransaction({
@@ -51,7 +62,6 @@ export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRep
 
   return (
     <div className="flex flex-col gap-4 px-4 pt-2 pb-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
           <CreditCard className="w-5 h-5 text-green-600" />
@@ -62,21 +72,21 @@ export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRep
         </div>
       </div>
 
-      {/* Amount */}
       <div>
         <label className="block text-xs font-medium text-muted mb-1.5">{t('amount')} (KES)</label>
         <input
           type="number"
           inputMode="decimal"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(e) => { setAmount(e.target.value); setAmountError(''); }}
+          onBlur={() => { if (amount) validateAmount(amount); }}
           placeholder="0"
           className="w-full rounded-xl border border-border bg-background px-4 py-3.5 text-2xl font-bold text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
           autoFocus
         />
+        {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
       </div>
 
-      {/* Buttons */}
       <div className="flex gap-3 pt-1">
         <button
           type="button"
@@ -88,7 +98,7 @@ export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRep
         <button
           type="button"
           onClick={handleSave}
-          disabled={saving || !amount || parseFloat(amount) <= 0}
+          disabled={saving || !amount || !!amountError}
           className="flex-1 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
         >
           {saving ? t('saving') : t('save')}
