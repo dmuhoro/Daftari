@@ -15,7 +15,7 @@ interface Business {
   category?: string;
   subcategory?: string;
   payment_methods?: string[];
-  products?: Array<{ id: string; name: string; price: number; cost_price?: number; unit?: string; stock?: number; low_stock_threshold?: number }>;
+  products?: Array<{ id: string; name: string; price: number; cost_price?: number; unit?: string; stock?: number; low_stock_threshold?: number; barcode?: string }>;
 }
 
 interface AppStore {

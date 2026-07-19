@@ -189,6 +189,12 @@
   "batch_add": "Ongeza",
   "batch_count": "Umeongeza {{count}}",
   "batch_done": "Maliza",
-  "batch_tip": "Rekodi miamala mingi mfululizo bila kurudi menyu"
+  "batch_tip": "Rekodi miamala mingi mfululizo bila kurudi menyu",
+  "pos": "Sehemu ya Kuuza",
+  "pos_select_customer": "Mteja",
+  "pos_checkout": "Malipo",
+  "print_receipt": "Chapisha Risiti",
+  "print_thermal": "Chapisha Thermal",
+  "search": "Tafuta..."
 }
 

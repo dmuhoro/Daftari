@@ -422,6 +422,21 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
             </button>
           )}
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+          {onNavigate && (
+            <button onClick={() => onNavigate('pos')} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-cyan-50 flex items-center justify-center dark:bg-cyan-900">
+                  <Zap className="w-4 h-4 text-cyan-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('pos') || 'POS Mode'}</span>
+                  <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Sehemu ya kuuza bila taabu' : 'Touch-friendly point of sale'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
         </div>
       </div>
 

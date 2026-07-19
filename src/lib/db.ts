@@ -72,6 +72,7 @@ export interface Customer {
   last_visit: string;
   created_at: string;
   updated_at?: string;
+  loyalty_points?: number;
 }
 
 export interface Supplier {

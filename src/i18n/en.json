@@ -189,6 +189,12 @@
   "batch_add": "Add",
   "batch_count": "Added {{count}}",
   "batch_done": "Done",
-  "batch_tip": "Record multiple transactions in a row without returning to menu"
+  "batch_tip": "Record multiple transactions in a row without returning to menu",
+  "pos": "POS Mode",
+  "pos_select_customer": "Customer",
+  "pos_checkout": "Checkout",
+  "print_receipt": "Print Receipt",
+  "print_thermal": "Print Thermal",
+  "search": "Search..."
 }
 

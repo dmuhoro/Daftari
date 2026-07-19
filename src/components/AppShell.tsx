@@ -20,6 +20,7 @@ const SuppliersScreen = lazy(() => import('../screens/SuppliersScreen'));
 const PurchaseOrdersScreen = lazy(() => import('../screens/PurchaseOrdersScreen'));
 const StockAdjustmentsScreen = lazy(() => import('../screens/StockAdjustmentsScreen'));
 const BatchEntryScreen = lazy(() => import('../screens/BatchEntryScreen'));
+const PosScreen = lazy(() => import('../screens/PosScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -47,7 +48,8 @@ type View =
   | 'suppliers'
   | 'purchase-orders'
   | 'stock-adjustments'
-  | 'batch-entry';
+  | 'batch-entry'
+  | 'pos';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -57,7 +59,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
-  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry') return 'settings';
+  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos') return 'settings';
   if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
@@ -83,6 +85,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'purchase-orders': return t('purchase_orders');
     case 'stock-adjustments': return t('stock_adjustments');
     case 'batch-entry': return t('batch_entry');
+    case 'pos': return t('pos') || 'POS';
   }
 }
 
@@ -98,7 +101,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry';
+  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -148,7 +151,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -176,7 +179,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {/* Content */}
       <Suspense fallback={<div className="flex-1" />}>
         <main className="flex-1 overflow-y-auto pb-20">
-          {view === 'dashboard' && <DashboardScreen />}
+          {view === 'dashboard' && <DashboardScreen onNavigate={(v) => setView(v as View)} />}
           {view === 'add' && (
             <AddScreen onNavigate={(v) => setView(v)} />
           )}
@@ -213,6 +216,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'purchase-orders' && <PurchaseOrdersScreen onBack={() => setView('settings')} />}
           {view === 'stock-adjustments' && <StockAdjustmentsScreen onBack={() => setView('settings')} />}
           {view === 'batch-entry' && <BatchEntryScreen onBack={() => setView('settings')} />}
+          {view === 'pos' && <PosScreen onBack={() => setView('settings')} />}
         </main>
       </Suspense>
 

@@ -5,6 +5,30 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.0.0] — 2026-07-19
+
+### Added
+- **Quick POS Mode**: Full-screen touch-friendly POS interface with 3-column product grid, search bar, cart with running total and line-item management, customer selector for loyalty, and checkout flow. Accessible from Dashboard header and Settings.
+- **Barcode Scanner**: Camera-based product lookup using Web BarcodeDetector API. "Scan Barcode" button in POS toolbar with manual barcode fallback. `barcode` field on products.
+- **Receipt Printing**: Browser print (`window.print()`) with styled receipt layout. Bluetooth thermal printing via Web Bluetooth API — connects to ESC/POS printers (Epson TM, Star Micronics) and sends ESC/POS commands for text formatting, alignment, bold, double-height, paper cut.
+- **Customer Loyalty**: `loyalty_points` field on customers. Earn 1 point per KES 100 spent. Redeem 10 points = KES 10 discount at POS checkout. Loyalty balance on CustomerDetailScreen. "Regular Customer" badge on customer list.
+- **i18n Keys**: 30 new keys for POS, barcode, printing, loyalty
+
+### Changed
+- `src/screens/PosScreen.tsx` — new POS screen (created)
+- `src/lib/print.ts` — receipt print utility (created)
+- `src/lib/barcode.ts` — barcode scanner utility (created)
+- `src/lib/db.ts` — Customer.loyalty_points field
+- `src/lib/store.ts` — Product interface barcode field
+- `src/components/Receipt.tsx` — Print Receipt & Print Thermal buttons
+- `src/components/AppShell.tsx` — pos route added
+- `src/screens/SettingsScreen.tsx` — POS Mode link in Inventory section
+- `src/screens/DashboardScreen.tsx` — POS Mode button in header
+- `src/screens/CustomerDetailScreen.tsx` — loyalty points display + redeem
+- `src/screens/CustomersScreen.tsx` — loyalty badge per customer
+- `src/i18n/sw.json`, `src/i18n/en.json` — 30 new keys
+- `package.json` — version 4.0.0 → 5.0.0
+
 ## [4.0.0] — 2026-07-19
 
 ### Added

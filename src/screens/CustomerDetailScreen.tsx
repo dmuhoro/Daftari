@@ -145,7 +145,7 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
             <p className="text-xs text-muted dark:text-stone-400">{t('total') || 'Total'}</p>
             <p className="text-xl font-bold text-primary-600 mt-1">{fmt(totalSpent)}</p>
@@ -153,6 +153,10 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
           <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
             <p className="text-xs text-muted dark:text-stone-400">{t('visits') || 'Visits'}</p>
             <p className="text-xl font-bold text-ink dark:text-stone-100 mt-1">{customer.total_visits}</p>
+          </div>
+          <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+            <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Pointi' : 'Points'}</p>
+            <p className="text-xl font-bold text-amber-500 mt-1">{customer.loyalty_points ?? 0}</p>
           </div>
         </div>
 

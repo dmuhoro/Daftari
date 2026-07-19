@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Check, Printer, X } from 'lucide-react';
+import { Check, Printer, Bluetooth, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
 import { track, EVENTS } from '../lib/analytics';
+import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
 
 interface ReceiptProps {
   receiptId: string;
@@ -11,22 +12,48 @@ interface ReceiptProps {
   description?: string;
   onDismiss: () => void;
   onShare?: () => void;
+  businessName?: string;
+  items?: Array<{ name: string; qty: number; price: number }>;
+  customerName?: string;
 }
 
-export default function Receipt({ receiptId, amount, type, description, onDismiss, onShare }: ReceiptProps) {
+export default function Receipt({ receiptId, amount, type, description, onDismiss, onShare, businessName, items, customerName }: ReceiptProps) {
   const { t } = useTranslation();
   const [phase, setPhase] = useState<'enter' | 'visible' | 'exit'>('enter');
+  const [printing, setPrinting] = useState(false);
 
   useEffect(() => {
     const enter = setTimeout(() => setPhase('visible'), 50);
     track(EVENTS.RECEIPT_VIEWED, { type, amount })
     return () => clearTimeout(enter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [type, amount]);
 
   function handleDismiss() {
     setPhase('exit');
     setTimeout(onDismiss, 200);
+  }
+
+  const receiptData: ReceiptData = {
+    businessName: businessName || 'Daftari',
+    receiptId,
+    amount,
+    type,
+    description,
+    items,
+    date: new Date().toISOString(),
+    customerName,
+  };
+
+  async function handlePrintBrowser() {
+    await printBrowserReceipt(receiptData);
+  }
+
+  async function handlePrintBluetooth() {
+    setPrinting(true);
+    try {
+      await printBluetoothReceipt(receiptData);
+    } catch { void 0; }
+    setPrinting(false);
   }
 
   const labelKey = type === 'income' ? 'sale_recorded' : type === 'expense' ? 'expense_recorded' : 'withdrawal_recorded';
@@ -64,19 +91,21 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
             <p className="text-sm text-stone-600 dark:text-stone-300">{description}</p>
           )}
           <div className="w-full h-px bg-border dark:border-stone-700 my-1" />
+          <div className="flex gap-2 w-full">
+            <button onClick={handlePrintBrowser} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-ink dark:text-stone-100 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+              <Printer className="w-4 h-4" /> {t('print_receipt') || 'Print'}
+            </button>
+            <button onClick={handlePrintBluetooth} disabled={printing} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-ink dark:text-stone-100 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50">
+              <Bluetooth className="w-4 h-4" /> {printing ? '...' : (t('print_thermal') || 'Thermal')}
+            </button>
+          </div>
           <div className="flex gap-3 w-full">
             {onShare && (
-              <button
-                onClick={onShare}
-                className="flex-1 py-3 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
-              >
+              <button onClick={onShare} className="flex-1 py-3 rounded-xl bg-green-600 text-white text-sm font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors">
                 <Printer className="w-4 h-4" /> {t('share') || 'Share'}
               </button>
             )}
-            <button
-              onClick={handleDismiss}
-              className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-            >
+            <button onClick={handleDismiss} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
               <X className="w-4 h-4" /> {t('close') || 'Close'}
             </button>
           </div>

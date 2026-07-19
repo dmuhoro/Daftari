@@ -128,8 +128,13 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-ink dark:text-stone-100 truncate">{customer.name}</p>
-                  <p className="text-xs text-muted dark:text-stone-400">
-                    {customer.total_visits} {customer.total_visits === 1 ? (t('visit') || 'visit') : (t('visits') || 'visits')}
+                  <p className="text-xs text-muted dark:text-stone-400 flex items-center gap-2">
+                    <span>{customer.total_visits} {customer.total_visits === 1 ? (t('visit') || 'visit') : (t('visits') || 'visits')}</span>
+                    {(customer.loyalty_points ?? 0) > 0 && (
+                      <span className="inline-flex items-center gap-0.5 text-amber-500 font-medium">
+                        <span className="text-[10px]">★</span> {customer.loyalty_points}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="text-right">

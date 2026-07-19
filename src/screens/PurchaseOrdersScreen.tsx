@@ -131,7 +131,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
     await db.purchase_orders.where('local_id').equals(poId).modify({ status: newStatus, updated_at: new Date().toISOString() });
 
     if (business) {
-      let updated = [...products];
+      const updated = [...products];
       for (const item of items) {
         const idx = updated.findIndex(p => p.id === item.product_id);
         if (idx >= 0) {

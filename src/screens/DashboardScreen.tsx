@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame, Users, ChevronDown, Package, Check } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame, Users, ChevronDown, Package, Check, Zap } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -39,7 +39,11 @@ function formatDateEn(date: Date): string {
 
 type Tab = 'leo' | 'wiki';
 
-export default function DashboardScreen() {
+interface DashboardScreenProps {
+  onNavigate?: (view: string) => void;
+}
+
+export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
   const { t, language } = useTranslation();
   const transactions = useStore((s) => s.transactions);
   const business = useStore((s) => s.business);
@@ -225,14 +229,22 @@ export default function DashboardScreen() {
               </div>
             )}
           </div>
-          <button
-            onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-gray-200 dark:hover:bg-stone-700 transition-colors"
-          >
-            <span className={`text-xs font-semibold ${language === 'sw' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>SW</span>
-            <span className="text-xs text-muted dark:text-stone-400">/</span>
-            <span className={`text-xs font-semibold ${language === 'en' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>EN</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {onNavigate && (
+              <button onClick={() => onNavigate('pos')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
+                <Zap className="w-3.5 h-3.5 text-blue-600" />
+                <span className="text-xs font-semibold text-blue-600">{language === 'sw' ? 'POS' : 'POS'}</span>
+              </button>
+            )}
+            <button
+              onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-gray-200 dark:hover:bg-stone-700 transition-colors"
+            >
+              <span className={`text-xs font-semibold ${language === 'sw' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>SW</span>
+              <span className="text-xs text-muted dark:text-stone-400">/</span>
+              <span className={`text-xs font-semibold ${language === 'en' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>EN</span>
+            </button>
+          </div>
         </div>
 
         {/* Streak chip */}

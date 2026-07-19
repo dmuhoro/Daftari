@@ -13,6 +13,7 @@ interface LocalProduct {
   unit?: string;
   stock?: number;
   low_stock_threshold?: number;
+  barcode?: string;
 }
 
 interface ProductCatalogScreenProps {
