@@ -17,6 +17,14 @@ Format: [Semantic Versioning](https://semver.org)
   - PosScreen & Receipt — Bluetooth print failure
 - **Category change warning**: Changing business category now shows a confirmation dialog warning the user that existing products will be cleared. Previously this happened silently with no undo.
 - **Global promise rejection handler**: `unhandledrejection` events are now caught and logged via `console.warn` in `main.tsx` to prevent silent async failures.
+- **Duplicate product name check**: Adding a product with a name that already exists now triggers a confirmation prompt.
+- **Duplicate supplier check**: Adding a supplier with an existing name or phone now triggers a confirmation prompt.
+- **Search debouncing**: Search inputs in History, POS, and Customers screens now debounce at 300ms to reduce unnecessary re-renders.
+- **Sync queue purge**: Successfully synced queue entries are now deleted (previously marked synced but never cleaned up). Added `getPendingCount()` export for sync status UI.
+- **ARIA labels**: Added `aria-label` attributes to back buttons, search inputs, scan buttons, cart controls, filter toggles, and language/business switchers across 5 screens for improved accessibility.
+- **Input maxLength enforcement**: Description and notes fields across RecordSale, RecordExpense, RecordWithdrawal, StockAdjustments, Suppliers, and PurchaseOrders now enforce `maxLength={200}`.
+- **Empty state**: StockAdjustmentsScreen now shows a descriptive empty state when no adjustments exist.
+- **Virtualized customer list**: CustomersScreen now uses `react-virtuoso` for virtualized rendering, improving performance with large customer lists.
 - **Version**: bumped `package.json` 5.0.0 → 5.0.1
 
 ## [5.0.0] — 2026-07-19

@@ -128,11 +128,11 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
                 </div>
               </div>
 
-              <textarea value={adjNotes} onChange={(e) => setAdjNotes(e.target.value)} placeholder={t('stock_adjust_notes')} rows={2} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none" />
+              <textarea value={adjNotes} onChange={(e) => setAdjNotes(e.target.value)} placeholder={t('stock_adjust_notes')} rows={2} maxLength={200} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent resize-none" />
 
               <div className="flex gap-2">
                 <button onClick={() => { setShowForm(false); setSelProductId(''); setChangeQty(''); }} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('cancel')}</button>
-                <button onClick={handleSave} disabled={!selProductId || !changeQty} className="flex-1 py-3 rounded-xl bg-amber-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><ClipboardList className="w-4 h-4" /> {t('stock_adjust_save')}</button>
+                <button onClick={handleSave} disabled={!selProductId || !changeQty} aria-label={t('stock_adjust_save') || 'Save adjustment'} className="flex-1 py-3 rounded-xl bg-amber-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><ClipboardList className="w-4 h-4" /> {t('stock_adjust_save')}</button>
               </div>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
                 <div className="w-14 h-14 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
                   <ClipboardList className="w-7 h-7 text-muted dark:text-stone-400" />
                 </div>
-                <p className="text-sm text-muted dark:text-stone-400">{language === 'sw' ? 'Hakuna marekebisho bado' : 'No adjustments yet'}</p>
+                <p className="text-sm text-muted dark:text-stone-400">{language === 'sw' ? 'Hakuna marekebisho ya stock bado' : 'No stock adjustments yet'}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">

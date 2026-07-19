@@ -79,6 +79,12 @@ export default function HistoryScreen() {
   const undoDataRef = useRef<Transaction | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [paymentFilter, setPaymentFilter] = useState('');
@@ -120,8 +126,8 @@ export default function HistoryScreen() {
       result = result.filter((tx) => new Date(tx.recorded_at) >= startOfMonth);
     }
 
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch) {
+      const q = debouncedSearch.toLowerCase();
       result = result.filter(
         (tx) =>
           (tx.description && tx.description.toLowerCase().includes(q)) ||
@@ -178,7 +184,7 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     setPage(1);
-  }, [searchQuery, typeFilter, categoryFilter, paymentFilter, dateFrom, dateTo, filter]);
+  }, [debouncedSearch, typeFilter, categoryFilter, paymentFilter, dateFrom, dateTo, filter]);
 
   const handleRefresh = useCallback(async () => {
     if (!isOnline) return;
@@ -365,6 +371,7 @@ export default function HistoryScreen() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={language === 'sw' ? 'Tafuta kiasi, maelezo...' : 'Search amount, description...'}
+            aria-label={t('search') || 'Search transactions'}
             className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-10 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
           />
           {searchQuery && (
@@ -384,6 +391,7 @@ export default function HistoryScreen() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
+                aria-label={f === 'week' ? (language === 'sw' ? 'Wiki hii' : 'This week') : f === 'month' ? (language === 'sw' ? 'Mwezi huu' : 'This month') : (language === 'sw' ? 'Zote' : 'All')}
                 className={`rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
                   filter === f
                     ? 'bg-green-600 text-white'
@@ -396,6 +404,7 @@ export default function HistoryScreen() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
+            aria-label={language === 'sw' ? 'Chuja' : 'Filter'}
             className={`p-2 rounded-xl transition-colors ${
               showFilters || typeFilter !== 'all' || categoryFilter || paymentFilter || dateFrom || dateTo
                 ? 'bg-green-600 text-white'
@@ -423,17 +432,18 @@ export default function HistoryScreen() {
             {/* Type filter */}
             <div className="flex gap-2 flex-wrap">
               {TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.key}
-                  onClick={() => setTypeFilter(typeFilter === opt.key ? 'all' : opt.key)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    typeFilter === opt.key
-                      ? 'bg-green-600 text-white'
-                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
-                  }`}
-                >
-                  {language === 'sw' ? opt.sw : opt.en}
-                </button>
+                  <button
+                    key={opt.key}
+                    onClick={() => setTypeFilter(typeFilter === opt.key ? 'all' : opt.key)}
+                    aria-label={opt.key === 'all' ? (language === 'sw' ? 'Onyesha miamala yote' : 'Show all transactions') : opt.key === 'income' ? (language === 'sw' ? 'Onyesha mauzo tu' : 'Show income only') : (language === 'sw' ? 'Onyesha gharama tu' : 'Show expenses only')}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                      typeFilter === opt.key
+                        ? 'bg-green-600 text-white'
+                        : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300'
+                    }`}
+                  >
+                    {language === 'sw' ? opt.sw : opt.en}
+                  </button>
               ))}
             </div>
 

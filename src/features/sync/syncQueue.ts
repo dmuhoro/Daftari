@@ -98,6 +98,7 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
       }
 
       await db.sync_queue.update(item.id!, { synced: 1 });
+      await db.sync_queue.delete(item.id!);
       syncedCount++;
     } catch (cause) {
       failedCount++;
@@ -113,4 +114,8 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
   }
 
   return { synced: syncedCount, failed: failedCount };
+}
+
+export function getPendingCount() {
+  return db.sync_queue.where('synced').equals(0).count();
 }

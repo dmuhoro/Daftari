@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { X, Search, ShoppingCart, Plus, Minus, User, Printer, Bluetooth, Camera, Zap } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -27,6 +27,12 @@ export default function PosScreen({ onBack }: PosScreenProps) {
   const updateBusiness = useStore((s) => s.updateBusiness);
   const products = business?.products ?? [];
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCustomerPicker, setShowCustomerPicker] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -36,8 +42,8 @@ export default function PosScreen({ onBack }: PosScreenProps) {
   const [printing, setPrinting] = useState(false);
   const [scanning, setScanning] = useState(false);
 
-  const filtered = search
-    ? products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || (p.barcode && p.barcode.includes(search)))
+  const filtered = debouncedSearch
+    ? products.filter(p => p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || (p.barcode && p.barcode.includes(debouncedSearch)))
     : products;
 
   const cartTotal = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
@@ -177,12 +183,12 @@ export default function PosScreen({ onBack }: PosScreenProps) {
       {/* Header */}
       <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4">
         <div className="flex items-center h-14 gap-2">
-          <button onClick={onBack} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 -ml-1"><X className="w-5 h-5 text-ink dark:text-stone-100" /></button>
+          <button onClick={onBack} aria-label={language === 'sw' ? 'Rudi' : 'Back'} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 -ml-1"><X className="w-5 h-5 text-ink dark:text-stone-100" /></button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center"><Zap className="w-4 h-4 text-white" /></div>
             <span className="font-bold text-ink dark:text-stone-100 text-base">{t('pos') || 'POS'}</span>
           </div>
-          <button onClick={handleBarcodeScan} disabled={scanning} className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
+          <button onClick={handleBarcodeScan} disabled={scanning} aria-label={language === 'sw' ? 'Changanua barcode' : 'Scan barcode'} className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
             <Camera className={`w-5 h-5 text-primary-600 ${scanning ? 'animate-pulse' : ''}`} />
           </button>
         </div>
@@ -240,9 +246,9 @@ export default function PosScreen({ onBack }: PosScreenProps) {
                 <div key={item.productId} className="flex items-center gap-2 text-sm">
                   <span className="flex-1 text-ink dark:text-stone-100 truncate">{item.name}</span>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => updateQty(item.productId, -1)} className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Minus className="w-3 h-3 text-muted" /></button>
+                    <button onClick={() => updateQty(item.productId, -1)} aria-label="Decrease quantity" className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Minus className="w-3 h-3 text-muted" /></button>
                     <span className="w-6 text-center text-xs font-semibold text-ink dark:text-stone-100">{item.qty}</span>
-                    <button onClick={() => updateQty(item.productId, 1)} className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Plus className="w-3 h-3 text-muted" /></button>
+                    <button onClick={() => updateQty(item.productId, 1)} aria-label="Increase quantity" className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Plus className="w-3 h-3 text-muted" /></button>
                   </div>
                   <span className="w-20 text-right text-xs text-primary-600 font-semibold">KES {(item.price * item.qty).toLocaleString('en-KE')}</span>
                 </div>
@@ -256,7 +262,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
                 <p className="text-sm font-bold text-ink dark:text-stone-100">KES {finalTotal.toLocaleString('en-KE')}</p>
                 {selectedCustomer && <p className="text-[10px] text-muted dark:text-stone-400">+{pointsEarned}pts</p>}
               </div>
-              <button onClick={handleCheckout} className="py-2.5 px-6 rounded-xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 hover:bg-blue-700"><ShoppingCart className="w-4 h-4" /> {t('pos_checkout') || 'Checkout'}</button>
+              <button onClick={handleCheckout} aria-label={t('pos_checkout') || 'Checkout'} className="py-2.5 px-6 rounded-xl bg-blue-600 text-white text-sm font-bold flex items-center gap-2 hover:bg-blue-700"><ShoppingCart className="w-4 h-4" /> {t('pos_checkout') || 'Checkout'}</button>
             </div>
           </div>
         )}

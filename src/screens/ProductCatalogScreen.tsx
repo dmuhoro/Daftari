@@ -66,6 +66,10 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
 
   async function addProduct(name: string, price: number, unit: string, stock?: number, threshold?: number) {
     if (!business) return;
+    const existing = products.find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing && !confirm(`A product named '${name}' already exists. Add anyway?`)) {
+      return;
+    }
     const newProduct: LocalProduct = { id: generateId(), name, price, unit, stock, low_stock_threshold: threshold };
     const updated = [...products, newProduct];
     await persistProducts(updated);

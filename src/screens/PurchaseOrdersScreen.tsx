@@ -215,7 +215,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
               </div>
             )}
 
-            <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={t('po_notes')} rows={2} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" />
+            <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={t('po_notes')} rows={2} maxLength={200} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" />
 
             <div className="flex gap-2">
               <button onClick={() => { setMode('list'); setPoItems([]); setPoNotes(''); setSelSupplierId(''); }} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('cancel')}</button>

@@ -186,6 +186,7 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
               {catEmoji && <span className="text-xl">{catEmoji}</span>}
               <button
                 onClick={() => setShowBizSwitcher(!showBizSwitcher)}
+                aria-label={language === 'sw' ? 'Badilisha biashara' : 'Switch business'}
                 className="flex items-center gap-1 max-w-[200px]"
               >
                 <h1 className="text-lg font-bold text-ink dark:text-stone-100 truncate">{businessName}</h1>
@@ -231,13 +232,14 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
           </div>
           <div className="flex items-center gap-2">
             {onNavigate && (
-              <button onClick={() => onNavigate('pos')} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
+              <button onClick={() => onNavigate('pos')} aria-label={language === 'sw' ? 'Fungua POS' : 'Open POS'} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors">
                 <Zap className="w-3.5 h-3.5 text-blue-600" />
                 <span className="text-xs font-semibold text-blue-600">{language === 'sw' ? 'POS' : 'POS'}</span>
               </button>
             )}
             <button
               onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
+              aria-label={language === 'sw' ? 'Badilisha lugha' : 'Switch language'}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 hover:bg-gray-200 dark:hover:bg-stone-700 transition-colors"
             >
               <span className={`text-xs font-semibold ${language === 'sw' ? 'text-primary-600' : 'text-muted dark:text-stone-400'}`}>SW</span>

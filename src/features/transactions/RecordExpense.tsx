@@ -111,6 +111,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t('description')}
+          maxLength={200}
           className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
         />
       </div>

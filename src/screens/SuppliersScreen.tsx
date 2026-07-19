@@ -33,6 +33,17 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
 
   async function handleSave() {
     if (!name.trim() || !activeBusinessId) return;
+    const nameDup = suppliers.find(s => s.name.toLowerCase() === name.trim().toLowerCase());
+    if (nameDup && !confirm(`A supplier named '${name.trim()}' already exists. Add anyway?`)) {
+      return;
+    }
+    const phoneVal = phone.trim();
+    if (phoneVal) {
+      const phoneDup = suppliers.find(s => s.phone === phoneVal);
+      if (phoneDup && !confirm(`A supplier with phone '${phoneVal}' already exists. Add anyway?`)) {
+        return;
+      }
+    }
     const now = new Date().toISOString();
     await db.suppliers.add({
       local_id: crypto.randomUUID(),
@@ -133,7 +144,7 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('supplier_phone')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('supplier_email')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
               <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t('supplier_address')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('supplier_notes')} rows={2} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none" />
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('supplier_notes')} rows={2} maxLength={200} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none" />
               <div className="flex gap-2">
                 <button onClick={() => { setShowForm(false); setName(''); setPhone(''); setEmail(''); setAddress(''); setNotes(''); }} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('cancel')}</button>
                 <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><Check className="w-4 h-4" /> {t('save')}</button>
