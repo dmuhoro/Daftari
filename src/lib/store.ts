@@ -29,6 +29,8 @@ interface AppStore {
   updateBusiness: (partial: Partial<Business>) => void;
   setTransactions: (transactions: Transaction[]) => void;
   addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<string | undefined>;
+  updateTransaction: (local_id: string, updates: Partial<Omit<Transaction, 'id' | 'local_id'>>) => Promise<void>;
+  deleteTransaction: (local_id: string) => Promise<void>;
   setLastCloseDate: (date: string) => void;
   dismissClosePrompt: () => void;
   setTheme: (theme: Theme) => void;
@@ -75,6 +77,35 @@ export const useStore = create<AppStore>()(
 
         set((state) => ({ transactions: [txWithUser, ...state.transactions] }));
         return receipt_id;
+      },
+      updateTransaction: async (local_id, updates) => {
+        await db.transactions.where('local_id').equals(local_id).modify(updates);
+        const { data: { user } } = await supabase.auth.getUser();
+        const queuePayload: QueuePayload = {
+          local_id,
+          type: updates.type as TransactionType,
+          category: updates.category ?? '',
+          source: updates.source ?? 'manual',
+          amount: updates.amount ?? 0,
+          description: updates.description,
+          recorded_at: updates.recorded_at ?? new Date().toISOString(),
+          synced: 0,
+          user_id: user?.id,
+          payment_method: updates.payment_method,
+        };
+        await addToQueue('upsert', 'daftari_transactions', local_id, queuePayload);
+        set((state) => ({
+          transactions: state.transactions.map((tx) =>
+            tx.local_id === local_id ? { ...tx, ...updates } : tx
+          ),
+        }));
+      },
+      deleteTransaction: async (local_id) => {
+        await db.transactions.where('local_id').equals(local_id).delete();
+        await addToQueue('delete', 'daftari_transactions', local_id, null);
+        set((state) => ({
+          transactions: state.transactions.filter((tx) => tx.local_id !== local_id),
+        }));
       },
       setLastCloseDate: (date) => set({ lastCloseDate: date, closePromptDismissedAt: null }),
       dismissClosePrompt: () => set({ closePromptDismissedAt: Date.now() }),

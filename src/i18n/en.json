@@ -147,6 +147,8 @@
   "reset_email_instructions": "We sent a password reset link to your email.",
   "forgot_password": "Forgot password?",
   "resend_confirmation": "Resend confirmation email",
-  "signed_in_as": "Signed in as"
+  "signed_in_as": "Signed in as",
+  "monthly_report": "Monthly Report",
+  "transaction_deleted": "Transaction deleted"
 }
 

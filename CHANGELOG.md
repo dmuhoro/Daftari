@@ -5,6 +5,33 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [2.0.0] — 2026-07-19
+
+### Added
+- **Edit/Delete Transactions**: Long-press or hover to reveal edit/delete buttons on any transaction row. Edit sheet allows changing amount, description, category, date, and time. Delete shows confirmation dialog with undo snackbar (4s window).
+- **Smart Search + Filters**: Search bar searches across amount, description, category, and M-Pesa sender. Filter drawer with type chips (sales/expenses/withdrawals), category dropdown, payment method dropdown, and date range picker (from/to).
+- **Infinite Scroll Pagination**: HistoryScreen loads 50 transactions at a time via Intersection Observer — busy dukas with thousands of transactions no longer freeze.
+- **Monthly P&L Report**: New dedicated screen with month navigator, profit card with prior-month comparison %, daily profit bar chart, and category breakdown pie charts for both revenue and expenses.
+- **CSV Export**: Download all transactions as CSV from both HistoryScreen (toolbar button) and SettingsScreen ("Export CSV" row). Compatible with Excel/Google Sheets.
+- **Customer 360° Detail Screen**: Tap any customer to see full transaction history, total spent, visit count, last visit date. Tap phone to dial or WhatsApp directly. Manual customer creation with name + phone.
+- **Enhanced Fuliza Dashboard**: Running total debt display on dashboard, estimated interest (5%), total taken vs. repaid, today's estimated Fuliza cost.
+- **Product-Level Profitability Foundation**: Monthly P&L now breaks down revenue and expenses by category for the first step toward per-product margin analysis.
+- **10 new i18n keys**: `monthly_report`, `transaction_deleted` added to both `sw.json` and `en.json`.
+
+### Changed
+- `HistoryScreen.tsx` — complete rewrite: edit/delete, search, filters, pagination, export
+- `DashboardScreen.tsx` — Fuliza section expanded with running balance, interest, cost tracking
+- `CustomersScreen.tsx` — tappable rows navigate to new `CustomerDetailScreen`, add-customer modal
+- `SettingsScreen.tsx` — new "Data & Reports" section with Monthly Report link and CSV export
+- `AppShell.tsx` — added `monthly-report` route
+- `lib/store.ts` — added `updateTransaction` and `deleteTransaction` actions with Supabase sync
+- `package.json` — version 1.5.0 → 2.0.0
+
+### New Files
+- `src/screens/MonthlyReportScreen.tsx` — full monthly P&L with charts
+- `src/screens/CustomerDetailScreen.tsx` — customer 360° transaction history
+- `src/lib/csv.ts` — CSV generation and download utility
+
 ## [1.5.0] — 2026-07-19
 
 ### Added

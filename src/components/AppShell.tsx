@@ -14,6 +14,7 @@ const SettingsScreen = lazy(() => import('../screens/SettingsScreen'));
 const ProductCatalogScreen = lazy(() => import('../screens/ProductCatalogScreen'));
 const BusinessProfileScreen = lazy(() => import('../screens/BusinessProfileScreen'));
 const CustomersScreen = lazy(() => import('../screens/CustomersScreen'));
+const MonthlyReportScreen = lazy(() => import('../screens/MonthlyReportScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -35,7 +36,8 @@ type View =
   | 'settings'
   | 'catalog'
   | 'profile'
-  | 'customers';
+  | 'customers'
+  | 'monthly-report';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -45,7 +47,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
-  if (view === 'catalog' || view === 'customers') return 'settings';
+  if (view === 'catalog' || view === 'customers' || view === 'monthly-report') return 'settings';
   if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
@@ -65,6 +67,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'catalog': return t('my_products');
     case 'profile': return t('business_profile');
     case 'customers': return t('wateja_wangu') || 'Customers';
+    case 'monthly-report': return t('monthly_report') || 'Monthly Report';
   }
 }
 
@@ -80,7 +83,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile';
+  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -130,7 +133,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -189,6 +192,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
           {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
           {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
+          {view === 'monthly-report' && <MonthlyReportScreen onBack={() => setView('settings')} />}
         </main>
       </Suspense>
 

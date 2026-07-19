@@ -147,6 +147,8 @@
   "reset_email_instructions": "Tumekutumia kiungo cha kuweka upya nenosiri kwenye barua pepe yako.",
   "forgot_password": "Umesahau nenosiri?",
   "resend_confirmation": "Tuma tena barua ya uthibitishaji",
-  "signed_in_as": "Umeingia kama"
+  "signed_in_as": "Umeingia kama",
+  "monthly_report": "Ripoti ya Mwezi",
+  "transaction_deleted": "Miamala imefutwa"
 }
 

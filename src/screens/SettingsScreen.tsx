@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check, Calendar } from 'lucide-react';
+import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { db } from '../lib/db';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
+import { transactionsToCSV, downloadCSV } from '../lib/csv';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -288,6 +289,62 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               })}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Data & Reports section */}
+      <div>
+        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
+          {language === 'sw' ? 'Data & Ripoti' : 'Data & Reports'}
+        </p>
+        <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden dark:bg-stone-900 dark:border-stone-700">
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('monthly-report')}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center dark:bg-green-900">
+                  <BarChart3 className="w-4 h-4 text-green-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">
+                    {language === 'sw' ? 'Ripoti ya Mwezi' : 'Monthly Report'}
+                  </span>
+                  <p className="text-xs text-muted dark:text-stone-400">
+                    {language === 'sw' ? 'Faida, gharama, na kulinganisha' : 'Profit, expenses & comparison'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          <button
+            onClick={() => {
+              const csv = transactionsToCSV(useStore.getState().transactions);
+              const filename = `daftari_${new Date().toISOString().slice(0, 10)}.csv`;
+              downloadCSV(csv, filename);
+            }}
+            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center dark:bg-blue-900">
+                <FileDown className="w-4 h-4 text-blue-600" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-medium text-ink dark:text-stone-100">
+                  {language === 'sw' ? 'Pakua CSV' : 'Export CSV'}
+                </span>
+                <p className="text-xs text-muted dark:text-stone-400">
+                  {language === 'sw' ? 'Pakua miamala yote kwa Excel' : 'Download all transactions for Excel'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+          </button>
         </div>
       </div>
 
