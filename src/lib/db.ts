@@ -74,19 +74,56 @@ export interface Customer {
   updated_at?: string;
 }
 
-export interface PurchaseOrder {
+export interface Supplier {
+  id?: number;
+  local_id: string;
+  business_id: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  synced: number;
+}
+
+export interface StockAdjustment {
   id?: number;
   local_id: string;
   business_id: string;
   product_id: string;
   product_name: string;
-  quantity: number;
-  unit_cost: number;
+  quantity_change: number;
+  reason: 'restock' | 'wastage' | 'spoilage' | 'damage' | 'theft' | 'count_correction' | 'return' | 'other';
+  reason_text?: string;
+  notes?: string;
+  created_at: string;
+  synced: number;
+}
+
+export interface PurchaseOrder {
+  id?: number;
+  local_id: string;
+  business_id: string;
+  supplier_id?: string;
+  supplier_name?: string;
+  status: 'draft' | 'pending' | 'partial' | 'received' | 'cancelled';
+  items: string;
   total_cost: number;
   notes?: string;
   created_at: string;
   updated_at: string;
   synced: number;
+}
+
+export interface PurchaseOrderItem {
+  product_id: string;
+  product_name: string;
+  quantity: number;
+  quantity_received: number;
+  unit_cost: number;
+  total_cost: number;
 }
 
 class DaftariDB extends Dexie {
@@ -96,37 +133,39 @@ class DaftariDB extends Dexie {
   daily_closes!: Table<DailyClose>;
   customers!: Table<Customer>;
   purchase_orders!: Table<PurchaseOrder>;
+  suppliers!: Table<Supplier>;
+  stock_adjustments!: Table<StockAdjustment>;
 
   constructor() {
     super('DaftariDB');
-    this.version(5).stores({
+    this.version(6).stores({
       transactions: '++id, &local_id, type, category, source, recorded_at, synced, business_id, product_id',
       sync_queue: '++id, operation, synced, created_at',
       business: '++id, &local_id',
       daily_closes: '++id, &date, business_id',
       customers: '++id, &name, phone, business_id',
-      purchase_orders: '++id, &local_id, business_id, product_id, created_at',
+      purchase_orders: '++id, &local_id, business_id, supplier_id, status, created_at',
+      suppliers: '++id, &local_id, business_id, name',
+      stock_adjustments: '++id, &local_id, business_id, product_id, created_at, reason',
     }).upgrade(async (tx) => {
-      const now = new Date().toISOString();
-      await tx.table('transactions').toCollection().modify((t) => {
-        t.business_id = t.business_id || undefined;
-        t.product_id = t.product_id || undefined;
-        t.cost_price = t.cost_price || undefined;
-        t.updated_at = t.updated_at || now;
-      });
-      await tx.table('business').toCollection().modify((b) => {
-        b.local_id = b.local_id || b.user_id || crypto.randomUUID();
-        b.updated_at = b.updated_at || now;
-      });
-      await tx.table('daily_closes').toCollection().modify((d) => {
-        d.local_id = d.local_id || crypto.randomUUID();
-        d.business_id = d.business_id || undefined;
-        d.updated_at = d.updated_at || now;
-      });
-      await tx.table('customers').toCollection().modify((c) => {
-        c.local_id = c.local_id || crypto.randomUUID();
-        c.business_id = c.business_id || undefined;
-        c.updated_at = c.updated_at || now;
+      // Migrate purchase_orders from v5 (single product) to v6 (multi-item JSON)
+      await tx.table('purchase_orders').toCollection().modify((po: Record<string, unknown>) => {
+        if (typeof po.items === 'string') return;
+        po.items = JSON.stringify([{
+          product_id: po.product_id || '',
+          product_name: po.product_name || '',
+          quantity: po.quantity || 0,
+          quantity_received: po.synced === 1 ? (po.quantity || 0) : 0,
+          unit_cost: po.unit_cost || 0,
+          total_cost: po.total_cost || 0,
+        }]);
+        po.status = po.status || (po.synced === 1 ? 'received' : 'pending');
+        po.supplier_id = po.supplier_id || undefined;
+        po.supplier_name = po.supplier_name || undefined;
+        delete po.product_id;
+        delete po.product_name;
+        delete po.quantity;
+        delete po.unit_cost;
       });
     });
   }

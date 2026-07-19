@@ -16,6 +16,10 @@ const BusinessProfileScreen = lazy(() => import('../screens/BusinessProfileScree
 const CustomersScreen = lazy(() => import('../screens/CustomersScreen'));
 const MonthlyReportScreen = lazy(() => import('../screens/MonthlyReportScreen'));
 const ProductProfitabilityScreen = lazy(() => import('../screens/ProductProfitabilityScreen'));
+const SuppliersScreen = lazy(() => import('../screens/SuppliersScreen'));
+const PurchaseOrdersScreen = lazy(() => import('../screens/PurchaseOrdersScreen'));
+const StockAdjustmentsScreen = lazy(() => import('../screens/StockAdjustmentsScreen'));
+const BatchEntryScreen = lazy(() => import('../screens/BatchEntryScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -39,7 +43,11 @@ type View =
   | 'profile'
   | 'customers'
   | 'monthly-report'
-  | 'product-profitability';
+  | 'product-profitability'
+  | 'suppliers'
+  | 'purchase-orders'
+  | 'stock-adjustments'
+  | 'batch-entry';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -49,7 +57,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
-  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability') return 'settings';
+  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry') return 'settings';
   if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
@@ -71,6 +79,10 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'customers': return t('wateja_wangu') || 'Customers';
     case 'monthly-report': return t('monthly_report') || 'Monthly Report';
     case 'product-profitability': return 'Product Profitability';
+    case 'suppliers': return t('suppliers');
+    case 'purchase-orders': return t('purchase_orders');
+    case 'stock-adjustments': return t('stock_adjustments');
+    case 'batch-entry': return t('batch_entry');
   }
 }
 
@@ -86,7 +98,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability';
+  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -136,7 +148,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -197,6 +209,10 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
           {view === 'monthly-report' && <MonthlyReportScreen onBack={() => setView('settings')} />}
           {view === 'product-profitability' && <ProductProfitabilityScreen onBack={() => setView('settings')} />}
+          {view === 'suppliers' && <SuppliersScreen onBack={() => setView('settings')} />}
+          {view === 'purchase-orders' && <PurchaseOrdersScreen onBack={() => setView('settings')} />}
+          {view === 'stock-adjustments' && <StockAdjustmentsScreen onBack={() => setView('settings')} />}
+          {view === 'batch-entry' && <BatchEntryScreen onBack={() => setView('settings')} />}
         </main>
       </Suspense>
 

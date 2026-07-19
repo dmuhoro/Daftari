@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package } from 'lucide-react';
+import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package, ShoppingCart, ClipboardList, Zap } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -354,6 +354,74 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               })}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Inventory Management section */}
+      <div>
+        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
+          {language === 'sw' ? 'Usimamizi wa Bidhaa' : 'Inventory Management'}
+        </p>
+        <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden dark:bg-stone-900 dark:border-stone-700">
+          {onNavigate && (
+            <button onClick={() => onNavigate('suppliers')} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center dark:bg-purple-900">
+                  <Building2 className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('suppliers')}</span>
+                  <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Wasambazaji na wauzaji' : 'Manage your suppliers'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+          {onNavigate && (
+            <button onClick={() => onNavigate('purchase-orders')} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center dark:bg-orange-900">
+                  <ShoppingCart className="w-4 h-4 text-orange-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('purchase_orders')}</span>
+                  <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Agiza bidhaa kutoka kwa wauzaji' : 'Order products from suppliers'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+          {onNavigate && (
+            <button onClick={() => onNavigate('stock-adjustments')} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center dark:bg-amber-900">
+                  <ClipboardList className="w-4 h-4 text-amber-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('stock_adjustments')}</span>
+                  <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Rekebisha hesabu za bidhaa' : 'Adjust product stock levels'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+          {onNavigate && (
+            <button onClick={() => onNavigate('batch-entry')} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center dark:bg-blue-900">
+                  <Zap className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">{t('batch_entry')}</span>
+                  <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Rekodi miamala mingi mfululizo' : 'Record multiple transactions quickly'}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
         </div>
       </div>
 

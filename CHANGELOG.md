@@ -5,6 +5,29 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [4.0.0] — 2026-07-19
+
+### Added
+- **Supplier Management**: Full CRUD for suppliers with name, phone, email, address, and notes. Suppliers list screen with search and delete. Accessible from Settings → Inventory Management.
+- **Purchase Orders**: Create multi-item purchase orders linked to suppliers. Select products from catalog, set quantity and unit cost, auto-calculates total. Receive POs in full or partial — stock auto-increments on receipt. Status badges: Draft, Pending, Partial, Received, Cancelled.
+- **Stock Adjustments**: Log all stock changes with reason codes (restock, wastage, spoilage, damage, theft, count correction, return, other) and free-text notes. Full audit trail — every stock change recorded with timestamp, product, reason, and quantity change. Stock updates in real-time.
+- **Batch Entry Mode**: Record multiple income or expense transactions in rapid succession without returning to the add screen. Type selector, amount, description fields with running counter.
+- **DB Schema v6**: New `suppliers` table, `stock_adjustments` table. Redesigned `purchase_orders` with JSON `items` array for multi-item orders, `status` field, `supplier_id`, `supplier_name`. Upgrade migration converts v5 single-product POs to v6 multi-item format.
+- **i18n Keys**: 58 new keys for suppliers, purchase orders, stock adjustments, batch entry
+
+### Changed
+- `src/lib/db.ts` — schema v6 with suppliers, stock_adjustments, purchase_orders redesign
+- `src/components/AppShell.tsx` — added suppliers, purchase-orders, stock-adjustments, batch-entry routes
+- `src/screens/SettingsScreen.tsx` — new "Inventory Management" section with all 4 feature links
+- `src/i18n/sw.json`, `src/i18n/en.json` — 58 new keys
+- `package.json` — version 3.0.0 → 4.0.0
+
+### New Files
+- `src/screens/SuppliersScreen.tsx` — supplier CRUD
+- `src/screens/PurchaseOrdersScreen.tsx` — PO create/receive/list
+- `src/screens/StockAdjustmentsScreen.tsx` — stock adjustment with reasons
+- `src/screens/BatchEntryScreen.tsx` — batch transaction entry
+
 ## [3.0.0] — 2026-07-19
 
 ### Added
