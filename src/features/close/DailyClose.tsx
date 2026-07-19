@@ -3,6 +3,7 @@ import { X, CheckCircle, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { db } from '../../lib/db';
+import { track, EVENTS } from '../../lib/analytics';
 
 function fmtKES(n: number) {
   return `KES ${n.toLocaleString('en-KE')}`;
@@ -53,6 +54,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
     setLastCloseDate(todayStr);
     setSaving(false);
     onClose();
+    track(EVENTS.DAILY_CLOSE_COMPLETED, { profit, revenue, expenses })
   }
 
   return (
@@ -115,12 +117,12 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
 
           {/* Buttons */}
           <div className="flex gap-3">
-            <button
-              onClick={onDismiss}
-              className="flex-1 py-3.5 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
-            >
-              {t('baadaye')}
-            </button>
+              <button
+                onClick={() => { track(EVENTS.DAILY_CLOSE_DISMISSED); onDismiss() }}
+                className="flex-1 py-3.5 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 hover:bg-gray-50 dark:hover:bg-stone-800 transition-colors"
+              >
+                {t('baadaye')}
+              </button>
             <button
               onClick={handleClose}
               disabled={saving}

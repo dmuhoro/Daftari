@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../lib/db';
 import { useStore } from '../lib/store';
+import { track, EVENTS } from '../lib/analytics';
 
 export function useRecordingStreak() {
   const [streak, setStreak] = useState(0);
@@ -44,6 +45,10 @@ export function useRecordingStreak() {
 
       setStreak(count);
       setLastCloseDate(closeDates.size > 0 ? [...closeDates].sort().pop() ?? null : null);
+
+      if (count > 0 && count % 7 === 0) {
+        track(EVENTS.STREAK_MILESTONE, { days: count })
+      }
     }
 
     compute();

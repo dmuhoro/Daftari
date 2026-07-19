@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, ChevronLeft, Search } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { db, type Customer } from '../lib/db';
+import { track, EVENTS } from '../lib/analytics';
 
 interface CustomersScreenProps {
   onBack: () => void;
@@ -18,6 +19,7 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    track(EVENTS.CUSTOMER_LIST_VIEWED)
     db.customers.orderBy('total_spent').reverse().toArray().then((result) => {
       setCustomers(result);
       setLoading(false);

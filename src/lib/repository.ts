@@ -11,6 +11,7 @@
 
 import { db } from './db'
 import { logger } from './logger'
+import { captureError } from './sentry'
 import { ok, err, appError } from './types'
 import type { Result, Transaction, Business, SyncQueueEntry, AppError } from './types'
 import type { KES } from './money'
@@ -28,6 +29,7 @@ export const saveTransaction = async (
     return ok(id as number)
   } catch (cause) {
     logger.error('repository:transaction_save_failed', cause, { type: tx.type })
+    captureError(cause, { feature: 'repository', action: 'saveTransaction' })
     return err(appError('DEXIE_WRITE_FAILED', 'Failed to save transaction', cause))
   }
 }
@@ -50,6 +52,7 @@ export const getTodayTransactions = async (): Promise<Result<Transaction[], AppE
     return ok(transactions as Transaction[])
   } catch (cause) {
     logger.error('repository:get_today_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'getTodayTransactions' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read today\'s transactions', cause))
   }
 }
@@ -69,6 +72,7 @@ export const getRecentTransactions = async (
     return ok(transactions as Transaction[])
   } catch (cause) {
     logger.error('repository:get_recent_failed', cause, { days })
+    captureError(cause, { feature: 'repository', action: 'getRecentTransactions' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read recent transactions', cause))
   }
 }
@@ -86,6 +90,7 @@ export const getTransactionsForMonth = async (): Promise<Result<Transaction[], A
     return ok(transactions as Transaction[])
   } catch (cause) {
     logger.error('repository:get_month_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'getTransactionsForMonth' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read month transactions', cause))
   }
 }
@@ -100,6 +105,7 @@ export const getAllTransactions = async (): Promise<Result<Transaction[], AppErr
     return ok(transactions as Transaction[])
   } catch (cause) {
     logger.error('repository:get_all_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'getAllTransactions' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read transactions', cause))
   }
 }
@@ -113,6 +119,7 @@ export const getBusiness = async (): Promise<Result<Business | null, AppError>> 
     return ok((business as Business | undefined) ?? null)
   } catch (cause) {
     logger.error('repository:get_business_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'getBusiness' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read business', cause))
   }
 }
@@ -138,6 +145,7 @@ export const saveBusiness = async (
     return ok(id)
   } catch (cause) {
     logger.error('repository:business_save_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'saveBusiness' })
     return err(appError('DEXIE_WRITE_FAILED', 'Failed to save business', cause))
   }
 }
@@ -153,6 +161,7 @@ export const enqueue = async (
     return ok(undefined)
   } catch (cause) {
     logger.error('repository:enqueue_failed', cause, { table: entry.table_name })
+    captureError(cause, { feature: 'repository', action: 'enqueue' })
     return err(appError('DEXIE_WRITE_FAILED', 'Failed to enqueue sync entry', cause))
   }
 }
@@ -167,6 +176,7 @@ export const getUnsyncedQueue = async (): Promise<Result<SyncQueueEntry[], AppEr
     return ok(entries as unknown as SyncQueueEntry[])
   } catch (cause) {
     logger.error('repository:get_queue_failed', cause)
+    captureError(cause, { feature: 'repository', action: 'getUnsyncedQueue' })
     return err(appError('DEXIE_READ_FAILED', 'Failed to read sync queue', cause))
   }
 }
@@ -178,6 +188,7 @@ export const markSynced = async (id: number): Promise<Result<void, AppError>> =>
     return ok(undefined)
   } catch (cause) {
     logger.error('repository:mark_synced_failed', cause, { id })
+    captureError(cause, { feature: 'repository', action: 'markSynced' })
     return err(appError('DEXIE_WRITE_FAILED', 'Failed to mark entry synced', cause))
   }
 }

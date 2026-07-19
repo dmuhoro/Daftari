@@ -9,6 +9,7 @@ import type { BusinessCategoryKey } from '../lib/businessCategories';
 import SyncDot from '../components/SyncDot';
 import { useRecordingStreak } from '../hooks/useRecordingStreak';
 import { shareViaWhatsApp, formatDailySummaryText } from '../lib/whatsapp';
+import { track, EVENTS } from '../lib/analytics';
 
 const SW_DAYS = ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi'];
 const SW_DAYS_SHORT = ['Jpl', 'Jt', 'Jn', 'Jt', 'Al', 'Ij', 'Jm'];
@@ -221,14 +222,17 @@ export default function DashboardScreen() {
                 </div>
                 {todayHasData && (
                   <button
-                    onClick={() => shareViaWhatsApp(formatDailySummaryText(
-                      business?.name || 'Daftari',
-                      new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
-                      revenue,
-                      expenses,
-                      profit,
-                      txCount,
-                    ))}
+                    onClick={() => {
+                      track(EVENTS.DAILY_SUMMARY_SHARED)
+                      shareViaWhatsApp(formatDailySummaryText(
+                        business?.name || 'Daftari',
+                        new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                        revenue,
+                        expenses,
+                        profit,
+                        txCount,
+                      ))
+                    }}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
                     title={t('share') || 'Share'}
                   >

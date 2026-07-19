@@ -18,6 +18,7 @@ function getResolvedTheme(theme: string): 'light' | 'dark' {
 export default function App() {
   const [session, setSession] = useState<boolean | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'reset' | 'recovery'>('signin');
   const [loadingDexie, setLoadingDexie] = useState(true);
   const [loadingBusiness, setLoadingBusiness] = useState(true);
   const setTransactions = useStore((s) => s.setTransactions);
@@ -63,8 +64,12 @@ export default function App() {
       setSession(!!data.session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       setSession(!!sess);
+      if (event === 'PASSWORD_RECOVERY') {
+        setAuthMode('recovery');
+        setShowSignIn(true);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -112,11 +117,11 @@ export default function App() {
     <ErrorBoundary>
       {!session ? (
         showSignIn ? (
-          <AuthScreen onAuth={() => setSession(true)} />
+          <AuthScreen onAuth={() => { setSession(true); setAuthMode('signin'); }} mode={authMode} />
         ) : (
           <LandingScreen
-            onSignUp={() => setShowSignIn(true)}
-            onSignIn={() => setShowSignIn(true)}
+            onSignUp={() => { setAuthMode('signup'); setShowSignIn(true); }}
+            onSignIn={() => { setAuthMode('signin'); setShowSignIn(true); }}
           />
         )
       ) : !business || !business.category ? (

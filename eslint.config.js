@@ -23,6 +23,22 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+
+      /* Daftari conventions */
+      '@typescript-eslint/no-explicit-any': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{
+            name: 'dexie',
+            message: 'Use src/lib/repository.ts instead of importing Dexie directly',
+          }],
+          patterns: [{
+            group: ['dexie'],
+            message: 'Use src/lib/repository.ts instead of importing Dexie directly',
+          }],
+        },
+      ],
     },
   }
 );

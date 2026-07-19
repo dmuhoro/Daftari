@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-restricted-imports
 import Dexie, { Table } from 'dexie';
 
 export type TransactionType = 'income' | 'expense' | 'withdrawal' | 'debt_taken' | 'debt_repaid';

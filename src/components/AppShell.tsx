@@ -1,25 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Home, PlusCircle, ClipboardList, Settings, ChevronLeft } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
 import { useSync } from '../hooks/useSync';
 import { useStore } from '../lib/store';
-import DashboardScreen from '../screens/DashboardScreen';
-import AddScreen from '../screens/AddScreen';
-import HistoryScreen from '../screens/HistoryScreen';
-import SettingsScreen from '../screens/SettingsScreen';
-import ProductCatalogScreen from '../screens/ProductCatalogScreen';
-import BusinessProfileScreen from '../screens/BusinessProfileScreen';
-import CustomersScreen from '../screens/CustomersScreen';
-
-import RecordSale from '../features/transactions/RecordSale';
-import RecordExpense from '../features/transactions/RecordExpense';
-import RecordWithdrawal from '../features/transactions/RecordWithdrawal';
-import RecordFulizaDebt from '../features/transactions/RecordFulizaDebt';
-import RecordFulizaRepaid from '../features/transactions/RecordFulizaRepaid';
-import SMSParser from '../features/sms/SMSParser';
 import DailyClose from '../features/close/DailyClose';
 import OfflineBanner from './OfflineBanner';
+
+const DashboardScreen = lazy(() => import('../screens/DashboardScreen'));
+const AddScreen = lazy(() => import('../screens/AddScreen'));
+const HistoryScreen = lazy(() => import('../screens/HistoryScreen'));
+const SettingsScreen = lazy(() => import('../screens/SettingsScreen'));
+const ProductCatalogScreen = lazy(() => import('../screens/ProductCatalogScreen'));
+const BusinessProfileScreen = lazy(() => import('../screens/BusinessProfileScreen'));
+const CustomersScreen = lazy(() => import('../screens/CustomersScreen'));
+
+const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
+const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
+const RecordWithdrawal = lazy(() => import('../features/transactions/RecordWithdrawal'));
+const RecordFulizaDebt = lazy(() => import('../features/transactions/RecordFulizaDebt'));
+const RecordFulizaRepaid = lazy(() => import('../features/transactions/RecordFulizaRepaid'));
+const SMSParser = lazy(() => import('../features/sms/SMSParser'));
 
 type View =
   | 'dashboard'
@@ -155,39 +156,41 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       )}
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {view === 'dashboard' && <DashboardScreen />}
-        {view === 'add' && (
-          <AddScreen onNavigate={(v) => setView(v)} />
-        )}
-        {view === 'add/sale' && (
-          <RecordSale onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
-        )}
-        {view === 'add/expense' && (
-          <RecordExpense onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
-        )}
-        {view === 'add/withdrawal' && (
-          <RecordWithdrawal onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
-        )}
-        {view === 'add/sms' && (
-          <SMSParser
-            onSave={() => setView('dashboard')}
-            onCancel={() => setView('add')}
-            onManualEntry={() => setView('add/sale')}
-          />
-        )}
-        {view === 'add/fuliza-debt' && (
-          <RecordFulizaDebt onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
-        )}
-        {view === 'add/fuliza-repaid' && (
-          <RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
-        )}
-        {view === 'history' && <HistoryScreen />}
-        {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
-        {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
-        {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
-        {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
-      </main>
+      <Suspense fallback={<div className="flex-1" />}>
+        <main className="flex-1 overflow-y-auto pb-20">
+          {view === 'dashboard' && <DashboardScreen />}
+          {view === 'add' && (
+            <AddScreen onNavigate={(v) => setView(v)} />
+          )}
+          {view === 'add/sale' && (
+            <RecordSale onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+          )}
+          {view === 'add/expense' && (
+            <RecordExpense onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+          )}
+          {view === 'add/withdrawal' && (
+            <RecordWithdrawal onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+          )}
+          {view === 'add/sms' && (
+            <SMSParser
+              onSave={() => setView('dashboard')}
+              onCancel={() => setView('add')}
+              onManualEntry={() => setView('add/sale')}
+            />
+          )}
+          {view === 'add/fuliza-debt' && (
+            <RecordFulizaDebt onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+          )}
+          {view === 'add/fuliza-repaid' && (
+            <RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+          )}
+          {view === 'history' && <HistoryScreen />}
+          {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
+          {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
+          {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
+          {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
+        </main>
+      </Suspense>
 
       {/* Fixed Bottom nav */}
       {!hideNav && (

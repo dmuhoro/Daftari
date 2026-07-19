@@ -7,6 +7,7 @@ import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { supabase } from '../lib/supabase';
 import { db } from '../lib/db';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { track, EVENTS } from '../lib/analytics';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -69,6 +70,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
     : null;
 
   async function handleSignOut() {
+    track(EVENTS.SIGNOUT)
     await supabase.auth.signOut();
     onSignOut();
   }
@@ -376,6 +378,12 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               <span className="text-sm font-medium text-ink dark:text-stone-100">{t('business_profile')}</span>
             </div>
           )}
+
+          <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-xs text-muted dark:text-stone-400">
+              {t('signed_in_as') || 'Signed in as'} <span className="font-medium text-ink dark:text-stone-100">{userEmail || '—'}</span>
+            </span>
+          </div>
 
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { captureError } from '../lib/sentry';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -33,8 +34,9 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('[Daftari] ErrorBoundary caught:', error.message, errorInfo);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
+    captureError(error, { feature: 'ErrorBoundary', action: 'render_crash' })
   }
 
   handleReset = () => {

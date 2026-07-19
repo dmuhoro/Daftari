@@ -5,34 +5,61 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.5.0] — 2026-07-19
+
+### Added
+- **Password Reset Flow**: "Forgot Password?" link on sign-in form, triggers `supabase.auth.resetPasswordForEmail()` with redirect, inline `ResetPasswordScreen`-style recovery UI on redirect
+- **Recovery Mode**: `PASSWORD_RECOVERY` event listener in `App.tsx` sets `authMode='reset_password'` on redirect with `type=recovery`
+- **Resend Confirmation**: Error-bound resend confirmation email on `sign_in` with `email_not_confirmed` error
+- **Signed-in Badge**: Shows email + "Signed in as" indicator in Settings screen
+- **OG Meta Tags**: Open Graph tags (`og:title`, `og:description`, `og:type`, `og:url`, `og:image`) added to `index.html`
+- **`robots.txt`**: Search-engine crawl rules at `public/robots.txt`
+- **Missing Track Call**: `handleAddAllTemplates` in `RecordSale.tsx` now fires `TRANSACTION_RECORDED` event
+- **i18n Keys**: 10 new keys for password reset, confirmation resend, signed-in state
+- **Test Setup**: `src/test/mocks.ts` wired into vitest `setupFiles`
+
+### Removed
+- **Dead i18n Keys**: 28 unused translation keys removed from both `sw.json` and `en.json` for a clean 1:1 match with usage
+
+### Engineering
+- `scripts/check-i18n.ts` — `DYNAMIC_KEYS` exclusion list for programmatically-used keys (`sale_recorded`, `expense_recorded`, `withdrawal_recorded`)
+
 ## [1.4.0] — 2026-07-19
 
 ### Added
-- **Digital Receipt System**: Auto-generated receipt IDs (`REC-YYMMDD-XXXX`) for every income transaction
-- **Receipt Modal**: Animated receipt card shown after recording a sale, with receipt ID, amount, description, and WhatsApp share button
-- **Receipt Detail Sheet**: Tap any transaction in History to see the full receipt detail (ID, amount, description, sender, timestamp)
-- **Customer Intelligence ("Wateja Wangu")**: Dedicated customers table in Dexie, auto-saved from M-Pesa senders, with visit count and total spent
-- **Customers Screen**: Searchable customer list sorted by total spend, accessible from Settings
-- **Customer Count**: Dashboard shows customer count with purple icon card
-- **WhatsApp Sharing**: Share receipts and daily summaries directly to WhatsApp via URL scheme
-- **Low-Stock Alerts**: Product stock tracking with configurable thresholds and Dashboard alert cards
-- **Restock Dialog**: Restock products directly from the Product Catalog with quantity input
-- **Stock Fields**: Initial stock and low-stock threshold fields when adding products
-- **CI/CD Pipeline**: GitHub Actions workflow for typecheck, lint, test, and build
+- **Self-hosted Sentry Integration**: Error tracking with DSN config via `VITE_SENTRY_DSN`, release tagging, PII redaction in `beforeSend`, ignore list for benign errors
+- **Error Boundary**: `ErrorBoundary` now forwards crashes to Sentry via `captureError()`
+- **Repository Instrumentation**: All Dexie read/write failures in `repository.ts` captured to Sentry with feature/action tags
+- **Privacy-first Analytics**: Self-hosted `daftari_analytics` table in Supabase with event buffering (flush at 10 events), RLS restricted to service_role only
+- **Analytics Events**: 18 event types tracked across onboarding, auth, transaction recording, SMS parsing, receipt view, WhatsApp share, daily close, customer views, sign-out
+- **OnboardingSessionCounter**: Tracks session count via `sessionStorage` and fires `onboarding_abandoned` at 3 sessions without completion
+- **Sync Queue Circuit Breaker**: `MAX_BATCH=50` overflow protection, 3 consecutive failures open circuit for 60s, Sentry capture on circuit open and overflow
+- **i18n Coverage Linter**: `scripts/check-i18n.ts` validates all `t()` keys against `sw.json`/`en.json`, detects missing/extra keys, runs in CI
+- **React.lazy Routing**: 13 screens lazily loaded via `React.lazy()` + Suspense in AppShell
+- **Content Security Policy**: CSP header added to Vercel config (`default-src 'self'`, Supabase connect-src)
+- **ESLint Daftari Rules**: `no-explicit-any` enforced as error, Dexie direct import blocked
+- **Global Test Mocks**: `src/test/mocks.ts` with mock Dexie DB for unit tests
+- **CI Pipeline**: GitHub Actions workflow at `.github/workflows/ci.yml` with typecheck, lint, i18n check, test, build
+- **404 Fallback Page**: Custom `public/404.html` with Daftari branding for SPA routes
+- **Supabase Analytics Migration**: `supabase/migrations/002_create_daftari_analytics.sql` with RLS policies and indexes
 
 ### Changed
-- App version bumped to 1.1.0
-- README rewritten with full feature list and improved structure
-- DB version bumped to 4 (customers table, receipt_id on transactions)
-- `SuccessFlash` now delegates to `Receipt` component with share support
-- `Product` type now includes optional `stock` and `low_stock_threshold`
+- `tsconfig.app.json` — added `baseUrl` and `@/*` path alias
+- `.env.example` — added `VITE_SENTRY_DSN` documentation
+- `vercel.json` — added CSP header for all routes
+- README — updated with new features, Sentry, analytics, i18n linter
+- All transaction recording components now fire `analytics.track()` 
 
 ### Engineering
-- Created `src/lib/receiptId.ts` with daily-reset sequence generator
-- Created `src/lib/whatsapp.ts` with share utilities and text formatters
-- Created `src/components/Receipt.tsx` animated receipt modal
-- Created `src/screens/CustomersScreen.tsx` with search and sorting
-- Added 18 new i18n keys to both sw.json and en.json
+- Created `src/lib/sentry.ts` — Sentry init, captureError, setUser, clearUser
+- Created `src/lib/analytics.ts` — event queue, flush, EVENTS const
+- Created `src/components/OnboardingSessionCounter.tsx`
+- Created `scripts/check-i18n.ts` — i18n coverage linter for CI
+- Created `src/test/mocks.ts` — global Dexie mock factory
+- Created `.github/workflows/ci.yml` — CI/CD pipeline
+- Created `public/404.html` — SPA 404 fallback
+- Created `supabase/migrations/002_create_daftari_analytics.sql`
+- Added 18 analytic event track() calls across screens and features
 - 53 tests passing across 4 test files
 
 ## [1.3.0] — 2026-07-19

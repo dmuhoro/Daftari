@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, Printer, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
+import { track, EVENTS } from '../lib/analytics';
 
 interface ReceiptProps {
   receiptId: string;
@@ -18,7 +19,9 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
 
   useEffect(() => {
     const enter = setTimeout(() => setPhase('visible'), 50);
+    track(EVENTS.RECEIPT_VIEWED, { type, amount })
     return () => clearTimeout(enter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleDismiss() {

@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { BUSINESS_CATEGORIES } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface RecordExpenseProps {
   onSave: () => void;
@@ -56,6 +57,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
     });
     setSaving(false);
     setFlashAmount(Number(amount));
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'expense', method: 'manual' })
   }
 
   if (flashAmount !== null) {

@@ -7,6 +7,7 @@ import { BUSINESS_CATEGORIES, getTemplateProducts } from '../../lib/businessCate
 import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface RecordSaleProps {
   onSave: () => void;
@@ -93,6 +94,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     setFlashAmount(product.price);
     setFlashReceiptId(receiptId);
     setFlashDescription(product.name);
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'income', method: 'quick_sale' })
 
     if (product.stock !== undefined && business) {
       const updatedProducts = products.map((p) =>
@@ -126,6 +128,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         payment_method: paymentMethod || undefined,
       });
     }
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'income', method: 'template_bulk' })
   }
 
   function validateAmount(val: string): boolean {
@@ -157,6 +160,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     setFlashAmount(Number(amount));
     setFlashReceiptId(receiptId);
     setFlashDescription(description || undefined);
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'income', method: 'manual' })
   }
 
   if (flashAmount !== null) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CheckCircle, CreditCard } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface RecordFulizaRepaidProps {
   onSave: () => void;
@@ -43,6 +44,7 @@ export default function RecordFulizaRepaid({ onSave, onCancel }: RecordFulizaRep
     });
     setSaving(false);
     setFlash(true);
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'debt_repaid', method: 'manual' })
     setTimeout(() => {
       setFlash(false);
       onSave();

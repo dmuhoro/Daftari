@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface RecordFulizaDebtProps {
   onSave: () => void;
@@ -43,6 +44,7 @@ export default function RecordFulizaDebt({ onSave, onCancel }: RecordFulizaDebtP
     });
     setSaving(false);
     setFlash(true);
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'debt_taken', method: 'manual' })
     setTimeout(() => {
       setFlash(false);
       onSave();

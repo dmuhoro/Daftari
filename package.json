@@ -1,7 +1,7 @@
 {
   "name": "daftari",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,6 +14,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@sentry/react": "^10.66.0",
     "@supabase/supabase-js": "^2.57.4",
     "dexie": "^4.4.3",
     "lucide-react": "^0.344.0",

@@ -3,6 +3,7 @@ import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import SuccessFlash from '../../components/SuccessFlash';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface RecordWithdrawalProps {
   onSave: () => void;
@@ -45,6 +46,7 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
     });
     setSaving(false);
     setFlashAmount(Number(amount));
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'withdrawal', method: 'manual' })
   }
 
   if (flashAmount !== null) {

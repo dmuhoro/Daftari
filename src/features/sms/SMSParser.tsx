@@ -6,6 +6,7 @@ import { db } from '../../lib/db';
 import { parseMpesaSMS } from './parseMpesa';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
+import { track, EVENTS } from '../../lib/analytics';
 
 interface SMSParserProps {
   onSave: () => void;
@@ -48,9 +49,11 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       setParsed(result);
       setEditAmount(String(result.amount));
       setParseError(false);
+      track(EVENTS.SMS_PARSED)
     } else {
       setParsed(null);
       setParseError(true);
+      track(EVENTS.SMS_PARSE_FAILED)
     }
   }
 
@@ -77,6 +80,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
     setFlashAmount(amount);
     setFlashReceiptId(receiptId);
     setFlashSender(parsed.sender);
+    track(EVENTS.TRANSACTION_RECORDED, { type: 'income', method: 'sms' })
 
     try {
       const existing = await db.customers.where('name').equals(parsed.sender).first();

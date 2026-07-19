@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   UtensilsCrossed, ShoppingBag, Hammer, Sprout, Scissors, Bike, Briefcase,
   Banknote, Smartphone, Wallet, Store, Building2, Wifi, Landmark,
@@ -10,6 +10,8 @@ import { db } from '../lib/db';
 import { supabase } from '../lib/supabase';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
+import { track, EVENTS } from '../lib/analytics';
+import OnboardingSessionCounter from '../components/OnboardingSessionCounter';
 
 const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
   UtensilsCrossed, ShoppingBag, Hammer, Sprout, Scissors, Bike, Briefcase,
@@ -44,6 +46,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const [businessName, setBusinessName] = useState('');
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState('');
+
+  useEffect(() => { track(EVENTS.ONBOARDING_STARTED) }, [])
 
   const progress = ((step + 1) / 4) * 100;
   const categoryEntries = Object.entries(BUSINESS_CATEGORIES) as [BusinessCategoryKey, typeof BUSINESS_CATEGORIES[BusinessCategoryKey]][];
@@ -85,6 +89,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       });
 
       onComplete();
+      track(EVENTS.ONBOARDING_COMPLETED, { category: selectedCategory ?? '' })
 
       supabase.from('daftari_businesses').upsert({
         name,
@@ -103,7 +108,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   }
 
   return (
-    <div className="min-h-dvh bg-background dark:bg-stone-950 flex flex-col">
+    <>
+      <OnboardingSessionCounter />
+      <div className="min-h-dvh bg-background dark:bg-stone-950 flex flex-col">
       {/* Progress bar */}
       <div className="h-1 bg-gray-200">
         <div className="h-full bg-green-600 transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -279,5 +286,6 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         )}
       </div>
     </div>
+    </>
   );
 }

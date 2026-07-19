@@ -17,6 +17,9 @@ Built with React, TypeScript, Vite, Supabase, and Dexie.js.
 - **Fuliza Tracking** — Track Fuliza debt against daily revenue
 - **Daily Close** — Automated end-of-day prompts with profit summary
 - **PWA** — Install on your phone's home screen for app-like experience
+- **Error Tracking** — Sentry integration with production error capture
+- **Analytics** — Privacy-first event analytics via Supabase (no third-party trackers)
+- **Digital Receipts** — Auto-generated receipt numbers (`REC-YYMMDD-XXXX`) for every sale
 
 ## Tech Stack
 
@@ -27,6 +30,8 @@ Built with React, TypeScript, Vite, Supabase, and Dexie.js.
 | Offline DB | Dexie.js (IndexedDB) |
 | Backend | Supabase (Postgres, Auth, Storage) |
 | Charts | Recharts |
+| Error Tracking | Sentry |
+| Analytics | Supabase (self-hosted) |
 | PWA | vite-plugin-pwa, Workbox |
 | Testing | Vitest, React Testing Library |
 | CI/CD | GitHub Actions → Vercel |
@@ -49,18 +54,22 @@ Open `http://localhost:5173` in your browser.
 | `npm run test:run` | Run all tests |
 | `npm run typecheck` | TypeScript check |
 | `npm run lint` | ESLint |
+| `npx tsx scripts/check-i18n.ts` | i18n coverage linter |
 
 ## Project Structure
 
 ```
 src/
-├── components/     # Reusable UI (Shell, Receipt, SuccessFlash)
+├── components/     # Reusable UI (Shell, Receipt, SuccessFlash, etc.)
 ├── features/       # Feature modules (sms, sync, transactions, close)
-├── hooks/          # Custom React hooks
+├── hooks/          # Custom React hooks (useTranslation, useSync, etc.)
 ├── i18n/           # Translations (sw.json, en.json)
-├── lib/            # Core: store, db, repository, money, receiptId, whatsapp
-├── screens/        # Full-page screens
-└── App.tsx         # Root component with auth & onboarding routing
+├── lib/            # Core: store, db, repository, money, receiptId, whatsapp, sentry, analytics
+├── screens/        # Full-page screens (dashboard, history, settings, etc.)
+├── test/           # Test setup and global mocks
+├── App.tsx         # Root component with auth & onboarding routing
+├── main.tsx        # Entry point (Sentry init, React root)
+└── scripts/        # Dev tooling (i18n linter)
 ```
 
 ## License
