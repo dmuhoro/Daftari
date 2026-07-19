@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame, Users } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame, Users, ChevronDown, Package, Check } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -43,8 +43,12 @@ export default function DashboardScreen() {
   const { t, language } = useTranslation();
   const transactions = useStore((s) => s.transactions);
   const business = useStore((s) => s.business);
+  const businesses = useStore((s) => s.businesses);
+  const setBusiness = useStore((s) => s.setBusiness);
+  const setActiveBusinessId = useStore((s) => s.setActiveBusinessId);
   const setLanguage = useStore((s) => s.setLanguage);
   const [tab, setTab] = useState<Tab>('leo');
+  const [showBizSwitcher, setShowBizSwitcher] = useState(false);
   const { streak } = useRecordingStreak();
   const [customerCount, setCustomerCount] = useState(0);
 
@@ -132,6 +136,32 @@ export default function DashboardScreen() {
   const profitBg = profit > 0 ? 'bg-primary-600' : profit < 0 ? 'bg-red-500' : 'bg-amber-500';
   const weekProfitBg = weekProfit > 0 ? 'bg-primary-600' : weekProfit < 0 ? 'bg-red-500' : 'bg-amber-500';
 
+  // Product profitability
+  const productProfitData = useMemo(() => {
+    const prods = business?.products ?? [];
+    const productRevenue: Record<string, { rev: number; cost: number; qty: number }> = {};
+    for (const p of prods) {
+      productRevenue[p.id] = { rev: 0, cost: 0, qty: 0 };
+    }
+    const todayStr = getTodayNairobi();
+    const todayTxsFull = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr && tx.type === 'income');
+    for (const tx of todayTxsFull) {
+      if (tx.product_id && productRevenue[tx.product_id]) {
+        productRevenue[tx.product_id].rev += tx.amount;
+        productRevenue[tx.product_id].cost += tx.cost_price ?? 0;
+        productRevenue[tx.product_id].qty += 1;
+      }
+    }
+    return Object.entries(productRevenue)
+      .filter(([, v]) => v.qty > 0)
+      .map(([id, v]) => {
+        const p = prods.find(p => p.id === id);
+        return { id, name: p?.name ?? id, revenue: v.rev, cost: v.cost, margin: v.rev - v.cost, qty: v.qty };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+  }, [transactions, business]);
+
   const formattedDate = language === 'sw' ? formatDateSw(todayDate) : formatDateEn(todayDate);
   const businessName = business?.name ?? 'Daftari';
 
@@ -147,16 +177,53 @@ export default function DashboardScreen() {
       {/* Header */}
       <div className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 py-4">
         <div className="flex items-start justify-between">
-          <div>
+          <div className="relative">
             <div className="flex items-center gap-2">
               {catEmoji && <span className="text-xl">{catEmoji}</span>}
-              <h1 className="text-lg font-bold text-ink dark:text-stone-100">{businessName}</h1>
+              <button
+                onClick={() => setShowBizSwitcher(!showBizSwitcher)}
+                className="flex items-center gap-1 max-w-[200px]"
+              >
+                <h1 className="text-lg font-bold text-ink dark:text-stone-100 truncate">{businessName}</h1>
+                {businesses.length > 1 && <ChevronDown className="w-4 h-4 text-muted flex-shrink-0" />}
+              </button>
               <SyncDot />
             </div>
             {catLabel && (
               <p className="text-xs text-muted dark:text-stone-400 mt-0.5">{catLabel}</p>
             )}
             <p className="text-sm text-muted dark:text-stone-400 mt-0.5">{formattedDate}</p>
+
+            {/* Business switcher dropdown */}
+            {showBizSwitcher && businesses.length > 1 && (
+              <div className="absolute top-full left-0 mt-1 z-50 bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-xl p-2 min-w-[200px]">
+                <p className="text-xs font-medium text-muted dark:text-stone-400 px-3 py-1.5 uppercase tracking-wider">
+                  {language === 'sw' ? 'Badilisha Biashara' : 'Switch Business'}
+                </p>
+                {businesses.map((biz) => {
+                  const isActive = biz.id === business?.id;
+                  return (
+                    <button
+                      key={biz.id}
+                      onClick={() => {
+                        setBusiness(biz);
+                        setActiveBusinessId(biz.id);
+                        setShowBizSwitcher(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                        isActive
+                          ? 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 font-semibold'
+                          : 'hover:bg-stone-50 dark:hover:bg-stone-800 text-ink dark:text-stone-100'
+                      }`}
+                    >
+                      <span className="text-lg">{catEmoji}</span>
+                      <span className="truncate">{biz.name}</span>
+                      {isActive && <Check className="w-4 h-4 ml-auto text-green-600" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <button
             onClick={() => setLanguage(language === 'sw' ? 'en' : 'sw')}
@@ -349,6 +416,34 @@ export default function DashboardScreen() {
                       <p className="text-xs text-muted dark:text-stone-400">{t('wateja_wangu') || 'Customers'}</p>
                       <p className="text-xl font-bold text-ink dark:text-stone-100 mt-0.5">{customerCount}</p>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Product profitability card */}
+              {productProfitData.length > 0 && (
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Package className="w-4 h-4 text-primary-600" />
+                    <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
+                      {language === 'sw' ? 'Faida kwa Bidhaa' : 'Product Profitability'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {productProfitData.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-ink dark:text-stone-100 truncate font-medium">{p.name}</span>
+                          <span className="text-xs text-muted dark:text-stone-400 flex-shrink-0">x{p.qty}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-xs text-muted dark:text-stone-400">{fmtKES(p.cost)}</span>
+                          <span className={`text-xs font-semibold ${p.margin >= 0 ? 'text-primary-600' : 'text-danger'}`}>
+                            {p.margin >= 0 ? '+' : ''}{fmtKES(p.margin)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

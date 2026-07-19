@@ -5,6 +5,28 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [3.0.0] — 2026-07-19
+
+### Added
+- **Multi-Business Support**: Run multiple businesses under one account. Business switcher dropdown in Dashboard header. Add New Business in Settings. All transactions scoped by active business.
+- **Product Profitability Screen**: Dedicated screen showing per-product revenue, cost of goods sold, margin (KES + %), and units sold. Horizontal bar chart for top-10 margin visualization. Accessible from Settings → Data & Reports.
+- **Product Profitability Dashboard Card**: Shows today's top-selling products with revenue, cost, and margin breakdown directly on the Dashboard.
+- **Cost Price on Products**: New `cost_price` field on products. When recording a sale from a product, the cost price is used to calculate profit margin.
+- **Supabase Pull-to-Restore**: New "Restore from Cloud" button in Settings → Data & Reports. Downloads all transactions, businesses, daily closes, and customers from Supabase. Last-write-wins conflict resolution via `updated_at` timestamps.
+- **Sync All Tables**: Business, daily closes, and customer records now sync to Supabase via the sync queue (previously only transactions synced).
+- **Dexie Schema v5**: New `business_id`, `product_id`, `cost_price`, `updated_at` fields on transactions. New `purchase_orders` table. All tables now have `local_id` and `updated_at` for proper sync.
+- **3 new files**: `lib/syncAll.ts`, `screens/ProductProfitabilityScreen.tsx`, `docs/changelog/sprint-11-business-os-completed.md`
+
+### Changed
+- `App.tsx` — loads all businesses from Dexie, sets activeBusinessId, maps business data with local_id
+- `DashboardScreen.tsx` — business switcher dropdown in header, product profitability card in Today tab
+- `SettingsScreen.tsx` — "My Businesses" section with switcher + Add Business, Product Profitability link, Restore from Cloud button
+- `AppShell.tsx` — added `product-profitability` route
+- `lib/db.ts` — schema v5 with business_id, product_id, cost_price, updated_at, purchase_orders
+- `lib/store.ts` — businesses[], activeBusinessId, setBusinesses, addBusiness, setActiveBusinessId, updateTransaction now syncs updated_at
+- `features/sync/syncQueue.ts` — QueuePayload extended with business_id, product_id, cost_price, updated_at
+- `package.json` — version 2.0.0 → 3.0.0
+
 ## [2.0.0] — 2026-07-19
 
 ### Added

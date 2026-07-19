@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown } from 'lucide-react';
+import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -9,6 +9,7 @@ import { db } from '../lib/db';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
+import { pullFromSupabase } from '../lib/syncAll';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -234,6 +235,70 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         </div>
       </div>
 
+      {/* Manage Businesses section */}
+      <div>
+        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
+          {language === 'sw' ? 'Biashara Zangu' : 'My Businesses'}
+        </p>
+        <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden dark:bg-stone-900 dark:border-stone-700">
+          {/* Business switcher */}
+          {(() => {
+            const businesses = useStore.getState().businesses;
+            const activeId = useStore.getState().activeBusinessId;
+            return businesses.map((biz) => {
+              const isActive = biz.id === activeId;
+              return (
+                <button
+                  key={biz.id}
+                  onClick={() => {
+                    useStore.getState().setBusiness(biz);
+                    useStore.getState().setActiveBusinessId(biz.id);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 border-b border-border dark:border-stone-700 last:border-b-0"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isActive ? 'bg-green-100 dark:bg-green-900' : 'bg-stone-100 dark:bg-stone-800'}`}>
+                    <Building className={`w-4 h-4 ${isActive ? 'text-green-600' : 'text-muted'}`} />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className={`text-sm font-medium ${isActive ? 'text-green-700 dark:text-green-300' : 'text-ink dark:text-stone-100'}`}>
+                      {biz.name}
+                    </p>
+                  </div>
+                  {isActive && <Check className="w-4 h-4 text-green-600" />}
+                </button>
+              );
+            });
+          })()}
+
+          {/* Add Business */}
+          <button
+            onClick={async () => {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              const localId = crypto.randomUUID();
+              const now = new Date().toISOString();
+              await db.business.add({
+                local_id: localId,
+                name: language === 'sw' ? 'Biashara Mpya' : 'New Business',
+                currency: 'KES',
+                user_id: user.id,
+                created_at: now,
+                updated_at: now,
+              });
+              window.location.reload();
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+          >
+            <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center dark:bg-green-900">
+              <Plus className="w-4 h-4 text-green-600" />
+            </div>
+            <span className="text-sm font-medium text-green-600">
+              {language === 'sw' ? 'Ongeza Biashara Mpya' : 'Add New Business'}
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* Appearance section */}
       <div>
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
@@ -322,6 +387,30 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
 
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />
 
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('product-profitability')}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center dark:bg-teal-900">
+                  <Package className="w-4 h-4 text-teal-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">
+                    {language === 'sw' ? 'Faida kwa Bidhaa' : 'Product Profitability'}
+                  </span>
+                  <p className="text-xs text-muted dark:text-stone-400">
+                    {language === 'sw' ? 'Angalia faida kwa kila bidhaa' : 'View margin per product'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
           <button
             onClick={() => {
               const csv = transactionsToCSV(useStore.getState().transactions);
@@ -340,6 +429,36 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
                 </span>
                 <p className="text-xs text-muted dark:text-stone-400">
                   {language === 'sw' ? 'Pakua miamala yote kwa Excel' : 'Download all transactions for Excel'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+          </button>
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          <button
+            onClick={async () => {
+              const { restored, errors } = await pullFromSupabase();
+              if (errors.length > 0) {
+                alert(errors.join('\n'));
+              } else {
+                alert(restored.join('\n') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found'));
+                window.location.reload();
+              }
+            }}
+            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center dark:bg-purple-900">
+                <RefreshCw className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-medium text-ink dark:text-stone-100">
+                  {language === 'sw' ? 'Rejesha kutoka Wavuti' : 'Restore from Cloud'}
+                </span>
+                <p className="text-xs text-muted dark:text-stone-400">
+                  {language === 'sw' ? 'Pakua data yako kutoka Supabase' : 'Pull your data from backup'}
                 </p>
               </div>
             </div>

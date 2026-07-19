@@ -15,6 +15,24 @@ function getResolvedTheme(theme: string): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+function mapBusiness(biz: import('./lib/db').Business): {
+  id: string; local_id?: string; name: string; owner_name?: string;
+  currency: string; category?: string; subcategory?: string;
+  payment_methods?: string[]; products?: Array<{ id: string; name: string; price: number; cost_price?: number; unit?: string; stock?: number; low_stock_threshold?: number }>;
+} {
+  return {
+    id: biz.user_id ?? biz.local_id ?? crypto.randomUUID(),
+    local_id: biz.local_id,
+    name: biz.name,
+    owner_name: biz.owner_name,
+    currency: biz.currency,
+    category: biz.category,
+    subcategory: biz.subcategory,
+    payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
+    products: biz.products ? JSON.parse(biz.products) : undefined,
+  };
+}
+
 export default function App() {
   const [session, setSession] = useState<boolean | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
@@ -24,26 +42,24 @@ export default function App() {
   const setTransactions = useStore((s) => s.setTransactions);
   const business = useStore((s) => s.business);
   const setBusiness = useStore((s) => s.setBusiness);
+  const setBusinesses = useStore((s) => s.setBusinesses);
+  const setActiveBusinessId = useStore((s) => s.setActiveBusinessId);
+  const activeBusinessId = useStore((s) => s.activeBusinessId);
   const theme = useStore((s) => s.theme);
 
   // Dark mode: apply resolved theme to document
   useEffect(() => {
     const resolved = getResolvedTheme(theme);
-
     if (resolved === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-
     if (theme === 'system') {
       const mq = window.matchMedia('(prefers-color-scheme: dark)');
       const handler = (e: MediaQueryListEvent) => {
-        if (e.matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        if (e.matches) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
       };
       mq.addEventListener('change', handler);
       return () => mq.removeEventListener('change', handler);
@@ -75,24 +91,22 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, [setTransactions, setBusiness]);
 
-  // Load business from Dexie when session changes
+  // Load businesses from Dexie when session changes
   useEffect(() => {
     if (session) {
       setLoadingBusiness(true);
-      db.business.toCollection().first().then((biz) => {
-        if (biz) {
-          setBusiness({
-            id: biz.user_id ?? '',
-            name: biz.name,
-            owner_name: biz.owner_name,
-            currency: biz.currency,
-            category: biz.category,
-            subcategory: biz.subcategory,
-            payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
-            products: biz.products ? JSON.parse(biz.products) : undefined,
-          });
+      db.business.toArray().then((bizList) => {
+        const mapped = bizList.map(mapBusiness);
+        setBusinesses(mapped);
+        // Set active business: prefer stored activeBusinessId, fallback to first
+        const storedId = activeBusinessId;
+        const target = storedId ? mapped.find(b => b.id === storedId) : mapped[0];
+        if (target) {
+          setBusiness(target);
+          setActiveBusinessId(target.id);
         } else {
           setBusiness(null);
+          setActiveBusinessId(null);
         }
         setLoadingBusiness(false);
       }).catch(() => {
@@ -103,7 +117,7 @@ export default function App() {
       setBusiness(null);
       setLoadingBusiness(false);
     }
-  }, [session, setBusiness]);
+  }, [session, setBusiness, setBusinesses, setActiveBusinessId]);
 
   if (session === null || loadingDexie) {
     return <LoadingScreen />;
