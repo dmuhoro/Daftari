@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2, Smartphone, Wallet, Store, Building2, Wifi, Banknote } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -57,19 +57,19 @@ export default function HistoryScreen() {
   const startY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  async function handleRefresh() {
+  const handleRefresh = useCallback(async () => {
     if (!isOnline) return;
     setRefreshing(true);
     await flushQueue();
     setRefreshing(false);
-  }
+  }, [isOnline]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     function handleTouchStart(e: TouchEvent) {
-      const el = containerRef.current;
+      const el = container;
       if (el && el.scrollTop === 0) {
         startY.current = e.touches[0].clientY;
       }
@@ -77,11 +77,10 @@ export default function HistoryScreen() {
 
     function handleTouchMove(e: TouchEvent) {
       if (startY.current === 0) return;
-      const el = containerRef.current;
-      if (!el) return;
+      if (!container) return;
       const currentY = e.touches[0].clientY;
       const diff = currentY - startY.current;
-      if (diff > 0 && el.scrollTop === 0) {
+      if (diff > 0 && container.scrollTop === 0) {
         setPullY(Math.min(diff, 80));
       }
     }
@@ -99,14 +98,11 @@ export default function HistoryScreen() {
     container.addEventListener('touchend', handleTouchEnd);
 
     return () => {
-      const el = containerRef.current;
-      if (el) {
-        el.removeEventListener('touchstart', handleTouchStart);
-        el.removeEventListener('touchmove', handleTouchMove);
-        el.removeEventListener('touchend', handleTouchEnd);
-      }
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [pullY, isOnline]);
+  }, [pullY, isOnline, handleRefresh]);
 
   // Filter transactions
   const filteredTransactions = (() => {

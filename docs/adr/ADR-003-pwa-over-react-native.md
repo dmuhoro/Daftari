@@ -15,7 +15,7 @@ Build a Progressive Web App (PWA) using Vite + React.
 - Instant deployment — share a URL, no app store review
 - Works on any Android Chrome without installation (then installable)
 - Single codebase — no iOS/Android split
-- Bolt.new and standard web tooling support it natively
+- Standard web tooling supports it natively (Vite, Workbox)
 
 **Negative:**
 - No native push notifications (Notification API has limitations on Android)

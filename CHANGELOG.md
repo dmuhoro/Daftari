@@ -5,6 +5,26 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.3.0] — 2026-07-19
+
+### Added
+- **CI/CD pipeline**: GitHub Actions quality gate (typecheck, lint, test, build) + auto-deploy to Vercel on main
+- **SMS parser hardening**: handles 12-digit Kenyan phone numbers, prevents name/phone confusion, 50 tests
+- **Payment method detection**: all SMS patterns now extract payment method (M-Pesa, Till, Paybill, Pochi, Airtel Money)
+- **Engineering standards**: `.nvmrc`, `AGENTS.md`, professional `CONTRIBUTING.md`
+
+### Removed
+- All Bolt.ai artifacts (`.bolt/` directory, README badge, ADR mention)
+- Generic "start repository" boilerplate
+- 2 React lint warnings in HistoryScreen.tsx
+
+### Engineering
+- CI workflow renamed to CI/CD with deploy job
+- Node version bumped to 22 in CI
+- Lockfile regenerated with esbuild 0.28.1 optional deps correctly marked
+- Phone regex `[A-Z0-9]{6,10}` → `\d{6,12}` and `[A-Z0-9]` → `\d` in extractSenderPhone
+- `handleRefresh` wrapped in `useCallback`, ref captured in effect closure
+
 ## [1.2.0] — 2026-07-19
 
 ### Added
