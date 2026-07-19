@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'pwa-192x192.svg'],
+      includeAssets: ['pwa-192x192.svg', 'favicon.svg'],
       manifest: {
         name: 'Daftari',
         short_name: 'Daftari',
