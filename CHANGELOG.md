@@ -25,6 +25,20 @@ Format: [Semantic Versioning](https://semver.org)
 - **Input maxLength enforcement**: Description and notes fields across RecordSale, RecordExpense, RecordWithdrawal, StockAdjustments, Suppliers, and PurchaseOrders now enforce `maxLength={200}`.
 - **Empty state**: StockAdjustmentsScreen now shows a descriptive empty state when no adjustments exist.
 - **Virtualized customer list**: CustomersScreen now uses `react-virtuoso` for virtualized rendering, improving performance with large customer lists.
+- **Toast notification system**: New `ToastProvider` + `useToast()` hook for user-facing success/error/info messages with auto-dismiss. Wired into manual sync trigger.
+- **Manual sync trigger**: "Sync Now" button in Settings Data & Reports section calls `flushQueue()` with toast feedback.
+- **Background sync registration**: `registerBackgroundSync()` registered when transitioning online, enabling Service Worker sync.
+- **Local JSON backup**: New `exportAllData()` utility in `src/lib/backup.ts` downloads all 8 Dexie tables as a single JSON file. "Export Backup" button in Settings.
+- **Help/FAQ screen**: New `HelpScreen` with 6 accordion FAQs in Kiswahili/English. Accessible from Settings Account section.
+- **Color-independent indicators**: "(Profit)"/"(Loss)" text labels added alongside green/red color on Dashboard profit cards for accessibility.
+- **Skeleton loaders**: Reusable `Skeleton` component created. Applied to CustomersScreen loading state (5 skeleton rows).
+- **Touch target sizes**: Cart qty +/- buttons, back buttons, scan button now have `min-w-[44px] min-h-[44px]` for touch accessibility.
+- **Screen reader announcements**: `aria-live="polite"` and `role="alert"` added to DailyClose bottom sheet, Receipt overlay, and Toast container.
+- **Focus management**: `autoFocus` added to receipt close button and customer picker modal.
+- **Supplier validation**: Phone input has `pattern` and `title` attributes for format validation.
+- **Phone/email validation**: Supplier phone has pattern validation; email uses `type="email"`.
+- **Unit tests**: `src/lib/__tests__/syncQueue.test.ts` created with test for `getPendingCount()`. 54 tests total.
+- **Desktop layout**: AppShell container constrained to `max-w-lg mx-auto` to prevent stretching on wide screens.
 - **Version**: bumped `package.json` 5.0.0 → 5.0.1
 
 ## [5.0.0] — 2026-07-19

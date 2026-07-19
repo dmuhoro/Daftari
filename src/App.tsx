@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase';
 import { db } from './lib/db';
 import { useStore } from './lib/store';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider } from './components/Toast';
 import AuthScreen from './screens/AuthScreen';
 import AppShell from './components/AppShell';
 import LandingScreen from './screens/LandingScreen';
@@ -129,7 +130,8 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      {!session ? (
+      <ToastProvider>
+        {!session ? (
         showSignIn ? (
           <AuthScreen onAuth={() => { setSession(true); setAuthMode('signin'); }} mode={authMode} />
         ) : (
@@ -143,6 +145,7 @@ export default function App() {
       ) : (
         <AppShell onSignOut={() => setSession(false)} />
       )}
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

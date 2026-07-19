@@ -5,6 +5,7 @@ import { db, type Customer } from '../lib/db';
 import { track, EVENTS } from '../lib/analytics';
 import CustomerDetailScreen from './CustomerDetailScreen';
 import { Virtuoso } from 'react-virtuoso';
+import Skeleton from '../components/Skeleton';
 
 interface CustomersScreenProps {
   onBack: () => void;
@@ -107,8 +108,20 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <p className="text-sm text-muted dark:text-stone-400">{t('loading')}</p>
+          <div className="flex flex-col gap-3 px-1">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5 flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <Skeleton className="h-4 w-3/5" />
+                  <Skeleton className="h-3 w-2/5" />
+                </div>
+                <div className="text-right space-y-1.5">
+                  <Skeleton className="h-4 w-16 ml-auto" />
+                  <Skeleton className="h-3 w-10 ml-auto" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">

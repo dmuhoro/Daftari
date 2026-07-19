@@ -290,7 +290,10 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
             <>
               <div className={`${profitBg} rounded-2xl p-6 shadow-lg relative overflow-hidden`}>
                 <p className="text-white/80 text-sm font-medium mb-1">{t('leo_faida')}</p>
-                <p className="text-white text-4xl font-bold tracking-tight">{fmtKES(profit)}</p>
+                <p className="text-white text-4xl font-bold tracking-tight" aria-label={profit >= 0 ? `${language === 'sw' ? 'Faida' : 'Profit'} ${fmtKES(profit)}` : `${language === 'sw' ? 'Hasara' : 'Loss'} ${fmtKES(profit)}`}>
+                  <span className="text-lg font-medium align-middle mr-2">{profit >= 0 ? (language === 'sw' ? 'Faida' : 'Profit') : (language === 'sw' ? 'Hasara' : 'Loss')}</span>
+                  {fmtKES(profit)}
+                </p>
                 <div className="flex items-center gap-2 mt-3">
                   {profit >= 0 ? (
                     <TrendingUp className="w-4 h-4 text-white/70" />
@@ -452,7 +455,8 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0">
                           <span className="text-xs text-muted dark:text-stone-400">{fmtKES(p.cost)}</span>
-                          <span className={`text-xs font-semibold ${p.margin >= 0 ? 'text-primary-600' : 'text-danger'}`}>
+                          <span className={`text-xs font-semibold ${p.margin >= 0 ? 'text-primary-600' : 'text-danger'}`} aria-label={p.margin >= 0 ? `Gain ${fmtKES(p.margin)}` : `Loss ${fmtKES(p.margin)}`}>
+                            {p.margin >= 0 ? (language === 'sw' ? 'Faida ' : 'Profit ') : (language === 'sw' ? 'Hasara ' : 'Loss ')}
                             {p.margin >= 0 ? '+' : ''}{fmtKES(p.margin)}
                           </span>
                         </div>
@@ -479,7 +483,10 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
             <>
               <div className={`${weekProfitBg} rounded-2xl p-6 shadow-lg`}>
                 <p className="text-white/80 text-sm font-medium mb-1">{t('wiki_faida')}</p>
-                <p className="text-white text-4xl font-bold tracking-tight">{fmtKES(weekProfit)}</p>
+                <p className="text-white text-4xl font-bold tracking-tight" aria-label={weekProfit >= 0 ? `${language === 'sw' ? 'Faida' : 'Profit'} ${fmtKES(weekProfit)}` : `${language === 'sw' ? 'Hasara' : 'Loss'} ${fmtKES(weekProfit)}`}>
+                  <span className="text-lg font-medium align-middle mr-2">{weekProfit >= 0 ? (language === 'sw' ? 'Faida' : 'Profit') : (language === 'sw' ? 'Hasara' : 'Loss')}</span>
+                  {fmtKES(weekProfit)}
+                </p>
                 {bestDay.profit > 0 && (
                   <div className="flex items-center gap-2 mt-3">
                     <TrendingUp className="w-4 h-4 text-white/70" />
@@ -521,7 +528,8 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
                 </div>
                 <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
                   <p className="text-xs text-muted dark:text-stone-400">{t('profit')}</p>
-                  <p className={`text-sm font-bold mt-0.5 ${weekProfit >= 0 ? 'text-primary-600' : 'text-danger'}`}>
+                  <p className={`text-sm font-bold mt-0.5 ${weekProfit >= 0 ? 'text-primary-600' : 'text-danger'}`} aria-label={weekProfit >= 0 ? `${language === 'sw' ? 'Faida' : 'Profit'} ${fmtKES(weekProfit)}` : `${language === 'sw' ? 'Hasara' : 'Loss'} ${fmtKES(weekProfit)}`}>
+                    <span>{weekProfit >= 0 ? (language === 'sw' ? 'Faida ' : 'Profit ') : (language === 'sw' ? 'Hasara ' : 'Loss ')}</span>
                     {fmtKES(weekProfit)}
                   </p>
                 </div>

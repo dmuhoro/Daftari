@@ -65,6 +65,7 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
         backgroundColor: phase === 'enter' || phase === 'exit' ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.5)',
         opacity: phase === 'exit' ? 0 : 1,
       }}
+      aria-live="polite"
       onClick={handleDismiss}
     >
       <div
@@ -105,7 +106,7 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
                 <Printer className="w-4 h-4" /> {t('share') || 'Share'}
               </button>
             )}
-            <button onClick={handleDismiss} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+            <button autoFocus onClick={handleDismiss} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 flex items-center justify-center gap-2 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
               <X className="w-4 h-4" /> {t('close') || 'Close'}
             </button>
           </div>

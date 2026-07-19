@@ -66,7 +66,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
       />
 
       {/* Sheet */}
-      <div className="relative w-full max-w-md bg-white dark:bg-stone-900 rounded-t-3xl shadow-xl animate-slide-up">
+      <div role="alert" aria-live="polite" className="relative w-full max-w-md bg-white dark:bg-stone-900 rounded-t-3xl shadow-xl animate-slide-up">
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-10 h-1 bg-gray-300 rounded-full" />

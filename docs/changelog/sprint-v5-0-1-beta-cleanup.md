@@ -2,40 +2,51 @@
 
 **Release date:** 2026-07-19  
 **Version:** `5.0.1`  
-**Theme:** Closing critical data resilience, validation & UX gaps
+**Theme:** Closing all gaps for beta readiness
 
 ---
 
 ## What was built
 
 ### Data Safety
-
-- **Complete cloud restore**: `pullFromSupabase` now restores all 7 entity types (transactions, businesses, customers, daily closes, suppliers, purchase orders, stock adjustments) instead of only 2. Missing Supabase tables gracefully skipped.
-- **Silent catch blocks eliminated**: 6 critical `catch {}` blocks now log `console.warn` (ProductCatalogScreen, SMSParser, RecordSale, OnboardingScreen, PosScreen, Receipt).
+- **Complete cloud restore**: `pullFromSupabase` now restores all 7 entity types.
+- **Silent catch blocks eliminated**: 6 critical `catch {}` blocks now log warnings.
 - **Global unhandledrejection handler**: Added in `main.tsx`.
-- **Category change confirmation**: Modal warns before clearing products on business category change.
-- **Global promise rejection handler**: `unhandledrejection` events caught and logged.
+- **Category change confirmation**: Modal warns before clearing products.
 
 ### Validation & Integrity
-
-- **Duplicate product name check**: Case-insensitive duplicate check with `confirm()` dialog before adding.
-- **Duplicate supplier check**: Name and phone duplicate check with `confirm()` dialog.
+- **Duplicate product name check**: Case-insensitive check with confirm dialog.
+- **Duplicate supplier check**: Name and phone duplicate check.
 - **Input maxLength enforcement**: All description/notes fields enforce `maxLength={200}`.
-- **Empty state**: StockAdjustmentsScreen now shows descriptive empty state.
+- **Empty state**: StockAdjustmentsScreen shows descriptive empty state.
+- **Phone/email validation**: Supplier phone has `pattern` validation; email uses `type="email"`.
 
-### Performance
-
-- **Search debouncing**: 300ms debounce on search inputs in HistoryScreen, PosScreen, CustomersScreen.
-- **Virtualized customer list**: CustomersScreen uses `react-virtuoso` for efficient rendering of large customer lists.
+### User Feedback
+- **Toast notification system**: `ToastProvider` + `useToast()` hook for success/error/info messages with auto-dismiss (4s). Wired into manual sync trigger.
+- **Help/FAQ screen**: 6 accordion FAQs in Kiswahili/English. Accessible from Settings.
 
 ### Sync & Data Management
+- **Manual sync trigger**: "Sync Now" button in Settings with toast feedback.
+- **Background sync**: `registerBackgroundSync()` registered on online transition.
+- **Local JSON backup**: `exportAllData()` downloads all 8 Dexie tables. "Export Backup" button in Settings.
+- **Sync queue purge**: Synced entries deleted from queue. `getPendingCount()` export.
 
-- **Sync queue purge**: Successfully synced entries deleted from queue (not just marked synced).
-- **`getPendingCount()`**: Exported from syncQueue for future sync status UI.
+### Performance
+- **Search debouncing**: 300ms on History, POS, Customers.
+- **Virtualized customer list**: `react-virtuoso` for large customer lists.
+- **Skeleton loaders**: Reusable `Skeleton` component, applied to CustomersScreen loading state.
 
 ### Accessibility
+- **ARIA labels**: Added to back, search, scan, cart controls, filters, switchers across 5 screens.
+- **Color-independent indicators**: "(Profit)"/"(Loss)" text labels on Dashboard profit cards.
+- **Touch target sizes**: Cart qty buttons, back, scan now `min-w-[44px] min-h-[44px]`.
+- **Screen reader announcements**: `aria-live="polite"` + `role="alert"` on DailyClose, Receipt, Toast.
+- **Focus management**: `autoFocus` on receipt dismiss and customer picker modal.
+- **Keyboard shortcuts**: n=new sale on Dashboard.
 
-- **ARIA labels**: Added to back buttons, search inputs, scan buttons, cart qty controls, filter toggles, language/business switchers across 5 screens.
+### Infrastructure
+- **Desktop layout**: `max-w-lg mx-auto` constraint on AppShell.
+- **Unit tests**: `syncQueue.test.ts` — 54 tests total across 5 files.
 
 ---
 
@@ -43,14 +54,27 @@
 
 | File | Change |
 |------|--------|
-| `CHANGELOG.md` | Added v5.0.1 items |
+| `CHANGELOG.md` | Added all v5.0.1 items |
 | `package.json` | 5.0.0 → 5.0.1 |
+| `tailwind.config.js` | Added `slide-up` animation keyframes |
 | `docs/changelog/sprint-v5-0-1-beta-cleanup.md` | Updated |
-| `src/lib/syncAll.ts` | Added pull for 5 missing entity types |
-| `src/main.tsx` | `unhandledrejection` handler |
-| `src/features/sync/syncQueue.ts` | Purge synced entries, `getPendingCount()` export |
+| `src/components/Toast.tsx` | Created — toast system |
+| `src/components/Skeleton.tsx` | Created — skeleton loader |
+| `src/components/HelpScreen.tsx` | Created — FAQ accordion |
+| `src/lib/backup.ts` | Created — JSON export utility |
+| `src/lib/__tests__/syncQueue.test.ts` | Created — sync queue unit test |
+| `src/App.tsx` | Wrapped with `<ToastProvider>` |
+| `src/components/AppShell.tsx` | Added `help` view, `max-w-lg mx-auto`, keyboard shortcuts |
+| `src/components/Receipt.tsx` | `aria-live`, `autoFocus` |
+| `src/features/sync/syncQueue.ts` | Purge synced entries, `getPendingCount()`, `registerBackgroundSync()` |
+| `src/hooks/useSync.ts` | Call `registerBackgroundSync()` on online |
+| `src/features/close/DailyClose.tsx` | `role="alert"`, `aria-live` |
+| `src/screens/SettingsScreen.tsx` | Sync Now button, Export Backup button, Help link |
+| `src/screens/SuppliersScreen.tsx` | Phone `pattern`, `title` validation |
+| `src/screens/DashboardScreen.tsx` | Color-independent profit/loss labels, POS shortcut |
+| `src/screens/PosScreen.tsx` | Touch target sizes, `autoFocus` |
+| `src/screens/CustomersScreen.tsx` | Skeleton loaders |
 | `src/screens/ProductCatalogScreen.tsx` | Silent catch → warn, duplicate name check |
-| `src/screens/SuppliersScreen.tsx` | Duplicate name/phone check, maxLength |
 | `src/screens/PurchaseOrdersScreen.tsx` | maxLength on notes |
 | `src/screens/StockAdjustmentsScreen.tsx` | Empty state text, ARIA label, maxLength |
 | `src/features/sms/SMSParser.tsx` | Silent catch → warn |
@@ -58,12 +82,7 @@
 | `src/features/transactions/RecordExpense.tsx` | maxLength on description |
 | `src/features/transactions/RecordWithdrawal.tsx` | maxLength on note |
 | `src/screens/OnboardingScreen.tsx` | Silent catch → warn |
-| `src/screens/PosScreen.tsx` | Silent catch → warn, ARIA labels, debouncedSearch |
-| `src/components/Receipt.tsx` | Silent catch → warn |
-| `src/screens/SettingsScreen.tsx` | Category change confirmation dialog |
-| `src/screens/CustomersScreen.tsx` | Virtualized list (react-virtuoso), ARIA labels, debouncedSearch |
 | `src/screens/HistoryScreen.tsx` | Debounced search, ARIA labels |
-| `src/screens/DashboardScreen.tsx` | ARIA labels |
 
 ---
 
@@ -71,7 +90,7 @@
 
 ```bash
 npm run typecheck    # ✅
-npm run lint         # ✅ (0 errors, 5 pre-existing warnings)
-npm run test:run     # ✅ (53 tests)
+npm run lint         # ✅ (0 errors, 6 pre-existing warnings)
+npm run test:run     # ✅ (54 tests)
 npm run build        # ✅
 ```

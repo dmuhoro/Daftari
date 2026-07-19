@@ -183,12 +183,12 @@ export default function PosScreen({ onBack }: PosScreenProps) {
       {/* Header */}
       <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4">
         <div className="flex items-center h-14 gap-2">
-          <button onClick={onBack} aria-label={language === 'sw' ? 'Rudi' : 'Back'} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 -ml-1"><X className="w-5 h-5 text-ink dark:text-stone-100" /></button>
+          <button onClick={onBack} aria-label={language === 'sw' ? 'Rudi' : 'Back'} className="min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-stone-800 -ml-1"><X className="w-5 h-5 text-ink dark:text-stone-100" /></button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center"><Zap className="w-4 h-4 text-white" /></div>
             <span className="font-bold text-ink dark:text-stone-100 text-base">{t('pos') || 'POS'}</span>
           </div>
-          <button onClick={handleBarcodeScan} disabled={scanning} aria-label={language === 'sw' ? 'Changanua barcode' : 'Scan barcode'} className="ml-auto w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
+          <button onClick={handleBarcodeScan} disabled={scanning} aria-label={language === 'sw' ? 'Changanua barcode' : 'Scan barcode'} className="ml-auto min-w-[44px] min-h-[44px] rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
             <Camera className={`w-5 h-5 text-primary-600 ${scanning ? 'animate-pulse' : ''}`} />
           </button>
         </div>
@@ -246,9 +246,9 @@ export default function PosScreen({ onBack }: PosScreenProps) {
                 <div key={item.productId} className="flex items-center gap-2 text-sm">
                   <span className="flex-1 text-ink dark:text-stone-100 truncate">{item.name}</span>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => updateQty(item.productId, -1)} aria-label="Decrease quantity" className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Minus className="w-3 h-3 text-muted" /></button>
+                    <button onClick={() => updateQty(item.productId, -1)} aria-label="Decrease quantity" className="min-w-[44px] min-h-[44px] rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Minus className="w-3 h-3 text-muted" /></button>
                     <span className="w-6 text-center text-xs font-semibold text-ink dark:text-stone-100">{item.qty}</span>
-                    <button onClick={() => updateQty(item.productId, 1)} aria-label="Increase quantity" className="w-6 h-6 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Plus className="w-3 h-3 text-muted" /></button>
+                    <button onClick={() => updateQty(item.productId, 1)} aria-label="Increase quantity" className="min-w-[44px] min-h-[44px] rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Plus className="w-3 h-3 text-muted" /></button>
                   </div>
                   <span className="w-20 text-right text-xs text-primary-600 font-semibold">KES {(item.price * item.qty).toLocaleString('en-KE')}</span>
                 </div>
@@ -270,7 +270,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
 
       {/* Customer picker modal */}
       {showCustomerPicker && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowCustomerPicker(false)}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowCustomerPicker(false)} autoFocus>
           <div className="absolute inset-0 bg-black/40" />
           <div className="relative bg-white dark:bg-stone-900 rounded-3xl w-full max-w-sm max-h-96 overflow-y-auto p-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm font-bold text-ink dark:text-stone-100 mb-3">{language === 'sw' ? 'Chagua Mteja' : 'Select Customer'}</p>

@@ -119,3 +119,12 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
 export function getPendingCount() {
   return db.sync_queue.where('synced').equals(0).count();
 }
+
+export async function registerBackgroundSync() {
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('sync-transactions');
+    } catch { /* background sync not supported */ }
+  }
+}

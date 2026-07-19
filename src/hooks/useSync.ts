@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
-import { flushQueue } from '../features/sync/syncQueue';
+import { flushQueue, registerBackgroundSync } from '../features/sync/syncQueue';
 
 export function useSync() {
   const { isOnline } = useOnlineStatus();
@@ -20,6 +20,7 @@ export function useSync() {
     // Run flush when transitioning from offline to online
     if (wasOffline.current && isOnline) {
       flushQueue().catch(console.error);
+      registerBackgroundSync().catch(console.error);
     }
 
     wasOffline.current = !isOnline;

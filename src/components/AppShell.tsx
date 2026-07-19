@@ -21,6 +21,7 @@ const PurchaseOrdersScreen = lazy(() => import('../screens/PurchaseOrdersScreen'
 const StockAdjustmentsScreen = lazy(() => import('../screens/StockAdjustmentsScreen'));
 const BatchEntryScreen = lazy(() => import('../screens/BatchEntryScreen'));
 const PosScreen = lazy(() => import('../screens/PosScreen'));
+const HelpScreen = lazy(() => import('../screens/HelpScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -49,7 +50,8 @@ type View =
   | 'purchase-orders'
   | 'stock-adjustments'
   | 'batch-entry'
-  | 'pos';
+  | 'pos'
+  | 'help';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -64,7 +66,7 @@ function activeTab(view: View): BottomTab {
   return view as BottomTab;
 }
 
-function viewTitle(view: View, t: (k: TranslationKey) => string): string {
+function viewTitle(view: View, t: (k: TranslationKey) => string, language: string): string {
   switch (view) {
     case 'dashboard': return t('dashboard');
     case 'add': return t('add');
@@ -86,11 +88,12 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'stock-adjustments': return t('stock_adjustments');
     case 'batch-entry': return t('batch_entry');
     case 'pos': return t('pos') || 'POS';
+    case 'help': return language === 'sw' ? 'Msaada' : 'Help';
   }
 }
 
 export default function AppShell({ onSignOut }: AppShellProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { isOnline } = useSync();
   const transactions = useStore((s) => s.transactions);
   const lastCloseDate = useStore((s) => s.lastCloseDate);
@@ -101,7 +104,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos';
+  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos' || view === 'help';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -147,11 +150,11 @@ export default function AppShell({ onSignOut }: AppShellProps) {
   }, [transactions, lastCloseDate, closePromptDismissedAt]);
 
   return (
-    <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950">
+    <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950 max-w-lg mx-auto">
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && view !== 'help' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -170,7 +173,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
               </div>
             )}
             <span className={`text-sm font-semibold text-muted dark:text-stone-400 ${isSubView ? '' : 'ml-auto'}`}>
-              {viewTitle(view, t)}
+              {viewTitle(view, t, language)}
             </span>
           </div>
         </header>
@@ -178,7 +181,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
       {/* Content */}
       <Suspense fallback={<div className="flex-1" />}>
-        <main className="flex-1 overflow-y-auto pb-20">
+        <main className="flex-1 overflow-y-auto pb-20 max-w-lg mx-auto">
           {view === 'dashboard' && <DashboardScreen onNavigate={(v) => setView(v as View)} />}
           {view === 'add' && (
             <AddScreen onNavigate={(v) => setView(v)} />
@@ -217,6 +220,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'stock-adjustments' && <StockAdjustmentsScreen onBack={() => setView('settings')} />}
           {view === 'batch-entry' && <BatchEntryScreen onBack={() => setView('settings')} />}
           {view === 'pos' && <PosScreen onBack={() => setView('settings')} />}
+          {view === 'help' && <HelpScreen onBack={() => setView('settings')} />}
         </main>
       </Suspense>
 

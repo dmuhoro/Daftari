@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package, ShoppingCart, ClipboardList, Zap } from 'lucide-react';
+import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package, ShoppingCart, ClipboardList, Zap, HelpCircle } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -9,7 +9,10 @@ import { db } from '../lib/db';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
+import { exportAllData } from '../lib/backup';
 import { pullFromSupabase } from '../lib/syncAll';
+import { flushQueue } from '../features/sync/syncQueue';
+import { useToast } from '../components/Toast';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -31,6 +34,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   const [pickSubcategory, setPickSubcategory] = useState<string | null>(null);
   const [savingCategory, setSavingCategory] = useState(false);
   const [showCategoryConfirm, setShowCategoryConfirm] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
   const [userLastSignIn, setUserLastSignIn] = useState<string | null>(null);
@@ -109,6 +113,36 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
     setShowCategoryPicker(false);
     setPickCategory(null);
     setPickSubcategory(null);
+  }
+
+  const { toast } = useToast();
+
+  async function handleSyncNow() {
+    setSyncing(true);
+    try {
+      const result = await flushQueue();
+      if (result.failed > 0) {
+        toast(
+          language === 'sw'
+            ? `Imetaleta ${result.synced}, imeshindwa ${result.failed}`
+            : `Synced ${result.synced}, failed ${result.failed}`,
+          result.failed > 0 ? 'error' : 'success'
+        );
+      } else {
+        toast(
+          language === 'sw'
+            ? `Imetaleta ${result.synced} kwa mafanikio`
+            : `Synced ${result.synced} successfully`,
+          'success'
+        );
+      }
+    } catch {
+      toast(
+        language === 'sw' ? 'Hitilafu ya usawazishaji' : 'Sync error',
+        'error'
+      );
+    }
+    setSyncing(false);
   }
 
   const categoryEntries = Object.entries(BUSINESS_CATEGORIES) as [BusinessCategoryKey, typeof BUSINESS_CATEGORIES[BusinessCategoryKey]][];
@@ -528,6 +562,28 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />
 
           <button
+            onClick={exportAllData}
+            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center dark:bg-teal-900">
+                <Download className="w-4 h-4 text-teal-600" />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-medium text-ink dark:text-stone-100">
+                  {language === 'sw' ? 'Hifadhi Backup' : 'Export Backup'}
+                </span>
+                <p className="text-xs text-muted dark:text-stone-400">
+                  {language === 'sw' ? 'Pakua data yote kwa JSON' : 'Download all data as JSON'}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+          </button>
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          <button
             onClick={async () => {
               const { restored, errors } = await pullFromSupabase();
               if (errors.length > 0) {
@@ -553,6 +609,32 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               </div>
             </div>
             <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+          </button>
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          <button
+            onClick={handleSyncNow}
+            disabled={syncing}
+            aria-label={language === 'sw' ? 'Sawazisha sasa' : 'Sync now'}
+            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 disabled:opacity-60"
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${syncing ? 'bg-amber-50 dark:bg-amber-900' : 'bg-cyan-50 dark:bg-cyan-900'}`}>
+                <RefreshCw className={`w-4 h-4 ${syncing ? 'text-amber-600 animate-spin' : 'text-cyan-600'}`} />
+              </div>
+              <div className="text-left">
+                <span className="text-sm font-medium text-ink dark:text-stone-100">
+                  {syncing
+                    ? (language === 'sw' ? 'Inasawazisha...' : 'Syncing...')
+                    : (language === 'sw' ? 'Sawazisha Sasa' : 'Sync Now')}
+                </span>
+                <p className="text-xs text-muted dark:text-stone-400">
+                  {language === 'sw' ? 'Sawazisha data na wavuti' : 'Sync pending data to cloud'}
+                </p>
+              </div>
+            </div>
+            {syncing && <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />}
           </button>
         </div>
       </div>
@@ -650,6 +732,20 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               {t('signed_in_as') || 'Signed in as'} <span className="font-medium text-ink dark:text-stone-100">{userEmail || '—'}</span>
             </span>
           </div>
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('help')}
+              className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+            >
+              <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center dark:bg-blue-900">
+                <HelpCircle className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="text-sm font-medium text-ink dark:text-stone-100">{language === 'sw' ? 'Msaada' : 'Help'}</span>
+            </button>
+          )}
 
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />
 
