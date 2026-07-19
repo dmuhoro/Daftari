@@ -61,21 +61,6 @@ Format: [Semantic Versioning](https://semver.org)
 - **Recovery Mode**: `PASSWORD_RECOVERY` event listener in `App.tsx` sets `authMode='reset_password'` on redirect with `type=recovery`
 - **Resend Confirmation**: Error-bound resend confirmation email on `sign_in` with `email_not_confirmed` error
 - **Signed-in Badge**: Shows email + "Signed in as" indicator in Settings screen
-- **OG Meta Tags**: Open Graph tags (`og:title`, `og:description`, `og:type`, `og:url`, `og:image`) added to `index.html`
-- **`robots.txt`**: Search-engine crawl rules at `public/robots.txt`
-- **Missing Track Call**: `handleAddAllTemplates` in `RecordSale.tsx` now fires `TRANSACTION_RECORDED` event
-- **i18n Keys**: 10 new keys for password reset, confirmation resend, signed-in state
-- **Test Setup**: `src/test/mocks.ts` wired into vitest `setupFiles`
-
-### Removed
-- **Dead i18n Keys**: 28 unused translation keys removed from both `sw.json` and `en.json` for a clean 1:1 match with usage
-
-### Engineering
-- `scripts/check-i18n.ts` — `DYNAMIC_KEYS` exclusion list for programmatically-used keys (`sale_recorded`, `expense_recorded`, `withdrawal_recorded`)
-
-## [1.4.0] — 2026-07-19
-
-### Added
 - **Self-hosted Sentry Integration**: Error tracking with DSN config via `VITE_SENTRY_DSN`, release tagging, PII redaction in `beforeSend`, ignore list for benign errors
 - **Error Boundary**: `ErrorBoundary` now forwards crashes to Sentry via `captureError()`
 - **Repository Instrumentation**: All Dexie read/write failures in `repository.ts` captured to Sentry with feature/action tags
@@ -90,26 +75,66 @@ Format: [Semantic Versioning](https://semver.org)
 - **Global Test Mocks**: `src/test/mocks.ts` with mock Dexie DB for unit tests
 - **CI Pipeline**: GitHub Actions workflow at `.github/workflows/ci.yml` with typecheck, lint, i18n check, test, build
 - **404 Fallback Page**: Custom `public/404.html` with Daftari branding for SPA routes
-- **Supabase Analytics Migration**: `supabase/migrations/002_create_daftari_analytics.sql` with RLS policies and indexes
+- **OG Meta Tags**: Open Graph tags (`og:title`, `og:description`, `og:type`, `og:url`, `og:image`) added to `index.html`
+- **`robots.txt`**: Search-engine crawl rules at `public/robots.txt`
+- **Missing Track Call**: `handleAddAllTemplates` in `RecordSale.tsx` now fires `TRANSACTION_RECORDED` event
+- **i18n Keys**: 10 new keys for password reset, confirmation resend, signed-in state
+- **Test Setup**: `src/test/mocks.ts` wired into vitest `setupFiles`
+
+### Removed
+- **Dead i18n Keys**: 28 unused translation keys removed from both `sw.json` and `en.json` for a clean 1:1 match with usage
 
 ### Changed
 - `tsconfig.app.json` — added `baseUrl` and `@/*` path alias
 - `.env.example` — added `VITE_SENTRY_DSN` documentation
 - `vercel.json` — added CSP header for all routes
+- `eslint.config.js` — `no-explicit-any` error rule
 - README — updated with new features, Sentry, analytics, i18n linter
-- All transaction recording components now fire `analytics.track()` 
+- All transaction recording components now fire `analytics.track()`
 
 ### Engineering
 - Created `src/lib/sentry.ts` — Sentry init, captureError, setUser, clearUser
 - Created `src/lib/analytics.ts` — event queue, flush, EVENTS const
 - Created `src/components/OnboardingSessionCounter.tsx`
-- Created `scripts/check-i18n.ts` — i18n coverage linter for CI
+- Created `scripts/check-i18n.ts` — i18n coverage linter for CI with `DYNAMIC_KEYS` exclusion
 - Created `src/test/mocks.ts` — global Dexie mock factory
-- Created `.github/workflows/ci.yml` — CI/CD pipeline
+- Created `src/test/setup.ts` — vitest setup file
 - Created `public/404.html` — SPA 404 fallback
 - Created `supabase/migrations/002_create_daftari_analytics.sql`
 - Added 18 analytic event track() calls across screens and features
-- 53 tests passing across 4 test files
+- `PACKAGE.json` version 1.1.0 → 1.5.0 (skipped intermediate bumps)
+
+## [1.4.0] — 2026-07-19
+
+### Added
+- **Digital Receipt System**: Auto-generated receipt IDs (`RCT-XXXXXX`) for every income transaction via `receiptId.ts`. Receipt modal with share-to-WhatsApp button shown after every sale. Receipt includes business name, date, amount, receipt ID, and item description.
+- **Customer Intelligence**: New `customers` table in Dexie (DB v4). Auto-saves customer name and phone from M-Pesa SMS sender on every transaction. Customer deduplication by phone number with visit/spend accumulation.
+- **Customers Screen**: Dedicated screen at `src/screens/CustomersScreen.tsx` with search bar, sort by total spent, per-customer stats (total visits, total spent, last visit date). Tappable rows (prep for Customer 360° in v2.0.0).
+- **Dashboard Customer Count**: Shows total number of unique customers in the Today tab.
+- **WhatsApp Sharing**: `src/lib/whatsapp.ts` utility constructs `wa.me` deep links with pre-filled message. Receipt modal has "Share via WhatsApp" button. Daily close summary can be shared as text via WhatsApp.
+- **Inventory Management**: Stock fields (`stock`, `low_stock_threshold`) on every product in the catalog. Stock auto-decrements when a sale is recorded from a product chip. Low-stock alert banner on ProductCatalogScreen. Restock dialog with quantity input. Dashboard shows low-stock warning pill.
+- **DB Schema v4**: `customers` table (`id`, `name`, `phone`, `total_visits`, `total_spent`, `last_visit`, `created_at`). `receipt_id` field on `transactions` table. Indexed by `&name`, `phone`.
+- **i18n Keys**: 18 new keys (`receipt`, `share_whatsapp`, `customers`, `customer_saved`, `inventory`, `stock`, `low_stock`, `restock`, `total_visits`, `total_spent`, etc.) added to both `sw.json` and `en.json`.
+
+### Changed
+- `src/screens/ProductCatalogScreen.tsx` — stock fields, restock dialog, low-stock alerts, stock decrement on sale
+- `src/screens/DashboardScreen.tsx` — customer count card, low-stock alert card
+- `src/screens/HistoryScreen.tsx` — receipt view per transaction row
+- `src/components/AppShell.tsx` — added `customers` route to nav tabs
+- `src/components/SuccessFlash.tsx` — updated to show receipt preview after sale
+- `src/features/transactions/RecordSale.tsx` — auto-save customer from M-Pesa, decrement stock on product-linked sale
+- `src/features/sms/SMSParser.tsx` — extracts sender phone/name for automatic customer creation
+- `src/lib/db.ts` — schema v4 with customers table, receipt_id on transactions
+- `src/lib/store.ts` — receipt_id generated on addTransaction
+- `Documentation` — `ADR-009-whatsapp-sharing.md`, README updated
+
+### New Files
+- `src/components/Receipt.tsx` — receipt modal with business info, item, amount, share button
+- `src/screens/CustomersScreen.tsx` — customer list with search and sort
+- `src/lib/receiptId.ts` — receipt ID generator (`RCT-` prefix + random hex)
+- `src/lib/receiptId.test.ts` — unit tests for receipt ID generation
+- `src/lib/whatsapp.ts` — WhatsApp deep link utility
+- `docs/adr/ADR-009-whatsapp-sharing.md` — WhatsApp sharing architecture
 
 ## [1.3.0] — 2026-07-19
 
