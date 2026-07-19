@@ -36,6 +36,12 @@ Remove all Bolt.ai artifacts to take full ownership of the codebase, harden the 
 - Fixed 2 lint warnings in `HistoryScreen.tsx` (useCallback + ref capture)
 - Achieved 0 lint warnings across the entire codebase
 
+### Section E — User Profile in Settings
+- Added user profile card in Settings Account section showing authenticated user email
+- Displayed account creation date and last sign-in time with relative date formatting
+- Fetched user metadata from `supabase.auth.getUser()` on mount
+- Added 3 new i18n keys to both sw.json and en.json (`user_profile`, `account_created`, `last_sign_in`)
+
 ## Files Created
 - `.nvmrc`
 - `AGENTS.md`
@@ -50,6 +56,9 @@ Remove all Bolt.ai artifacts to take full ownership of the codebase, harden the 
 - `src/features/sms/parseMpesa.ts` — phone regex hardening
 - `src/features/sms/parseMpesa.test.ts` — expanded to 50 tests
 - `src/screens/HistoryScreen.tsx` — fixed lint warnings
+- `src/screens/SettingsScreen.tsx` — user profile card with email, account creation, last sign-in
+- `src/i18n/sw.json` — 3 new keys (user_profile, account_created, last_sign_in)
+- `src/i18n/en.json` — 3 new keys (user_profile, account_created, last_sign_in)
 
 ## Acceptance Criteria
 - [x] `.bolt/` directory deleted
@@ -61,6 +70,8 @@ Remove all Bolt.ai artifacts to take full ownership of the codebase, harden the 
 - [x] SMS parser doesn't match names as phone numbers
 - [x] 50 tests pass across 3 test files
 - [x] CI/CD pipeline: typecheck → lint → test → build → deploy
+- [x] User profile card shows email, account creation, last sign-in in Settings
+- [x] 3 new i18n keys in both languages
 - [x] 0 lint warnings
 - [x] 0 typecheck errors
 - [x] Vercel deploy hook triggers successfully

@@ -146,5 +146,8 @@
   "owner_name": "Owner Name",
   "owner_name_placeholder": "Your name",
   "payment_methods": "Payment Methods",
-  "saved": "Saved"
+  "saved": "Saved",
+  "user_profile": "User Profile",
+  "account_created": "Account created",
+  "last_sign_in": "Last sign in"
 }

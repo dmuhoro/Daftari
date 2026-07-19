@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check, Calendar } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -27,6 +27,31 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   const [pickCategory, setPickCategory] = useState<BusinessCategoryKey | null>(null);
   const [pickSubcategory, setPickSubcategory] = useState<string | null>(null);
   const [savingCategory, setSavingCategory] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
+  const [userLastSignIn, setUserLastSignIn] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setUserEmail(user.email ?? null);
+        setUserCreatedAt(user.created_at ?? null);
+        setUserLastSignIn(user.last_sign_in_at ?? null);
+      }
+    });
+  }, []);
+
+  function formatDate(iso: string | null): string {
+    if (!iso) return '';
+    const date = new Date(iso);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (date >= today) return t('leo');
+    if (date >= yesterday) return t('jana');
+    return date.toLocaleDateString(language === 'sw' ? 'sw-KE' : 'en-KE', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 
   const catKey = business?.category as BusinessCategoryKey | undefined;
   const subKey = business?.subcategory;
@@ -298,6 +323,38 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           Account
         </p>
         <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden dark:bg-stone-900 dark:border-stone-700">
+          {/* User profile card */}
+          {userEmail && (
+            <>
+              <div className="px-4 py-3">
+                <p className="text-xs font-semibold text-muted dark:text-stone-400 uppercase tracking-widest mb-2">
+                  {t('user_profile')}
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center dark:bg-primary-900">
+                    <User className="w-4 h-4 text-primary-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink dark:text-stone-100 truncate">{userEmail}</p>
+                    {userCreatedAt && (
+                      <p className="text-xs text-muted dark:text-stone-400 flex items-center gap-1 mt-0.5">
+                        <Calendar className="w-3 h-3" />
+                        {t('account_created')}: {formatDate(userCreatedAt)}
+                      </p>
+                    )}
+                    {userLastSignIn && (
+                      <p className="text-xs text-muted dark:text-stone-400 flex items-center gap-1 mt-0.5">
+                        <Calendar className="w-3 h-3" />
+                        {t('last_sign_in')}: {formatDate(userLastSignIn)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            </>
+          )}
+
           {onNavigate ? (
             <button
               onClick={() => onNavigate('profile')}
@@ -305,7 +362,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center dark:bg-stone-800">
-                  <User className="w-4 h-4 text-muted dark:text-stone-400" />
+                  <Building2 className="w-4 h-4 text-muted dark:text-stone-400" />
                 </div>
                 <span className="text-sm font-medium text-ink dark:text-stone-100">{t('business_profile')}</span>
               </div>
@@ -314,7 +371,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           ) : (
             <div className="flex items-center gap-3 px-4 py-4">
               <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center dark:bg-stone-800">
-                <User className="w-4 h-4 text-muted dark:text-stone-400" />
+                <Building2 className="w-4 h-4 text-muted dark:text-stone-400" />
               </div>
               <span className="text-sm font-medium text-ink dark:text-stone-100">{t('business_profile')}</span>
             </div>

@@ -146,5 +146,8 @@
   "owner_name": "Jina la Mmiliki",
   "owner_name_placeholder": "Jina lako",
   "payment_methods": "Njia za Malipo",
-  "saved": "Imehifadhiwa"
+  "saved": "Imehifadhiwa",
+  "user_profile": "Wasifu wa Mtumiaji",
+  "account_created": "Imeundwa",
+  "last_sign_in": "Ingia mwisho"
 }

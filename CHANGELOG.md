@@ -12,6 +12,7 @@ Format: [Semantic Versioning](https://semver.org)
 - **SMS parser hardening**: handles 12-digit Kenyan phone numbers, prevents name/phone confusion, 50 tests
 - **Payment method detection**: all SMS patterns now extract payment method (M-Pesa, Till, Paybill, Pochi, Airtel Money)
 - **Engineering standards**: `.nvmrc`, `AGENTS.md`, professional `CONTRIBUTING.md`
+- **User profile in Settings**: Account section shows authenticated user email, account creation date, and last sign-in time
 
 ### Removed
 - All Bolt.ai artifacts (`.bolt/` directory, README badge, ADR mention)
