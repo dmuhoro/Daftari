@@ -28,3 +28,11 @@ jobs:
       - run: npx tsx scripts/check-i18n.ts
       - run: npm run test:run
       - run: npm run build
+
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        run: curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"

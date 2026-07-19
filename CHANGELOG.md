@@ -39,6 +39,7 @@ Format: [Semantic Versioning](https://semver.org)
 - **Phone/email validation**: Supplier phone has pattern validation; email uses `type="email"`.
 - **Unit tests**: `src/lib/__tests__/syncQueue.test.ts` created with test for `getPendingCount()`. 54 tests total.
 - **Desktop layout**: AppShell container constrained to `max-w-lg mx-auto` to prevent stretching on wide screens.
+- **CI/CD**: Added `deploy` job to GitHub Actions workflow — triggers Vercel deploy hook on push to main after checks pass (typecheck, lint, i18n, test, build). PR previews automatically enabled via Vercel GitHub integration.
 - **Version**: bumped `package.json` 5.0.0 → 5.0.1
 
 ## [5.0.0] — 2026-07-19

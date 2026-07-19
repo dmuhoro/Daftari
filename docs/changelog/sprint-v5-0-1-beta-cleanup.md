@@ -46,6 +46,7 @@
 
 ### Infrastructure
 - **Desktop layout**: `max-w-lg mx-auto` constraint on AppShell.
+- **CI/CD deploy job**: GitHub Actions now triggers Vercel deploy hook on push to main (after checks pass). PR previews via Vercel GitHub integration.
 - **Unit tests**: `syncQueue.test.ts` — 54 tests total across 5 files.
 
 ---
