@@ -9,6 +9,8 @@ import AddScreen from '../screens/AddScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ProductCatalogScreen from '../screens/ProductCatalogScreen';
+import BusinessProfileScreen from '../screens/BusinessProfileScreen';
+
 import RecordSale from '../features/transactions/RecordSale';
 import RecordExpense from '../features/transactions/RecordExpense';
 import RecordWithdrawal from '../features/transactions/RecordWithdrawal';
@@ -29,7 +31,8 @@ type View =
   | 'add/fuliza-repaid'
   | 'history'
   | 'settings'
-  | 'catalog';
+  | 'catalog'
+  | 'profile';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -40,6 +43,7 @@ interface AppShellProps {
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
   if (view === 'catalog') return 'settings';
+  if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
 
@@ -56,6 +60,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'history': return t('history');
     case 'settings': return t('settings');
     case 'catalog': return t('my_products');
+    case 'profile': return t('business_profile');
   }
 }
 
@@ -71,6 +76,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
+  const hideNav = view === 'catalog' || view === 'profile';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -84,7 +90,6 @@ export default function AppShell({ onSignOut }: AppShellProps) {
     else setView(key as View);
   }
 
-  // Daily Close prompt logic
   useEffect(() => {
     function checkDailyClose() {
       const now = new Date();
@@ -116,15 +121,12 @@ export default function AppShell({ onSignOut }: AppShellProps) {
     };
   }, [transactions, lastCloseDate, closePromptDismissedAt]);
 
-  // Hide bottom nav on catalog
-  const hideNav = view === 'catalog';
-
   return (
     <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950">
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -150,7 +152,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       )}
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-20">
         {view === 'dashboard' && <DashboardScreen />}
         {view === 'add' && (
           <AddScreen onNavigate={(v) => setView(v)} />
@@ -180,14 +182,12 @@ export default function AppShell({ onSignOut }: AppShellProps) {
         {view === 'history' && <HistoryScreen />}
         {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
         {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
+        {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
       </main>
 
-      {/* Bottom nav */}
+      {/* Fixed Bottom nav */}
       {!hideNav && (
-        <nav
-          className="bg-white dark:bg-stone-900 border-t border-border dark:border-stone-800 safe-bottom"
-          style={{ boxShadow: '0 -1px 0 0 #e5e7eb, 0 -4px 12px 0 rgba(0,0,0,0.04)' }}
-        >
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 safe-area-inset-bottom">
           <div className="flex items-stretch">
             {tabs.map(({ key, icon: Icon, labelKey }) => {
               const isActive = tab === key;
@@ -195,30 +195,32 @@ export default function AppShell({ onSignOut }: AppShellProps) {
               return (
                 <button
                   key={key}
+                  aria-label={t(labelKey)}
                   onClick={() => handleTabPress(key)}
-                  className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors relative ${
-                    isActive ? 'text-primary-600' : 'text-muted dark:text-stone-400 hover:text-ink dark:text-stone-100'
-                  }`}
+                  className="flex-1 flex flex-col items-center justify-center pt-2 pb-3 min-h-[64px] relative"
                 >
                   {isAdd ? (
                     <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                        isActive ? 'bg-primary-600' : 'bg-primary-100'
+                      className={`w-11 h-11 rounded-full flex items-center justify-center transition-colors ${
+                        isActive ? 'bg-primary-600' : 'bg-primary-100 dark:bg-primary-900'
                       }`}
                     >
                       <Icon
-                        className={`w-5 h-5 ${isActive ? 'text-white' : 'text-primary-600'}`}
+                        className={`w-6 h-6 ${isActive ? 'text-white' : 'text-primary-600 dark:text-primary-400'}`}
                         strokeWidth={2.5}
                       />
                     </div>
                   ) : (
                     <>
-                      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                      <span className={`text-[10px] font-medium ${isActive ? 'text-primary-600' : ''}`}>
+                      <Icon
+                        className={`w-6 h-6 ${isActive ? 'text-green-600 dark:text-green-400' : 'text-stone-500 dark:text-stone-400'}`}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      <span className={`text-xs mt-1 font-medium ${isActive ? 'text-green-600 dark:text-green-400' : 'text-stone-500 dark:text-stone-400'}`}>
                         {t(labelKey)}
                       </span>
                       {isActive && (
-                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary-600 rounded-full" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-green-600 dark:bg-green-400" />
                       )}
                     </>
                   )}

@@ -1,7 +1,11 @@
-import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor } from 'lucide-react';
+import { useState } from 'react';
+import { LogOut, ChevronRight, User, Building2, Package, Download, Sun, Moon, Monitor, Check } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
+import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { supabase } from '../lib/supabase';
+import { db } from '../lib/db';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface SettingsScreenProps {
@@ -10,18 +14,74 @@ interface SettingsScreenProps {
 }
 
 export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreenProps) {
-  const { t } = useTranslation();
-  const language = useStore((s) => s.language);
+  const { t, language } = useTranslation();
+  const languageStore = useStore((s) => s.language);
   const setLanguage = useStore((s) => s.setLanguage);
   const theme = useStore((s) => s.theme);
   const setTheme = useStore((s) => s.setTheme);
   const business = useStore((s) => s.business);
+  const updateBusiness = useStore((s) => s.updateBusiness);
   const { canInstall, install } = usePWAInstall();
+
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [pickCategory, setPickCategory] = useState<BusinessCategoryKey | null>(null);
+  const [pickSubcategory, setPickSubcategory] = useState<string | null>(null);
+  const [savingCategory, setSavingCategory] = useState(false);
+
+  const catKey = business?.category as BusinessCategoryKey | undefined;
+  const subKey = business?.subcategory;
+
+  const currentCategoryLabel = catKey
+    ? language === 'sw'
+      ? BUSINESS_CATEGORIES[catKey]?.label.sw
+      : BUSINESS_CATEGORIES[catKey]?.label.en
+    : null;
+
+  const currentSubcategoryLabel = catKey && subKey
+    ? language === 'sw'
+      ? (BUSINESS_CATEGORIES[catKey]?.subcategories as Record<string, { sw: string; en: string }>)[subKey]?.sw
+      : (BUSINESS_CATEGORIES[catKey]?.subcategories as Record<string, { sw: string; en: string }>)[subKey]?.en
+    : null;
 
   async function handleSignOut() {
     await supabase.auth.signOut();
     onSignOut();
   }
+
+  async function handleCategoryChange() {
+    if (!pickCategory || !pickSubcategory || !business) return;
+    setSavingCategory(true);
+    updateBusiness({
+      category: pickCategory,
+      subcategory: pickSubcategory,
+      products: [],
+    });
+    try {
+      const biz = await db.business.toCollection().first();
+      if (biz?.id) {
+        await db.business.update(biz.id, {
+          category: pickCategory,
+          subcategory: pickSubcategory,
+          products: '[]',
+        });
+      }
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('daftari_businesses').upsert({
+          owner_id: user.id,
+          category: pickCategory,
+          subcategory: pickSubcategory,
+          products: [],
+        }, { onConflict: 'owner_id' });
+      }
+    } catch (e) { console.warn('Category change background sync failed', e); }
+    setSavingCategory(false);
+    setShowCategoryPicker(false);
+    setPickCategory(null);
+    setPickSubcategory(null);
+  }
+
+  const categoryEntries = Object.entries(BUSINESS_CATEGORIES) as [BusinessCategoryKey, typeof BUSINESS_CATEGORIES[BusinessCategoryKey]][];
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-4">
@@ -37,11 +97,94 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             </div>
             <div className="flex-1">
               <span className="text-sm font-medium text-ink dark:text-stone-100">{business?.name ?? 'Daftari'}</span>
-              {business?.category && (
-                <p className="text-xs text-muted dark:text-stone-400">{business.category}{business.subcategory ? ` / ${business.subcategory}` : ''}</p>
+              {currentCategoryLabel && (
+                <p className="text-xs text-muted dark:text-stone-400">
+                  {currentCategoryLabel}{currentSubcategoryLabel ? ` / ${currentSubcategoryLabel}` : ''}
+                </p>
               )}
             </div>
           </div>
+
+          {/* Business category picker */}
+          {!showCategoryPicker ? (
+            <button
+              onClick={() => setShowCategoryPicker(true)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 border-t border-border dark:border-stone-700"
+            >
+              <span className="text-sm text-muted dark:text-stone-400">{t('change_category')}</span>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          ) : (
+            <div className="border-t border-border dark:border-stone-700 p-4">
+              {!pickCategory ? (
+                <div>
+                  <p className="text-sm font-medium text-ink dark:text-stone-100 mb-3">{t('what_business')}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {categoryEntries.map(([key, cat]) => {
+                      const emoji = categoryEmoji[key];
+                      return (
+                        <button
+                          key={key}
+                          onClick={() => { setPickCategory(key); setPickSubcategory(null); }}
+                          className="flex flex-col items-center gap-1 p-3 rounded-xl border-2 border-border dark:border-stone-700 hover:border-green-300 transition-colors"
+                        >
+                          <span className="text-xl">{emoji}</span>
+                          <span className="text-xs font-medium text-ink dark:text-stone-100 text-center">
+                            {language === 'sw' ? cat.label.sw : cat.label.en}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setShowCategoryPicker(false)}
+                    className="mt-3 text-xs text-muted dark:text-stone-400 underline"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm font-medium text-ink dark:text-stone-100 mb-3">{t('choose_subcategory')}</p>
+                  <div className="flex flex-col gap-1">
+                    {Object.entries(BUSINESS_CATEGORIES[pickCategory].subcategories).map(([key, sub]) => (
+                      <button
+                        key={key}
+                        onClick={() => setPickSubcategory(key)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+                          pickSubcategory === key
+                            ? 'bg-green-50 border-green-600 dark:bg-green-900 dark:border-green-500'
+                            : 'bg-white dark:bg-stone-900 border-border dark:border-stone-700'
+                        }`}
+                      >
+                        <span className={`text-sm font-medium ${pickSubcategory === key ? 'text-green-700 dark:text-green-300' : 'text-ink dark:text-stone-100'}`}>
+                          {language === 'sw' ? sub.sw : sub.en}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => { setPickCategory(null); }}
+                      className="flex-1 py-2.5 rounded-xl border border-border dark:border-stone-700 text-xs font-medium text-muted dark:text-stone-400"
+                    >
+                      {t('continue')}
+                    </button>
+                    {pickSubcategory && (
+                      <button
+                        onClick={handleCategoryChange}
+                        disabled={savingCategory}
+                        className="flex-1 py-2.5 rounded-xl bg-green-600 text-white text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        {savingCategory ? t('saving') : t('save')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {onNavigate && (
             <>
@@ -69,14 +212,13 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           {t('appearance_settings')}
         </p>
         <div className="bg-white rounded-2xl border border-border shadow-card p-4 space-y-4 dark:bg-stone-900 dark:border-stone-700">
-          {/* Language */}
           <div>
             <p className="text-xs font-medium text-muted mb-2 dark:text-stone-400">{t('language')}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setLanguage('sw')}
                 className={`flex-1 py-3 rounded-xl border-2 text-center text-sm font-semibold transition-colors ${
-                  language === 'sw'
+                  languageStore === 'sw'
                     ? 'bg-green-600 text-white border-green-600'
                     : 'bg-white text-stone-700 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'
                 }`}
@@ -86,7 +228,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               <button
                 onClick={() => setLanguage('en')}
                 className={`flex-1 py-3 rounded-xl border-2 text-center text-sm font-semibold transition-colors ${
-                  language === 'en'
+                  languageStore === 'en'
                     ? 'bg-green-600 text-white border-green-600'
                     : 'bg-white text-stone-700 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'
                 }`}
@@ -96,7 +238,6 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             </div>
           </div>
 
-          {/* Theme */}
           <div>
             <p className="text-xs font-medium text-muted mb-2 dark:text-stone-400">{t('appearance')}</p>
             <div className="flex gap-3">
@@ -157,15 +298,27 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           Account
         </p>
         <div className="bg-white rounded-2xl border border-border shadow-card overflow-hidden dark:bg-stone-900 dark:border-stone-700">
-          <button className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800">
-            <div className="flex items-center gap-3">
+          {onNavigate ? (
+            <button
+              onClick={() => onNavigate('profile')}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center dark:bg-stone-800">
+                  <User className="w-4 h-4 text-muted dark:text-stone-400" />
+                </div>
+                <span className="text-sm font-medium text-ink dark:text-stone-100">{t('business_profile')}</span>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-4">
               <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center dark:bg-stone-800">
                 <User className="w-4 h-4 text-muted dark:text-stone-400" />
               </div>
-              <span className="text-sm font-medium text-ink dark:text-stone-100">Profile</span>
+              <span className="text-sm font-medium text-ink dark:text-stone-100">{t('business_profile')}</span>
             </div>
-            <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
-          </button>
+          )}
 
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />
 
@@ -181,7 +334,6 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         </div>
       </div>
 
-      {/* Branding */}
       <p className="text-center text-xs text-muted pb-4 dark:text-stone-400">{t('made_in_kenya')}</p>
     </div>
   );

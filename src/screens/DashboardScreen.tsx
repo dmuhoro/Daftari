@@ -3,6 +3,8 @@ import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardLi
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { BUSINESS_CATEGORIES, categoryEmoji, CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
+import type { BusinessCategoryKey } from '../lib/businessCategories';
 import SyncDot from '../components/SyncDot';
 import { useRecordingStreak } from '../hooks/useRecordingStreak';
 
@@ -44,6 +46,17 @@ export default function DashboardScreen() {
 
   const todayStr = getTodayNairobi();
   const todayDate = new Date();
+
+  const catKey = business?.category as BusinessCategoryKey | undefined;
+
+  const catEmoji = catKey ? categoryEmoji[catKey] : null;
+  const catLabel = catKey
+    ? language === 'sw'
+      ? BUSINESS_CATEGORIES[catKey]?.label.sw
+      : BUSINESS_CATEGORIES[catKey]?.label.en
+    : null;
+
+  const dashboardLabels = catKey ? CATEGORY_DASHBOARD_LABELS[catKey] : null;
 
   function getWeekDates(): string[] {
     const dates: string[] = [];
@@ -107,6 +120,13 @@ export default function DashboardScreen() {
   const formattedDate = language === 'sw' ? formatDateSw(todayDate) : formatDateEn(todayDate);
   const businessName = business?.name ?? 'Daftari';
 
+  const incomeLabel = dashboardLabels ? (language === 'sw' ? dashboardLabels.incomeLabel.sw : dashboardLabels.incomeLabel.en) : t('mapato');
+  const expenseLabel = dashboardLabels ? (language === 'sw' ? dashboardLabels.expenseLabel.sw : dashboardLabels.expenseLabel.en) : t('matumizi');
+  const emptyTitle = dashboardLabels ? (language === 'sw' ? dashboardLabels.emptyTitle.sw : dashboardLabels.emptyTitle.en) : t('no_today_transactions');
+  const emptyDesc = dashboardLabels ? (language === 'sw' ? dashboardLabels.emptyDesc.sw : dashboardLabels.emptyDesc.en) : t('tap_plus_to_start');
+  const emptyWeekTitle = dashboardLabels ? (language === 'sw' ? dashboardLabels.emptyWeekTitle.sw : dashboardLabels.emptyWeekTitle.en) : t('no_transactions_history');
+  const emptyWeekDesc = dashboardLabels ? (language === 'sw' ? dashboardLabels.emptyWeekDesc.sw : dashboardLabels.emptyWeekDesc.en) : t('transactions_will_appear');
+
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -114,9 +134,13 @@ export default function DashboardScreen() {
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2">
+              {catEmoji && <span className="text-xl">{catEmoji}</span>}
               <h1 className="text-lg font-bold text-ink dark:text-stone-100">{businessName}</h1>
               <SyncDot />
             </div>
+            {catLabel && (
+              <p className="text-xs text-muted dark:text-stone-400 mt-0.5">{catLabel}</p>
+            )}
             <p className="text-sm text-muted dark:text-stone-400 mt-0.5">{formattedDate}</p>
           </div>
           <button
@@ -201,14 +225,14 @@ export default function DashboardScreen() {
                   <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900 flex items-center justify-center mb-3">
                     <TrendingUp className="w-5 h-5 text-primary-600" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs text-muted dark:text-stone-400">{t('mapato')}</p>
+                  <p className="text-xs text-muted dark:text-stone-400">{incomeLabel}</p>
                   <p className="text-lg font-bold text-primary-600 mt-0.5">{fmtKES(revenue)}</p>
                 </div>
                 <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
                   <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900 flex items-center justify-center mb-3">
                     <TrendingDown className="w-5 h-5 text-danger" strokeWidth={2.5} />
                   </div>
-                  <p className="text-xs text-muted dark:text-stone-400">{t('matumizi')}</p>
+                  <p className="text-xs text-muted dark:text-stone-400">{expenseLabel}</p>
                   <p className="text-lg font-bold text-danger mt-0.5">{fmtKES(expenses)}</p>
                 </div>
               </div>
@@ -230,8 +254,8 @@ export default function DashboardScreen() {
               <div className="w-16 h-16 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
                 <ClipboardList className="w-8 h-8 text-muted dark:text-stone-400" />
               </div>
-              <p className="text-base font-semibold text-ink dark:text-stone-100">{t('no_today_transactions')}</p>
-              <p className="text-sm text-muted dark:text-stone-400">{t('tap_plus_to_start')}</p>
+              <p className="text-base font-semibold text-ink dark:text-stone-100">{emptyTitle}</p>
+              <p className="text-sm text-muted dark:text-stone-400">{emptyDesc}</p>
               <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
                 <Plus className="w-6 h-6 text-primary-600" strokeWidth={2.5} />
               </div>
@@ -295,8 +319,8 @@ export default function DashboardScreen() {
               <div className="w-16 h-16 rounded-2xl bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
                 <ClipboardList className="w-8 h-8 text-muted dark:text-stone-400" />
               </div>
-              <p className="text-base font-semibold text-ink dark:text-stone-100">{t('no_transactions_history')}</p>
-              <p className="text-sm text-muted dark:text-stone-400">{t('transactions_will_appear')}</p>
+              <p className="text-base font-semibold text-ink dark:text-stone-100">{emptyWeekTitle}</p>
+              <p className="text-sm text-muted dark:text-stone-400">{emptyWeekDesc}</p>
             </div>
           )
         )}

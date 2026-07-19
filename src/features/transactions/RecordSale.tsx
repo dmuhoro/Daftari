@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { BUSINESS_CATEGORIES, getTemplateProducts } from '../../lib/businessCategories';
+import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
 
 interface RecordSaleProps {
@@ -29,6 +31,12 @@ const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
   bank_transfer: { sw: 'Benki', en: 'Bank' },
 };
 
+const DEFAULT_INCOME_CATEGORIES = [
+  { key: 'product_sale', sw: 'Bidhaa', en: 'Product' },
+  { key: 'service', sw: 'Huduma', en: 'Service' },
+  { key: 'other_income', sw: 'Nyingine', en: 'Other' },
+];
+
 export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
@@ -41,9 +49,23 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const [saving, setSaving] = useState(false);
   const [flashAmount, setFlashAmount] = useState<number | null>(null);
   const [amountError, setAmountError] = useState('');
+  const [addedTemplates, setAddedTemplates] = useState(false);
 
   const products = business?.products ?? [];
   const userPaymentMethods = (business?.payment_methods as string[]) ?? [];
+
+  const catKey = business?.category as BusinessCategoryKey | undefined;
+  const subKey = business?.subcategory;
+
+  const incomeCategories = catKey && BUSINESS_CATEGORIES[catKey]
+    ? ('incomeCategories' in BUSINESS_CATEGORIES[catKey]
+        ? (BUSINESS_CATEGORIES[catKey] as unknown as {
+            incomeCategories: Array<{ key: string; sw: string; en: string }>;
+          }).incomeCategories
+        : DEFAULT_INCOME_CATEGORIES)
+    : DEFAULT_INCOME_CATEGORIES;
+
+  const templateProducts = catKey && subKey ? getTemplateProducts(catKey, subKey) : undefined;
 
   if (!paymentMethod && userPaymentMethods.length === 1) {
     setPaymentMethod(userPaymentMethods[0]);
@@ -54,7 +76,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     await addTransaction({
       local_id: crypto.randomUUID(),
       type: 'income',
-      category: 'product_sale',
+      category: category,
       source: 'manual',
       amount: product.price,
       description: product.name,
@@ -64,6 +86,24 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     });
     setSaving(false);
     setFlashAmount(product.price);
+  }
+
+  async function handleAddAllTemplates() {
+    if (!templateProducts) return;
+    setAddedTemplates(true);
+    for (const tp of templateProducts) {
+      await addTransaction({
+        local_id: crypto.randomUUID(),
+        type: 'income',
+        category: category,
+        source: 'manual',
+        amount: tp.price,
+        description: tp.name,
+        recorded_at: new Date().toISOString(),
+        synced: 0,
+        payment_method: paymentMethod || undefined,
+      });
+    }
   }
 
   function validateAmount(val: string): boolean {
@@ -101,7 +141,8 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-6">
-      {products.length > 0 ? (
+      {/* Quick-add: user's saved products */}
+      {products.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {products.map((product) => (
             <button
@@ -117,7 +158,32 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
             </button>
           ))}
         </div>
-      ) : (
+      )}
+
+      {/* Quick-add: template products (for new users with no saved products) */}
+      {products.length === 0 && templateProducts && !addedTemplates && (
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-2xl p-4">
+          <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">{t('add_from_templates')}</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {templateProducts.map((tp, i) => (
+              <span key={i} className="text-xs bg-white dark:bg-stone-900 rounded-full px-3 py-1 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+                {tp.name} — KES {tp.price}
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleAddAllTemplates}
+              disabled={saving}
+              className="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
+            >
+              {t('add_from_templates')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {products.length === 0 && !templateProducts && (
         <a
           href="#"
           onClick={(e) => { e.preventDefault(); onCancel(); }}
@@ -178,18 +244,18 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         <div>
           <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('category')}</label>
           <div className="grid grid-cols-3 gap-2">
-            {(['product_sale', 'service', 'other'] as const).map((cat) => (
+            {incomeCategories.map((ic) => (
               <button
-                key={cat}
+                key={ic.key}
                 type="button"
-                onClick={() => setCategory(cat)}
+                onClick={() => setCategory(ic.key)}
                 className={`py-2.5 rounded-xl text-xs font-medium border transition-colors ${
-                  category === cat
+                  category === ic.key
                     ? 'bg-primary-600 text-white border-primary-600'
                     : 'bg-white dark:bg-stone-900 text-muted dark:text-stone-400 border-border dark:border-stone-700 hover:border-primary-300 hover:text-primary-700'
                 }`}
               >
-                {t(cat === 'product_sale' ? 'cat_product_sale' : cat === 'service' ? 'cat_service' : 'cat_other')}
+                {language === 'sw' ? ic.sw : ic.en}
               </button>
             ))}
           </div>

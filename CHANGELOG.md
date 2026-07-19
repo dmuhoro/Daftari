@@ -5,6 +5,29 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.2.0] — 2026-07-19
+
+### Added
+- **Business categories system**: 7 categories, 30 subcategories, each with 8-12 template products (KES pricing + units), income category labels, dashboard personalization labels — all bilingual (sw/en)
+- **Personalized Dashboard**: category emoji + label in header, per-category income/expense card labels (e.g. "Mauzo/Sales" → "Nauli/Fares"), personalized empty state messages per business type
+- **Business Profile screen**: editable business name + owner name, category display with emoji, payment method chips, save to Dexie + Supabase
+- **Category picker in Settings**: inline category/subcategory picker to change business type after onboarding, persists to Dexie + Supabase
+- **Income categories per business type**: 3 unique income category options per category (e.g. food → Food/Beverages/Other, transport → Fare/Delivery/Other)
+- **Template product quick-add**: "Add All Templates" button in RecordSale for new users with no saved products
+- **Cash-only mode**: SMS parser and Fuliza section hidden for businesses using only cash
+- **Business loading gate**: `isLoadingBusiness` state in App.tsx loads business from Dexie on session change, prevents routing before data ready
+
+### Fixed
+- **Bottom nav icon colors invisible after dark mode**: explicit icon/label colors (active green-600/green-400, inactive stone-500/stone-400), `pb-20` content padding to clear fixed nav, active indicator bar, `safe-area-inset-bottom` on nav
+- **Onboarding redirect hangs when Supabase slow**: Dexie-first architecture — business written to IndexedDB immediately, `setBusiness` + navigation before non-blocking Supabase upsert
+- **Empty catch blocks**: lint errors resolved with console.warn for background sync failures
+
+### Engineering
+- Created `categoryEmoji`, `getTemplateProducts()`, `getCategoryLabels()`, `CATEGORY_DASHBOARD_LABELS` helpers in `businessCategories.ts`
+- Created `LoadingScreen.tsx` reusable splash component
+- Added `incomeCategories` to every BUSINESS_CATEGORY entry
+- Added 7 i18n keys to sw.json and en.json (`business_profile`, `owner_name`, `owner_name_placeholder`, `payment_methods`, `saved`, `change_category`, `loading`)
+
 ## [1.1.0] — 2026-07-18
 
 ### Added

@@ -1,6 +1,8 @@
 import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
+import type { BusinessCategoryKey } from '../lib/businessCategories';
 
 type SubView =
   | 'add/sale'
@@ -15,15 +17,25 @@ interface AddScreenProps {
 }
 
 export default function AddScreen({ onNavigate }: AddScreenProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const business = useStore((s) => s.business);
   const products = business?.products ?? [];
+
+  const catKey = business?.category as BusinessCategoryKey | undefined;
+  const paymentMethods = (business?.payment_methods as string[]) ?? [];
+
+  const isCashOnly = paymentMethods.length === 0 || (paymentMethods.length === 1 && paymentMethods[0] === 'cash');
+
+  const dashboardLabels = catKey ? CATEGORY_DASHBOARD_LABELS[catKey] : null;
+  const incomeLabel = dashboardLabels
+    ? language === 'sw' ? dashboardLabels.incomeLabel.sw : dashboardLabels.incomeLabel.en
+    : t('income');
 
   const cards = [
     {
       view: 'add/sale' as SubView,
       label: t('add_sale'),
-      sublabel: t('income'),
+      sublabel: incomeLabel,
       icon: TrendingUp,
       bg: 'bg-primary-600',
       iconBg: 'bg-primary-700',
@@ -69,13 +81,17 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
     },
   ];
 
+  const visibleCards = isCashOnly
+    ? cards.filter((c) => c.view !== 'add/sms')
+    : cards;
+
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-6">
       <p className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-widest mb-1">
         {t('quick_add')}
       </p>
 
-      {cards.map(({ view, label, sublabel, icon: Icon, bg, iconBg, textColor, subColor, iconColor, border, chip }) => (
+      {visibleCards.map(({ view, label, sublabel, icon: Icon, bg, iconBg, textColor, subColor, iconColor, border, chip }) => (
         <button
           key={view}
           onClick={() => onNavigate(view)}
@@ -103,32 +119,34 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
         </button>
       ))}
 
-      {/* Fuliza Section */}
-      <div className="mt-4">
-        <p className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-widest mb-2">
-          {t('fuliza')}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => onNavigate('add/fuliza-debt')}
-            className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5 text-amber-600" strokeWidth={2} />
-            </div>
-            <span className="text-sm font-medium text-amber-800 text-center">{t('chukua_fuliza')}</span>
-          </button>
-          <button
-            onClick={() => onNavigate('add/fuliza-repaid')}
-            className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
-          >
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-green-600" strokeWidth={2} />
-            </div>
-            <span className="text-sm font-medium text-green-800 text-center">{t('lipa_fuliza')}</span>
-          </button>
+      {/* Fuliza Section (hidden for cash-only) */}
+      {!isCashOnly && (
+        <div className="mt-4">
+          <p className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-widest mb-2">
+            {t('fuliza')}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => onNavigate('add/fuliza-debt')}
+              className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-amber-600" strokeWidth={2} />
+              </div>
+              <span className="text-sm font-medium text-amber-800 text-center">{t('chukua_fuliza')}</span>
+            </button>
+            <button
+              onClick={() => onNavigate('add/fuliza-repaid')}
+              className="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col items-center gap-2 shadow-card active:scale-[0.98] transition-transform"
+            >
+              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-green-600" strokeWidth={2} />
+              </div>
+              <span className="text-sm font-medium text-green-800 text-center">{t('lipa_fuliza')}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Products link */}
       <button

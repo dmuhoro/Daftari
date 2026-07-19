@@ -57,7 +57,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     const name = businessName.trim();
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      let userId: string | undefined;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        userId = user?.id;
+      } catch (e) { console.warn('Failed to get user for onboarding', e); }
+
       await db.business.add({
         name,
         currency: 'KES',
@@ -65,21 +70,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         subcategory: selectedSubcategory ?? undefined,
         payment_methods: JSON.stringify(selectedPayments),
         products: '[]',
-        user_id: user?.id,
+        user_id: userId,
         created_at: new Date().toISOString(),
       });
-      const { error } = await supabase.from('daftari_businesses').upsert({
-        name,
-        currency: 'KES',
-        category: selectedCategory,
-        subcategory: selectedSubcategory,
-        payment_methods: selectedPayments,
-        products: [],
-        owner_id: user?.id,
-      }, { onConflict: 'owner_id' });
-      if (error) throw error;
+
       setBusiness({
-        id: user?.id ?? '',
+        id: userId ?? '',
         name,
         currency: 'KES',
         category: selectedCategory ?? undefined,
@@ -87,8 +83,20 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         payment_methods: selectedPayments,
         products: [],
       });
-      setSaving(false);
+
       onComplete();
+
+      supabase.from('daftari_businesses').upsert({
+        name,
+        currency: 'KES',
+        category: selectedCategory,
+        subcategory: selectedSubcategory,
+        payment_methods: selectedPayments,
+        products: [],
+        owner_id: userId,
+      }, { onConflict: 'owner_id' }).then(({ error }) => {
+        if (error) console.warn('Background sync failed:', error);
+      });
     } catch {
       setSaving(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { db } from './lib/db';
 import { useStore } from './lib/store';
@@ -7,6 +7,7 @@ import AuthScreen from './screens/AuthScreen';
 import AppShell from './components/AppShell';
 import LandingScreen from './screens/LandingScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import LoadingScreen from './screens/LoadingScreen';
 
 function getResolvedTheme(theme: string): 'light' | 'dark' {
   if (theme === 'dark') return 'dark';
@@ -18,6 +19,7 @@ export default function App() {
   const [session, setSession] = useState<boolean | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
   const [loadingDexie, setLoadingDexie] = useState(true);
+  const [loadingBusiness, setLoadingBusiness] = useState(true);
   const setTransactions = useStore((s) => s.setTransactions);
   const business = useStore((s) => s.business);
   const setBusiness = useStore((s) => s.setBusiness);
@@ -53,19 +55,6 @@ export default function App() {
       .then(async () => {
         const txs = await db.transactions.orderBy('recorded_at').reverse().toArray();
         setTransactions(txs);
-        const biz = await db.business.toCollection().first();
-        if (biz) {
-          setBusiness({
-            id: biz.user_id ?? '',
-            name: biz.name,
-            owner_name: biz.owner_name,
-            currency: biz.currency,
-            category: biz.category,
-            subcategory: biz.subcategory,
-            payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
-            products: biz.products ? JSON.parse(biz.products) : undefined,
-          });
-        }
         setLoadingDexie(false);
       })
       .catch(() => setLoadingDexie(false));
@@ -81,34 +70,43 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, [setTransactions, setBusiness]);
 
-  const handleOnboardingComplete = useCallback(() => {
-    db.business.toCollection().first().then((biz) => {
-      if (biz) {
-        setBusiness({
-          id: biz.user_id ?? '',
-          name: biz.name,
-          currency: biz.currency,
-          category: biz.category,
-          subcategory: biz.subcategory,
-          payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
-          products: biz.products ? JSON.parse(biz.products) : undefined,
-        });
-      }
-    });
-  }, [setBusiness]);
+  // Load business from Dexie when session changes
+  useEffect(() => {
+    if (session) {
+      setLoadingBusiness(true);
+      db.business.toCollection().first().then((biz) => {
+        if (biz) {
+          setBusiness({
+            id: biz.user_id ?? '',
+            name: biz.name,
+            owner_name: biz.owner_name,
+            currency: biz.currency,
+            category: biz.category,
+            subcategory: biz.subcategory,
+            payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
+            products: biz.products ? JSON.parse(biz.products) : undefined,
+          });
+        } else {
+          setBusiness(null);
+        }
+        setLoadingBusiness(false);
+      }).catch(() => {
+        setBusiness(null);
+        setLoadingBusiness(false);
+      });
+    } else {
+      setBusiness(null);
+      setLoadingBusiness(false);
+    }
+  }, [session, setBusiness]);
 
   if (session === null || loadingDexie) {
-    return (
-      <div className="min-h-dvh bg-background flex flex-col items-center justify-center gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-green-600 flex items-center justify-center">
-          <span className="text-white text-2xl font-black">D</span>
-        </div>
-        <p className="text-sm text-muted">Loading...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
-  const needsOnboarding = session && business && !business.category;
+  if (loadingBusiness && session) {
+    return <LoadingScreen />;
+  }
 
   return (
     <ErrorBoundary>
@@ -121,8 +119,8 @@ export default function App() {
             onSignIn={() => setShowSignIn(true)}
           />
         )
-      ) : needsOnboarding || !business?.category ? (
-        <OnboardingScreen onComplete={handleOnboardingComplete} />
+      ) : !business || !business.category ? (
+        <OnboardingScreen onComplete={() => {}} />
       ) : (
         <AppShell onSignOut={() => setSession(false)} />
       )}

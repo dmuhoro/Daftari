@@ -140,5 +140,11 @@
   "filter_this_week": "This Week",
   "filter_this_month": "This Month",
   "filter_all": "All",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "change_category": "Change Business Category",
+  "business_profile": "Business Profile",
+  "owner_name": "Owner Name",
+  "owner_name_placeholder": "Your name",
+  "payment_methods": "Payment Methods",
+  "saved": "Saved"
 }

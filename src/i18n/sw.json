@@ -140,5 +140,11 @@
   "filter_this_week": "Wiki Hii",
   "filter_this_month": "Mwezi Huu",
   "filter_all": "Yote",
-  "loading": "Inasubiri..."
+  "loading": "Inasubiri...",
+  "change_category": "Badilisha Aina ya Biashara",
+  "business_profile": "Wasifu wa Biashara",
+  "owner_name": "Jina la Mmiliki",
+  "owner_name_placeholder": "Jina lako",
+  "payment_methods": "Njia za Malipo",
+  "saved": "Imehifadhiwa"
 }
