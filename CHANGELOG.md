@@ -5,6 +5,36 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.4.0] — 2026-07-19
+
+### Added
+- **Digital Receipt System**: Auto-generated receipt IDs (`REC-YYMMDD-XXXX`) for every income transaction
+- **Receipt Modal**: Animated receipt card shown after recording a sale, with receipt ID, amount, description, and WhatsApp share button
+- **Receipt Detail Sheet**: Tap any transaction in History to see the full receipt detail (ID, amount, description, sender, timestamp)
+- **Customer Intelligence ("Wateja Wangu")**: Dedicated customers table in Dexie, auto-saved from M-Pesa senders, with visit count and total spent
+- **Customers Screen**: Searchable customer list sorted by total spend, accessible from Settings
+- **Customer Count**: Dashboard shows customer count with purple icon card
+- **WhatsApp Sharing**: Share receipts and daily summaries directly to WhatsApp via URL scheme
+- **Low-Stock Alerts**: Product stock tracking with configurable thresholds and Dashboard alert cards
+- **Restock Dialog**: Restock products directly from the Product Catalog with quantity input
+- **Stock Fields**: Initial stock and low-stock threshold fields when adding products
+- **CI/CD Pipeline**: GitHub Actions workflow for typecheck, lint, test, and build
+
+### Changed
+- App version bumped to 1.1.0
+- README rewritten with full feature list and improved structure
+- DB version bumped to 4 (customers table, receipt_id on transactions)
+- `SuccessFlash` now delegates to `Receipt` component with share support
+- `Product` type now includes optional `stock` and `low_stock_threshold`
+
+### Engineering
+- Created `src/lib/receiptId.ts` with daily-reset sequence generator
+- Created `src/lib/whatsapp.ts` with share utilities and text formatters
+- Created `src/components/Receipt.tsx` animated receipt modal
+- Created `src/screens/CustomersScreen.tsx` with search and sorting
+- Added 18 new i18n keys to both sw.json and en.json
+- 53 tests passing across 4 test files
+
 ## [1.3.0] — 2026-07-19
 
 ### Added

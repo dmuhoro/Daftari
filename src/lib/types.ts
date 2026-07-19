@@ -91,6 +91,7 @@ export interface Transaction {
   readonly mpesa_sender?: string
   readonly recorded_at: string   // ISO 8601
   readonly synced: 0 | 1
+  readonly receipt_id?: string
 }
 
 // ─── Business Types ───────────────────────────────────────────────────────
@@ -109,6 +110,8 @@ export interface Product {
   readonly name: string
   readonly price: KES
   readonly unit?: string
+  readonly stock?: number
+  readonly low_stock_threshold?: number
 }
 
 export interface Business {

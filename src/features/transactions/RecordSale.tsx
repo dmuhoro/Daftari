@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { db } from '../../lib/db';
 import { BUSINESS_CATEGORIES, getTemplateProducts } from '../../lib/businessCategories';
 import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
+import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
 
 interface RecordSaleProps {
   onSave: () => void;
@@ -41,6 +43,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
   const business = useStore((s) => s.business);
+  const updateBusiness = useStore((s) => s.updateBusiness);
 
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -48,6 +51,8 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const [paymentMethod, setPaymentMethod] = useState<string>('');
   const [saving, setSaving] = useState(false);
   const [flashAmount, setFlashAmount] = useState<number | null>(null);
+  const [flashReceiptId, setFlashReceiptId] = useState<string | undefined>();
+  const [flashDescription, setFlashDescription] = useState<string | undefined>();
   const [amountError, setAmountError] = useState('');
   const [addedTemplates, setAddedTemplates] = useState(false);
 
@@ -71,9 +76,9 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     setPaymentMethod(userPaymentMethods[0]);
   }
 
-  async function handleQuickSale(product: { name: string; price: number; unit: string }) {
+  async function handleQuickSale(product: { name: string; price: number; unit?: string; id: string; stock?: number; low_stock_threshold?: number }) {
     setSaving(true);
-    await addTransaction({
+    const receiptId = await addTransaction({
       local_id: crypto.randomUUID(),
       type: 'income',
       category: category,
@@ -86,6 +91,23 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     });
     setSaving(false);
     setFlashAmount(product.price);
+    setFlashReceiptId(receiptId);
+    setFlashDescription(product.name);
+
+    if (product.stock !== undefined && business) {
+      const updatedProducts = products.map((p) =>
+        p.id === product.id
+          ? { ...p, stock: Math.max(0, (p.stock ?? 0) - 1) }
+          : p
+      );
+      updateBusiness({ products: updatedProducts });
+      try {
+        const biz = await db.business.toCollection().first();
+        if (biz?.id) {
+          await db.business.update(biz.id, { products: JSON.stringify(updatedProducts) });
+        }
+      } catch { /* silent */ }
+    }
   }
 
   async function handleAddAllTemplates() {
@@ -120,7 +142,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     e.preventDefault();
     if (!validateAmount(amount)) return;
     setSaving(true);
-    await addTransaction({
+    const receiptId = await addTransaction({
       local_id: crypto.randomUUID(),
       type: 'income',
       category,
@@ -133,10 +155,29 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
     });
     setSaving(false);
     setFlashAmount(Number(amount));
+    setFlashReceiptId(receiptId);
+    setFlashDescription(description || undefined);
   }
 
   if (flashAmount !== null) {
-    return <SuccessFlash amount={flashAmount} type="income" onDismiss={onSave} />;
+    return (
+      <SuccessFlash
+        amount={flashAmount}
+        type="income"
+        onDismiss={onSave}
+        receiptId={flashReceiptId}
+        description={flashDescription}
+        onShare={flashReceiptId ? () => {
+          shareViaWhatsApp(formatReceiptText(
+            business?.name || 'Daftari',
+            flashReceiptId!,
+            flashAmount,
+            'income',
+            flashDescription,
+          ));
+        } : undefined}
+      />
+    );
   }
 
   return (

@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { MessageSquare, CheckCircle, AlertCircle, User, Hash, Banknote, Smartphone, Wallet, Store, Building2, Wifi } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { db } from '../../lib/db';
 import { parseMpesaSMS } from './parseMpesa';
+import SuccessFlash from '../../components/SuccessFlash';
+import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
 
 interface SMSParserProps {
   onSave: () => void;
@@ -35,7 +38,9 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
   const [editAmount, setEditAmount] = useState('');
   const [parseError, setParseError] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [flash, setFlash] = useState(false);
+  const [flashAmount, setFlashAmount] = useState<number | null>(null);
+  const [flashReceiptId, setFlashReceiptId] = useState<string | undefined>();
+  const [flashSender, setFlashSender] = useState('');
 
   function handleParse() {
     const result = parseMpesaSMS(smsText);
@@ -55,7 +60,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
     if (isNaN(amount) || amount <= 0) return;
 
     setSaving(true);
-    await addTransaction({
+    const receiptId = await addTransaction({
       local_id: crypto.randomUUID(),
       type: 'income',
       category: 'mpesa',
@@ -69,21 +74,50 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       payment_method: parsed.payment_method,
     });
     setSaving(false);
-    setFlash(true);
-    setTimeout(() => {
-      setFlash(false);
-      onSave();
-    }, 800);
+    setFlashAmount(amount);
+    setFlashReceiptId(receiptId);
+    setFlashSender(parsed.sender);
+
+    try {
+      const existing = await db.customers.where('name').equals(parsed.sender).first();
+      const now = new Date().toISOString();
+      if (existing?.id) {
+        await db.customers.update(existing.id, {
+          total_visits: existing.total_visits + 1,
+          total_spent: existing.total_spent + amount,
+          last_visit: now,
+        });
+      } else {
+        await db.customers.add({
+          name: parsed.sender,
+          phone: parsed.code || undefined,
+          total_visits: 1,
+          total_spent: amount,
+          last_visit: now,
+          created_at: now,
+        });
+      }
+    } catch { /* silent */ }
   }
 
-  if (flash) {
+  if (flashAmount !== null) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4">
-        <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center">
-          <CheckCircle className="w-8 h-8 text-primary-600" />
-        </div>
-        <p className="text-base font-semibold text-ink dark:text-stone-100">{t('recorded')}</p>
-      </div>
+      <SuccessFlash
+        amount={flashAmount}
+        type="income"
+        onDismiss={onSave}
+        receiptId={flashReceiptId}
+        description={`M-Pesa from ${flashSender}`}
+        onShare={flashReceiptId ? () => {
+          shareViaWhatsApp(formatReceiptText(
+            'Daftari',
+            flashReceiptId!,
+            flashAmount,
+            'income',
+            `M-Pesa from ${flashSender}`,
+          ));
+        } : undefined}
+      />
     );
   }
 

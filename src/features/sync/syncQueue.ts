@@ -14,6 +14,7 @@ export interface QueuePayload {
   mpesa_code?: string;
   mpesa_sender?: string;
   payment_method?: string;
+  receipt_id?: string;
 }
 
 export async function addToQueue(

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2, Smartphone, Wallet, Store, Building2, Wifi, Banknote } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2, Smartphone, Wallet, Store, Building2, Wifi, Banknote, X, Hash, User, Receipt } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { flushQueue } from '../features/sync/syncQueue';
@@ -54,6 +54,7 @@ export default function HistoryScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [pullY, setPullY] = useState(0);
   const [filter, setFilter] = useState<FilterTab>('all');
+  const [selectedTx, setSelectedTx] = useState<typeof transactions[number] | null>(null);
   const startY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -228,7 +229,10 @@ export default function HistoryScreen() {
                 const PayIcon = tx.payment_method ? PAYMENT_ICONS[tx.payment_method] : null;
                 return (
                   <div key={tx.local_id}>
-                    <div className="flex items-center gap-3 px-4 py-3.5">
+                    <div
+                      className="flex items-center gap-3 px-4 py-3.5 cursor-pointer active:bg-stone-50 dark:active:bg-stone-800 transition-colors"
+                      onClick={() => setSelectedTx(tx as typeof transactions[number])}
+                    >
                       <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
                         <Icon className={`w-4 h-4 ${color}`} strokeWidth={2} />
                       </div>
@@ -261,6 +265,107 @@ export default function HistoryScreen() {
           </div>
         ))}
       </div>
+
+      {/* Receipt detail bottom sheet */}
+      {selectedTx && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          onClick={() => setSelectedTx(null)}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+          <div
+            className="relative bg-white dark:bg-stone-900 rounded-t-3xl w-full max-w-lg p-6 pb-8 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-green-600" />
+                <span className="text-base font-bold text-ink dark:text-stone-100">{t('receipt') || 'Receipt'}</span>
+              </div>
+              <button onClick={() => setSelectedTx(null)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
+                <X className="w-5 h-5 text-muted dark:text-stone-400" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-center py-4">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-2xl font-black text-green-600">D</span>
+                </div>
+              </div>
+
+              {selectedTx.receipt_id && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-stone-50 dark:bg-stone-800 rounded-2xl">
+                  <Hash className="w-5 h-5 text-muted dark:text-stone-400" />
+                  <div>
+                    <p className="text-xs text-muted dark:text-stone-400">{t('receipt_no') || 'Receipt No.'}</p>
+                    <p className="text-sm font-mono font-bold text-ink dark:text-stone-100">{selectedTx.receipt_id}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-center py-2">
+                <p className={`text-3xl font-bold ${typeColor(selectedTx.type)}`}>
+                  {selectedTx.type === 'income' ? '+' : '-'}{'KES '}{selectedTx.amount.toLocaleString('en-KE')}
+                </p>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                    {(() => {
+                      const Icn = typeIcon(selectedTx.type);
+                      return <Icn className={`w-4 h-4 ${typeColor(selectedTx.type)}`} />;
+                    })()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted dark:text-stone-400">{t('type') || 'Type'}</p>
+                    <p className="text-sm font-medium text-ink dark:text-stone-100">{typeLabel(selectedTx.type)}</p>
+                  </div>
+                </div>
+
+                {selectedTx.description && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                      <ClipboardList className="w-4 h-4 text-muted dark:text-stone-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted dark:text-stone-400">{t('description')}</p>
+                      <p className="text-sm font-medium text-ink dark:text-stone-100">{selectedTx.description}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedTx.mpesa_sender && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                      <User className="w-4 h-4 text-muted dark:text-stone-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted dark:text-stone-400">{t('sender')}</p>
+                      <p className="text-sm font-medium text-ink dark:text-stone-100">{selectedTx.mpesa_sender}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
+                    <Smartphone className="w-4 h-4 text-muted dark:text-stone-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted dark:text-stone-400">{t('time') || 'Time'}</p>
+                    <p className="text-sm font-medium text-ink dark:text-stone-100">
+                      {new Date(selectedTx.recorded_at).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

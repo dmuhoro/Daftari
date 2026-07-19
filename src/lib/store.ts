@@ -4,6 +4,7 @@ import { db, Transaction, type TransactionType } from './db';
 import { supabase } from './supabase';
 import { addToQueue, type QueuePayload } from '../features/sync/syncQueue';
 import type { Theme } from './types';
+import { generateReceiptId } from './receiptId';
 
 interface Business {
   id: string;
@@ -13,7 +14,7 @@ interface Business {
   category?: string;
   subcategory?: string;
   payment_methods?: string[];
-  products?: Array<{ id: string; name: string; price: number; unit: string }>;
+  products?: Array<{ id: string; name: string; price: number; unit?: string; stock?: number; low_stock_threshold?: number }>;
 }
 
 interface AppStore {
@@ -27,7 +28,7 @@ interface AppStore {
   setBusiness: (business: Business | null) => void;
   updateBusiness: (partial: Partial<Business>) => void;
   setTransactions: (transactions: Transaction[]) => void;
-  addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<void>;
+  addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<string | undefined>;
   setLastCloseDate: (date: string) => void;
   dismissClosePrompt: () => void;
   setTheme: (theme: Theme) => void;
@@ -50,7 +51,8 @@ export const useStore = create<AppStore>()(
       setTransactions: (transactions) => set({ transactions }),
       addTransaction: async (tx) => {
         const { data: { user } } = await supabase.auth.getUser();
-        const txWithUser = { ...tx, user_id: user?.id };
+        const receipt_id = tx.type === 'income' ? generateReceiptId() : undefined;
+        const txWithUser = { ...tx, user_id: user?.id, receipt_id };
 
         await db.transactions.add(txWithUser);
 
@@ -67,10 +69,12 @@ export const useStore = create<AppStore>()(
           mpesa_code: txWithUser.mpesa_code,
           mpesa_sender: txWithUser.mpesa_sender,
           payment_method: txWithUser.payment_method,
+          receipt_id: txWithUser.receipt_id,
         };
         await addToQueue('upsert', 'daftari_transactions', txWithUser.local_id, queuePayload);
 
         set((state) => ({ transactions: [txWithUser, ...state.transactions] }));
+        return receipt_id;
       },
       setLastCloseDate: (date) => set({ lastCloseDate: date, closePromptDismissedAt: null }),
       dismissClosePrompt: () => set({ closePromptDismissedAt: Date.now() }),

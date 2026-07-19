@@ -10,6 +10,7 @@ import HistoryScreen from '../screens/HistoryScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import ProductCatalogScreen from '../screens/ProductCatalogScreen';
 import BusinessProfileScreen from '../screens/BusinessProfileScreen';
+import CustomersScreen from '../screens/CustomersScreen';
 
 import RecordSale from '../features/transactions/RecordSale';
 import RecordExpense from '../features/transactions/RecordExpense';
@@ -32,7 +33,8 @@ type View =
   | 'history'
   | 'settings'
   | 'catalog'
-  | 'profile';
+  | 'profile'
+  | 'customers';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -42,7 +44,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
-  if (view === 'catalog') return 'settings';
+  if (view === 'catalog' || view === 'customers') return 'settings';
   if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
@@ -61,6 +63,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string): string {
     case 'settings': return t('settings');
     case 'catalog': return t('my_products');
     case 'profile': return t('business_profile');
+    case 'customers': return t('wateja_wangu') || 'Customers';
   }
 }
 
@@ -183,6 +186,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
         {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
         {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
         {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
+        {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
       </main>
 
       {/* Fixed Bottom nav */}

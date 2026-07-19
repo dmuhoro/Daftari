@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardList, Plus, Flame, Users } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { db } from '../lib/db';
 import { BUSINESS_CATEGORIES, categoryEmoji, CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import SyncDot from '../components/SyncDot';
 import { useRecordingStreak } from '../hooks/useRecordingStreak';
+import { shareViaWhatsApp, formatDailySummaryText } from '../lib/whatsapp';
 
 const SW_DAYS = ['Jumapili', 'Jumatatu', 'Jumanne', 'Jumatano', 'Alhamisi', 'Ijumaa', 'Jumamosi'];
 const SW_DAYS_SHORT = ['Jpl', 'Jt', 'Jn', 'Jt', 'Al', 'Ij', 'Jm'];
@@ -43,6 +45,18 @@ export default function DashboardScreen() {
   const setLanguage = useStore((s) => s.setLanguage);
   const [tab, setTab] = useState<Tab>('leo');
   const { streak } = useRecordingStreak();
+  const [customerCount, setCustomerCount] = useState(0);
+
+  useEffect(() => {
+    db.customers.count().then(setCustomerCount).catch(() => {});
+  }, [transactions]);
+
+  const products = business?.products ?? [];
+  const lowStockProducts = products.filter((p) => {
+    if (p.stock === undefined) return false;
+    const threshold = p.low_stock_threshold ?? 5;
+    return p.stock <= threshold;
+  });
 
   const todayStr = getTodayNairobi();
   const todayDate = new Date();
@@ -192,7 +206,7 @@ export default function DashboardScreen() {
         {tab === 'leo' ? (
           todayHasData ? (
             <>
-              <div className={`${profitBg} rounded-2xl p-6 shadow-lg`}>
+              <div className={`${profitBg} rounded-2xl p-6 shadow-lg relative overflow-hidden`}>
                 <p className="text-white/80 text-sm font-medium mb-1">{t('leo_faida')}</p>
                 <p className="text-white text-4xl font-bold tracking-tight">{fmtKES(profit)}</p>
                 <div className="flex items-center gap-2 mt-3">
@@ -205,6 +219,22 @@ export default function DashboardScreen() {
                     {t('transactions_today', { count: txCount })}
                   </span>
                 </div>
+                {todayHasData && (
+                  <button
+                    onClick={() => shareViaWhatsApp(formatDailySummaryText(
+                      business?.name || 'Daftari',
+                      new Date().toLocaleDateString('en-KE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+                      revenue,
+                      expenses,
+                      profit,
+                      txCount,
+                    ))}
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors"
+                    title={t('share') || 'Share'}
+                  >
+                    <span className="text-white text-sm font-bold">↗</span>
+                  </button>
+                )}
               </div>
 
               {hasFulizaDebt && (
@@ -215,6 +245,22 @@ export default function DashboardScreen() {
                   <div>
                     <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
                       {t('fuliza_alert', { amount: fulizaDebt.toLocaleString('en-KE') })}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {lowStockProducts.length > 0 && (
+                <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-2xl p-4 flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900 flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-red-800 dark:text-red-300">
+                      {t('low_stock_alert') || 'Low stock alert'} ({lowStockProducts.length})
+                    </p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      {lowStockProducts.map((p) => p.name).join(', ')}
                     </p>
                   </div>
                 </div>
@@ -248,6 +294,20 @@ export default function DashboardScreen() {
                   </div>
                 </div>
               </div>
+
+              {customerCount > 0 && (
+                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-purple-600" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted dark:text-stone-400">{t('wateja_wangu') || 'Customers'}</p>
+                      <p className="text-xl font-bold text-ink dark:text-stone-100 mt-0.5">{customerCount}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
