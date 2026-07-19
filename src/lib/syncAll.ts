@@ -136,6 +136,92 @@ export async function pullFromSupabase(): Promise<{ restored: string[]; errors: 
       }
       restored.push(`${remoteBiz.length} businesses`)
     }
+
+    // Pull customers
+    const { data: remoteCustomers, error: custErr } = await supabase
+      .from('daftari_customers')
+      .select('*')
+    if (!custErr && remoteCustomers && remoteCustomers.length > 0) {
+      let count = 0
+      for (const c of remoteCustomers) {
+        const existing = c.local_id ? await db.customers.where('local_id').equals(c.local_id).first() : null
+        if (!existing) {
+          await db.customers.put(c)
+          count++
+        }
+      }
+      restored.push(`${count} customers`)
+    }
+
+    // Pull daily closes
+    const { data: remoteCloses, error: closeErr } = await supabase
+      .from('daftari_daily_closes')
+      .select('*')
+    if (!closeErr && remoteCloses && remoteCloses.length > 0) {
+      let count = 0
+      for (const c of remoteCloses) {
+        const existing = c.local_id ? await db.daily_closes.where('local_id').equals(c.local_id).first() : null
+        if (!existing) {
+          await db.daily_closes.put(c)
+          count++
+        }
+      }
+      restored.push(`${count} daily closes`)
+    }
+
+    // Pull suppliers (table may not exist for older deployments)
+    try {
+      const { data: remoteSuppliers, error: suppErr } = await supabase
+        .from('daftari_suppliers')
+        .select('*')
+      if (!suppErr && remoteSuppliers && remoteSuppliers.length > 0) {
+        let count = 0
+        for (const s of remoteSuppliers) {
+          const existing = s.local_id ? await db.suppliers.where('local_id').equals(s.local_id).first() : null
+          if (!existing) {
+            await db.suppliers.put(s)
+            count++
+          }
+        }
+        restored.push(`${count} suppliers`)
+      }
+    } catch { /* table may not exist */ }
+
+    // Pull purchase orders (table may not exist for older deployments)
+    try {
+      const { data: remotePOs, error: poErr } = await supabase
+        .from('daftari_purchase_orders')
+        .select('*')
+      if (!poErr && remotePOs && remotePOs.length > 0) {
+        let count = 0
+        for (const po of remotePOs) {
+          const existing = po.local_id ? await db.purchase_orders.where('local_id').equals(po.local_id).first() : null
+          if (!existing) {
+            await db.purchase_orders.put(po)
+            count++
+          }
+        }
+        restored.push(`${count} purchase orders`)
+      }
+    } catch { /* table may not exist */ }
+
+    // Pull stock adjustments (table may not exist for older deployments)
+    try {
+      const { data: remoteAdjustments, error: adjErr } = await supabase
+        .from('daftari_stock_adjustments')
+        .select('*')
+      if (!adjErr && remoteAdjustments && remoteAdjustments.length > 0) {
+        let count = 0
+        for (const a of remoteAdjustments) {
+          const existing = a.local_id ? await db.stock_adjustments.where('local_id').equals(a.local_id).first() : null
+          if (!existing) {
+            await db.stock_adjustments.put(a)
+            count++
+          }
+        }
+        restored.push(`${count} stock adjustments`)
+      }
+    } catch { /* table may not exist */ }
   } catch (cause) {
     const msg = cause instanceof Error ? cause.message : String(cause)
     errors.push(msg)

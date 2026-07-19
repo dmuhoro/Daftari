@@ -5,6 +5,20 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.0.1] — 2026-07-19
+
+### Fixed
+- **Cloud restore incomplete**: `pullFromSupabase` now restores all 7 entity types — customers, daily closes, suppliers, purchase orders, and stock adjustments (in addition to previously restored transactions and businesses). Tables that don't exist on the server are gracefully skipped.
+- **Silent catch blocks**: 6 critical `catch {}` blocks across the codebase now log warnings:
+  - ProductCatalogScreen — Supabase product sync failure
+  - SMSParser — customer upsert failure
+  - RecordSale — product stock cloud sync failure
+  - OnboardingScreen — business creation failure
+  - PosScreen & Receipt — Bluetooth print failure
+- **Category change warning**: Changing business category now shows a confirmation dialog warning the user that existing products will be cleared. Previously this happened silently with no undo.
+- **Global promise rejection handler**: `unhandledrejection` events are now caught and logged via `console.warn` in `main.tsx` to prevent silent async failures.
+- **Version**: bumped `package.json` 5.0.0 → 5.0.1
+
 ## [5.0.0] — 2026-07-19
 
 ### Added

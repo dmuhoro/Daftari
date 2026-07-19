@@ -30,6 +30,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   const [pickCategory, setPickCategory] = useState<BusinessCategoryKey | null>(null);
   const [pickSubcategory, setPickSubcategory] = useState<string | null>(null);
   const [savingCategory, setSavingCategory] = useState(false);
+  const [showCategoryConfirm, setShowCategoryConfirm] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
   const [userLastSignIn, setUserLastSignIn] = useState<string | null>(null);
@@ -201,7 +202,13 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
                     </button>
                     {pickSubcategory && (
                       <button
-                        onClick={handleCategoryChange}
+                        onClick={() => {
+                          if ((business?.products ?? []).length > 0) {
+                            setShowCategoryConfirm(true);
+                          } else {
+                            handleCategoryChange();
+                          }
+                        }}
                         disabled={savingCategory}
                         className="flex-1 py-2.5 rounded-xl bg-green-600 text-white text-xs font-semibold disabled:opacity-60 flex items-center justify-center gap-1"
                       >
@@ -657,6 +664,27 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           </button>
         </div>
       </div>
+
+      {/* Category change confirmation */}
+      {showCategoryConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowCategoryConfirm(false)}>
+          <div className="bg-white dark:bg-stone-900 rounded-3xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="w-14 h-14 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center mx-auto mb-4">
+              <Package className="w-7 h-7 text-amber-600" />
+            </div>
+            <p className="text-lg font-bold text-center text-ink dark:text-stone-100 mb-2">{language === 'sw' ? 'Badilisha aina ya biashara?' : 'Change business category?'}</p>
+            <p className="text-sm text-muted dark:text-stone-400 text-center mb-6">
+              {language === 'sw'
+                ? `Hii itafuta bidhaa zako zote (${(business?.products ?? []).length}) na kuingiza template za aina mpya.`
+                : `This will clear all your products (${(business?.products ?? []).length}) and load templates for the new category.`}
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowCategoryConfirm(false)} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('cancel')}</button>
+              <button onClick={() => { setShowCategoryConfirm(false); handleCategoryChange(); }} className="flex-1 py-3 rounded-xl bg-amber-600 text-white text-sm font-semibold">{language === 'sw' ? 'Badilisha' : 'Change'}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <p className="text-center text-xs text-muted pb-4 dark:text-stone-400">{t('made_in_kenya')}</p>
     </div>

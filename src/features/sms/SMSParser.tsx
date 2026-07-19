@@ -101,7 +101,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
           created_at: now,
         });
       }
-    } catch { /* silent */ }
+    } catch (e) { console.warn('Failed to upsert customer from SMS:', e); }
   }
 
   if (flashAmount !== null) {

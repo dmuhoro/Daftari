@@ -61,7 +61,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
           products: updated,
         }, { onConflict: 'owner_id' });
       }
-    } catch { /* silent */ }
+    } catch (e) { console.warn('Failed to sync products to cloud:', e); }
   }
 
   async function addProduct(name: string, price: number, unit: string, stock?: number, threshold?: number) {

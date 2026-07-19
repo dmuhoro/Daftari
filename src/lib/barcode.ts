@@ -27,7 +27,7 @@ export async function scanBarcode(): Promise<string | null> {
           video.remove();
           return codes[0].rawValue;
         }
-      } catch { return undefined; }
+      } catch { return null; }
       await new Promise(r => setTimeout(r, 300));
     }
 

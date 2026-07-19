@@ -108,7 +108,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         if (biz?.id) {
           await db.business.update(biz.id, { products: JSON.stringify(updatedProducts) });
         }
-      } catch { /* silent */ }
+      } catch (e) { console.warn('Failed to sync product stock to cloud:', e); }
     }
   }
 

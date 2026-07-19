@@ -52,7 +52,7 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
     setPrinting(true);
     try {
       await printBluetoothReceipt(receiptData);
-    } catch { void 0; }
+    } catch (e) { console.warn('Bluetooth print failed:', e); }
     setPrinting(false);
   }
 

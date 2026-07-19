@@ -102,9 +102,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       }, { onConflict: 'owner_id' }).then(({ error }) => {
         if (error) console.warn('Background sync failed:', error);
       });
-    } catch {
-      setSaving(false);
-    }
+    } catch (e) { console.warn('Failed to create business in Supabase:', e); setSaving(false); }
   }
 
   return (
