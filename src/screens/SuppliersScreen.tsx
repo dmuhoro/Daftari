@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Plus, Trash2, Building2, Phone, Mail, MapPin, FileText, Check } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -21,14 +21,14 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
   const [notes, setNotes] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
-
-  async function loadSuppliers() {
+  const loadSuppliers = useCallback(async () => {
     const result = await getSuppliersByBusinessId(activeBusinessId ?? '');
     if (result.ok) setSuppliers(result.value);
-  }
+  }, [activeBusinessId]);
+
+  useEffect(() => {
+    loadSuppliers();
+  }, [loadSuppliers]);
 
   async function handleSave() {
     if (!name.trim() || !activeBusinessId) return;

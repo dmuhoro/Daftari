@@ -113,7 +113,7 @@ export default function App() {
       setBusiness(null);
       setLoadingBusiness(false);
     }
-  }, [session, setBusiness, setBusinesses, setActiveBusinessId]);
+  }, [session, activeBusinessId, setBusiness, setBusinesses, setActiveBusinessId]);
 
   if (session === null || loadingDexie) {
     return <LoadingScreen />;

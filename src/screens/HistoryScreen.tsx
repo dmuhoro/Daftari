@@ -158,7 +158,7 @@ export default function HistoryScreen() {
     }
 
     return result;
-  }, [allTransactions, filter, searchQuery, typeFilter, categoryFilter, paymentFilter, dateFrom, dateTo]);
+  }, [allTransactions, filter, debouncedSearch, typeFilter, categoryFilter, paymentFilter, dateFrom, dateTo]);
 
   const sorted = useMemo(
     () => [...filteredTransactions].sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()),

@@ -19,10 +19,25 @@ Format: [Semantic Versioning](https://semver.org)
 ### Removed
 - **Direct Dexie imports**: No feature-level component imports `db` directly — all data access goes through the repository abstraction layer.
 
+### Fixed
+- **6 lint warnings eliminated**: 5 `exhaustive-deps` bugs fixed (App.tsx: activeBusinessId, HistoryScreen: debouncedSearch, PurchaseOrders/StockAdjustments/Suppliers: stale-closure data loaders). 1 `react-refresh` split — `useToast` hook moved to dedicated file.
+- **`any` type eliminated**: `backup.ts` replaced `(db as any)[table].toArray()` with type-safe `db.table(table).toArray()` using new `TableName` union type in `db.ts`.
+- **ESLint config**: Added `coverage/` to ignore list to prevent false positives from generated report files.
+
+### Tests
+- **Component tests added**: 22 new tests across DashboardScreen (9), HistoryScreen (6), and SettingsScreen (4) — the 3 largest screens (2,252 lines combined). Tests verify render, tab switching, data display, and async sections.
+- **73 total tests** (up from 54), 8 test files, 0 failures.
+
 ### Engineering
 - `src/lib/money.ts` — added `cents()` helper
 - `src/lib/repository.ts` — extended with 45+ functions for all entities
 - `src/lib/store.ts` — refactored to use repository
+- `src/lib/db.ts` — added `TableName` union type
+- `src/hooks/useToast.ts` — extracted from Toast.tsx for fast-refresh compatibility
+- `src/components/Toast.tsx` — simplified, imports from useToast hook
+- `src/screens/DashboardScreen.test.tsx` — 9 tests
+- `src/screens/HistoryScreen.test.tsx` — 6 tests
+- `src/screens/SettingsScreen.test.tsx` — 4 tests
 - `docs/changelog/sprint-v5-2-0-architectural-debt.md` — sprint log
 - `package.json` — version 5.1.0 → 5.2.0
 

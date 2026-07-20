@@ -13,7 +13,7 @@ import { exportAllData } from '../lib/backup';
 import { pullFromSupabase } from '../lib/syncAll';
 import { flushQueue } from '../features/sync/syncQueue';
 import { generateReferralUrl, shareViaWhatsApp } from '../lib/referral';
-import { useToast } from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 
 interface SettingsScreenProps {
   onSignOut: () => void;

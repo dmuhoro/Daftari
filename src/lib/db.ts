@@ -128,6 +128,8 @@ export interface PurchaseOrderItem {
   total_cost: number;
 }
 
+export type TableName = 'transactions' | 'sync_queue' | 'business' | 'daily_closes' | 'customers' | 'purchase_orders' | 'suppliers' | 'stock_adjustments';
+
 class DaftariDB extends Dexie {
   transactions!: Table<Transaction>;
   sync_queue!: Table<SyncQueueItem>;

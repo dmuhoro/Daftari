@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Package, Plus, ClipboardList } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -24,14 +24,14 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
   const [reason, setReason] = useState<string>('count_correction');
   const [adjNotes, setAdjNotes] = useState('');
 
-  useEffect(() => {
-    loadAdjustments();
-  }, []);
-
-  async function loadAdjustments() {
+  const loadAdjustments = useCallback(async () => {
     const result = await getStockAdjustmentsByBusinessId(activeBusinessId ?? '');
     if (result.ok) setAdjustments(result.value);
-  }
+  }, [activeBusinessId]);
+
+  useEffect(() => {
+    loadAdjustments();
+  }, [loadAdjustments]);
 
   const selectedProduct = products.find(p => p.id === selProductId);
   const currentStock = selectedProduct?.stock ?? 0;

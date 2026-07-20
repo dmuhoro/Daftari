@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Plus, ShoppingCart, Check, X, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -33,20 +33,20 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
   const [poNotes, setPoNotes] = useState('');
   const [poItems, setPoItems] = useState<PurchaseOrderItem[]>([]);
 
+  const loadOrders = useCallback(async () => {
+    const result = await getPurchaseOrdersByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setOrders(result.value);
+  }, [activeBusinessId]);
+
+  const loadSuppliers = useCallback(async () => {
+    const result = await getSuppliersByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setSuppliers(result.value);
+  }, [activeBusinessId]);
+
   useEffect(() => {
     loadOrders();
     loadSuppliers();
-  }, []);
-
-  async function loadOrders() {
-    const result = await getPurchaseOrdersByBusinessId(activeBusinessId ?? '');
-    if (result.ok) setOrders(result.value);
-  }
-
-  async function loadSuppliers() {
-    const result = await getSuppliersByBusinessId(activeBusinessId ?? '');
-    if (result.ok) setSuppliers(result.value);
-  }
+  }, [loadOrders, loadSuppliers]);
 
   function parseItems(po: POrder): PurchaseOrderItem[] {
     try { return JSON.parse(po.items) as PurchaseOrderItem[]; } catch { return []; }
