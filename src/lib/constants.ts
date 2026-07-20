@@ -22,7 +22,7 @@ export const TABLES = {
 /** Dexie DB name and version */
 export const DB = {
   NAME:    'DaftariDB' as const,
-  VERSION: 4           as const,  // increment in db.ts when schema changes
+  VERSION: 6           as const,  // increment in db.ts when schema changes
 } as const
 
 /** LocalStorage keys — single place, prevents typos */

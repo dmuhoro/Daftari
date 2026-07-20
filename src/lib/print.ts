@@ -138,7 +138,7 @@ export async function printBluetoothReceipt(data: ReceiptData): Promise<void> {
   }
 }
 
-export function formatReceptText(data: ReceiptData): string {
+export function formatReceiptText(data: ReceiptData): string {
   const lines = [
     data.businessName,
     '─'.repeat(24),
