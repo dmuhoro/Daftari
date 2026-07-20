@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Users, ChevronLeft, Search, Plus, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
-import { db, type Customer } from '../lib/db';
+import type { Customer } from '../lib/db';
+import { getAllCustomers, saveCustomer } from '../lib/repository';
 import { track, EVENTS } from '../lib/analytics';
 import CustomerDetailScreen from './CustomerDetailScreen';
 import { Virtuoso } from 'react-virtuoso';
@@ -31,11 +32,13 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
   const [addName, setAddName] = useState('');
   const [addPhone, setAddPhone] = useState('');
 
-  function loadCustomers() {
-    db.customers.orderBy('total_spent').reverse().toArray().then((result) => {
-      setCustomers(result);
-      setLoading(false);
-    });
+  async function loadCustomers() {
+    const result = await getAllCustomers();
+    if (result.ok) {
+      const sorted = result.value.sort((a, b) => b.total_spent - a.total_spent);
+      setCustomers(sorted);
+    }
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
 
   async function handleAddCustomer() {
     if (!addName.trim()) return;
-    await db.customers.add({
+    await saveCustomer({
       name: addName.trim(),
       phone: addPhone.trim() || undefined,
       total_visits: 0,

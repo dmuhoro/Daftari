@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '../lib/db';
+import { getAllDailyCloses } from '../lib/repository';
 import { useStore } from '../lib/store';
 import { track, EVENTS } from '../lib/analytics';
 
@@ -10,7 +10,8 @@ export function useRecordingStreak() {
 
   useEffect(() => {
     async function compute() {
-      const closes = await db.daily_closes.orderBy('date').reverse().toArray();
+      const closeResult = await getAllDailyCloses();
+      const closes = closeResult.ok ? closeResult.value.reverse() : [];
       const closeDates = new Set(closes.map((c) => c.date));
 
       let count = 0;

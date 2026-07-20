@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, Users } from 'lucide-react';
-import { db } from '../lib/db';
+import { getAllBusinesses, getAllTransactions } from '../lib/repository';
 
 interface AdminScreenProps {
   onBack: () => void;
@@ -12,8 +12,10 @@ export default function AdminScreen({ onBack }: AdminScreenProps) {
 
   useEffect(() => {
     async function load() {
-      const bizList = await db.business.toArray();
-      const txList = await db.transactions.toArray();
+      const bizResult = await getAllBusinesses();
+      const txResult = await getAllTransactions();
+      const bizList = bizResult.ok ? bizResult.value : [];
+      const txList = txResult.ok ? txResult.value : [];
       const now = Date.now();
       const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
 

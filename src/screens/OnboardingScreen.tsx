@@ -7,7 +7,7 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { requestNotificationPermission, subscribeToPush } from '../lib/pushNotifications';
 import { useStore } from '../lib/store';
-import { db } from '../lib/db';
+import { addBusiness } from '../lib/repository';
 import { supabase } from '../lib/supabase';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
@@ -68,7 +68,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         userId = user?.id;
       } catch (e) { console.warn('Failed to get user for onboarding', e); }
 
-      await db.business.add({
+      await addBusiness({
         name,
         currency: 'KES',
         category: selectedCategory ?? undefined,

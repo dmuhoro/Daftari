@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { X, Search, ShoppingCart, Plus, Minus, User, Printer, Bluetooth, Camera, Zap } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db, type Customer } from '../lib/db';
+import type { Customer } from '../lib/db';
+import { getBusiness, updateBusiness as repoUpdateBusiness, getAllCustomers, updateCustomer } from '../lib/repository';
 import { scanBarcodeWithFallback } from '../lib/barcode';
 import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
 
@@ -99,9 +100,9 @@ export default function PosScreen({ onBack }: PosScreenProps) {
         }
       }
       updateBusiness({ products: updated });
-      const biz = await db.business.toCollection().first();
-      if (biz?.id) {
-        await db.business.update(biz.id, { products: JSON.stringify(updated) });
+      const bizResult = await getBusiness();
+      if (bizResult.ok && bizResult.value?.id) {
+        await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updated) });
       }
     }
 
@@ -110,7 +111,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
       const newPoints = (selectedCustomer.loyalty_points ?? 0) + pointsEarned - (redeemPoints ? discount * POINTS_REDEEM_RATE : 0);
       const newSpent = (selectedCustomer.total_spent ?? 0) + finalTotal;
       const newVisits = (selectedCustomer.total_visits ?? 0) + 1;
-      await db.customers.update(selectedCustomer.id, {
+      await updateCustomer(selectedCustomer.id, {
         loyalty_points: Math.max(0, newPoints),
         total_spent: newSpent,
         total_visits: newVisits,
@@ -151,8 +152,8 @@ export default function PosScreen({ onBack }: PosScreenProps) {
   }
 
   async function openCustomerPicker() {
-    const list = await db.customers.toArray();
-    setCustomers(list);
+    const custResult = await getAllCustomers();
+    if (custResult.ok) setCustomers(custResult.value);
     setShowCustomerPicker(true);
   }
 

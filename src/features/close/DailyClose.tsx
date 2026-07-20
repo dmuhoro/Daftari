@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, CheckCircle, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
-import { db } from '../../lib/db';
+import { saveDailyClose } from '../../lib/repository';
 import { track, EVENTS } from '../../lib/analytics';
 
 function fmtKES(n: number) {
@@ -44,7 +44,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
 
   async function handleClose() {
     setSaving(true);
-    await db.daily_closes.add({
+    await saveDailyClose({
       date: todayStr,
       profit,
       revenue,

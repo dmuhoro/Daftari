@@ -4,7 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
-import { db } from '../lib/db';
+import { getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 import { supabase } from '../lib/supabase';
 
 const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
@@ -58,9 +58,9 @@ export default function BusinessProfileScreen({ onBack }: BusinessProfileScreenP
     setSaving(true);
     updateBusiness({ name: name.trim(), owner_name: ownerName.trim() || undefined });
     try {
-      const biz = await db.business.toCollection().first();
-      if (biz?.id) {
-        await db.business.update(biz.id, { name: name.trim(), owner_name: ownerName.trim() || undefined });
+      const bizResult = await getBusiness();
+      if (bizResult.ok && bizResult.value?.id) {
+        await repoUpdateBusiness(bizResult.value.id, { name: name.trim(), owner_name: ownerName.trim() || undefined });
       }
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {

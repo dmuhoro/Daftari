@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Package, Plus, Trash2, ChevronLeft, Check, RefreshCw } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db } from '../lib/db';
+import { getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 import { supabase } from '../lib/supabase';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 
@@ -50,9 +50,9 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
   async function persistProducts(updated: LocalProduct[]) {
     updateBusiness({ products: updated });
     try {
-      const biz = await db.business.toCollection().first();
-      if (biz?.id) {
-        await db.business.update(biz.id, { products: JSON.stringify(updated) });
+      const bizResult = await getBusiness();
+      if (bizResult.ok && bizResult.value?.id) {
+        await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updated) });
       }
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {

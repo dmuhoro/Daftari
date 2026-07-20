@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Wallet, BarChart3, AlertTriangle, ClipboardLi
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db } from '../lib/db';
+import { countCustomers } from '../lib/repository';
 import { BUSINESS_CATEGORIES, categoryEmoji, CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import SyncDot from '../components/SyncDot';
@@ -57,7 +57,7 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
   const [customerCount, setCustomerCount] = useState(0);
 
   useEffect(() => {
-    db.customers.count().then(setCustomerCount).catch(() => {});
+    countCustomers().then(r => { if (r.ok) setCustomerCount(r.value); });
   }, [transactions]);
 
   const products = business?.products ?? [];

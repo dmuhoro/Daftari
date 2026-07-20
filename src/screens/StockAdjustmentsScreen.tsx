@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, Package, Plus, ClipboardList } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db, type StockAdjustment } from '../lib/db';
+import type { StockAdjustment } from '../lib/db';
+import { getStockAdjustmentsByBusinessId, saveStockAdjustment, getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 
 interface StockAdjustmentsScreenProps {
   onBack: () => void;
@@ -28,11 +29,8 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
   }, []);
 
   async function loadAdjustments() {
-    const list = await db.stock_adjustments
-      .where('business_id').equals(activeBusinessId ?? '')
-      .reverse()
-      .toArray();
-    setAdjustments(list);
+    const result = await getStockAdjustmentsByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setAdjustments(result.value);
   }
 
   const selectedProduct = products.find(p => p.id === selProductId);
@@ -59,7 +57,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
     const p = products.find(x => x.id === selProductId);
     if (!p) return;
     const now = new Date().toISOString();
-    await db.stock_adjustments.add({
+    await saveStockAdjustment({
       local_id: crypto.randomUUID(),
       business_id: activeBusinessId,
       product_id: p.id,
@@ -76,9 +74,9 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
       pr.id === p.id ? { ...pr, stock: Math.max(0, (pr.stock ?? 0) + Number(changeQty)) } : pr
     );
     updateBusiness({ products: updatedProducts });
-    const biz = await db.business.toCollection().first();
-    if (biz?.id) {
-      await db.business.update(biz.id, { products: JSON.stringify(updatedProducts) });
+    const bizResult = await getBusiness();
+    if (bizResult.ok && bizResult.value?.id) {
+      await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updatedProducts) });
     }
 
     setSelProductId(''); setChangeQty(''); setReason('count_correction'); setAdjNotes('');

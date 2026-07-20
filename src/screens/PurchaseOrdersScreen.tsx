@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, Plus, ShoppingCart, Check, X, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db, type PurchaseOrder as POrder, type PurchaseOrderItem, type Supplier } from '../lib/db';
+import type { PurchaseOrder as POrder, PurchaseOrderItem, Supplier } from '../lib/db';
+import { getPurchaseOrdersByBusinessId, getSuppliersByBusinessId, savePurchaseOrder, updatePurchaseOrderByLocalId, getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 
 interface PurchaseOrdersScreenProps {
   onBack: () => void;
@@ -37,18 +38,13 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
   }, []);
 
   async function loadOrders() {
-    const list = await db.purchase_orders
-      .where('business_id').equals(activeBusinessId ?? '')
-      .reverse()
-      .toArray();
-    setOrders(list);
+    const result = await getPurchaseOrdersByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setOrders(result.value);
   }
 
   async function loadSuppliers() {
-    const list = await db.suppliers
-      .where('business_id').equals(activeBusinessId ?? '')
-      .toArray();
-    setSuppliers(list);
+    const result = await getSuppliersByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setSuppliers(result.value);
   }
 
   function parseItems(po: POrder): PurchaseOrderItem[] {
@@ -102,7 +98,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
     if (poItems.length === 0 || !activeBusinessId) return;
     const now = new Date().toISOString();
     const sup = suppliers.find(s => s.local_id === selSupplierId);
-    await db.purchase_orders.add({
+    await savePurchaseOrder({
       local_id: crypto.randomUUID(),
       business_id: activeBusinessId,
       supplier_id: selSupplierId || undefined,
@@ -128,7 +124,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
     const items = parseItems(po);
     const allReceived = items.every(i => i.quantity_received >= i.quantity);
     const newStatus = allReceived ? 'received' : 'partial';
-    await db.purchase_orders.where('local_id').equals(poId).modify({ status: newStatus, updated_at: new Date().toISOString() });
+    await updatePurchaseOrderByLocalId(poId, { status: newStatus, updated_at: new Date().toISOString() });
 
     if (business) {
       const updated = [...products];
@@ -142,9 +138,9 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
         }
       }
       updateBusiness({ products: updated });
-      const biz = await db.business.toCollection().first();
-      if (biz?.id) {
-        await db.business.update(biz.id, { products: JSON.stringify(updated) });
+      const bizResult = await getBusiness();
+      if (bizResult.ok && bizResult.value?.id) {
+        await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updated) });
       }
     }
 

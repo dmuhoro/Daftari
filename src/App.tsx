@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
-import { db } from './lib/db';
+import { getAllTransactions, getAllBusinesses } from './lib/repository';
 import { useStore } from './lib/store';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
@@ -69,13 +69,10 @@ export default function App() {
 
   // Load data from Dexie on mount
   useEffect(() => {
-    db.open()
-      .then(async () => {
-        const txs = await db.transactions.orderBy('recorded_at').reverse().toArray();
-        setTransactions(txs);
-        setLoadingDexie(false);
-      })
-      .catch(() => setLoadingDexie(false));
+    getAllTransactions().then(result => {
+      if (result.ok) setTransactions(result.value);
+      setLoadingDexie(false);
+    });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(!!data.session);
@@ -96,7 +93,8 @@ export default function App() {
   useEffect(() => {
     if (session) {
       setLoadingBusiness(true);
-      db.business.toArray().then((bizList) => {
+      getAllBusinesses().then(result => {
+        const bizList = result.ok ? result.value : [];
         const mapped = bizList.map(mapBusiness);
         setBusinesses(mapped);
         // Set active business: prefer stored activeBusinessId, fallback to first
@@ -109,9 +107,6 @@ export default function App() {
           setBusiness(null);
           setActiveBusinessId(null);
         }
-        setLoadingBusiness(false);
-      }).catch(() => {
-        setBusiness(null);
         setLoadingBusiness(false);
       });
     } else {

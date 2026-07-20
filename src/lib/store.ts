@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { db, Transaction, type TransactionType } from './db';
+import type { Transaction, TransactionType } from './db';
+import { saveTransaction, updateTransaction as repoUpdateTransaction, deleteTransaction as repoDeleteTransaction } from './repository';
 import { supabase } from './supabase';
 import { addToQueue, type QueuePayload } from '../features/sync/syncQueue';
 import type { Theme } from './types';
@@ -79,7 +80,7 @@ export const useStore = create<AppStore>()(
           updated_at: new Date().toISOString(),
         };
 
-        await db.transactions.add(txWithUser);
+        await saveTransaction(txWithUser);
 
         const queuePayload: QueuePayload = {
           local_id: txWithUser.local_id,
@@ -107,7 +108,7 @@ export const useStore = create<AppStore>()(
       updateTransaction: async (local_id, updates) => {
         const now = new Date().toISOString();
         const fullUpdates = { ...updates, updated_at: now };
-        await db.transactions.where('local_id').equals(local_id).modify(fullUpdates);
+        await repoUpdateTransaction(local_id, fullUpdates);
         const { data: { user } } = await supabase.auth.getUser();
         const existing = get().transactions.find(t => t.local_id === local_id);
         const queuePayload: QueuePayload = {
@@ -133,7 +134,7 @@ export const useStore = create<AppStore>()(
         }));
       },
       deleteTransaction: async (local_id) => {
-        await db.transactions.where('local_id').equals(local_id).delete();
+        await repoDeleteTransaction(local_id);
         await addToQueue('delete', 'daftari_transactions', local_id, null);
         set((state) => ({
           transactions: state.transactions.filter((tx) => tx.local_id !== local_id),

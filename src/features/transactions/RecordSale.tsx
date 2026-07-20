@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
-import { db } from '../../lib/db';
+import { getBusiness, updateBusiness as repoUpdateBusiness } from '../../lib/repository';
 import { BUSINESS_CATEGORIES, getTemplateProducts } from '../../lib/businessCategories';
 import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
@@ -104,9 +104,9 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
       );
       updateBusiness({ products: updatedProducts });
       try {
-        const biz = await db.business.toCollection().first();
-        if (biz?.id) {
-          await db.business.update(biz.id, { products: JSON.stringify(updatedProducts) });
+        const bizResult = await getBusiness();
+        if (bizResult.ok && bizResult.value?.id) {
+          await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updatedProducts) });
         }
       } catch (e) { console.warn('Failed to sync product stock to cloud:', e); }
     }

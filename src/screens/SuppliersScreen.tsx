@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, Plus, Trash2, Building2, Phone, Mail, MapPin, FileText, Check } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
-import { db, type Supplier } from '../lib/db';
+import type { Supplier } from '../lib/db';
+import { getSuppliersByBusinessId, saveSupplier, deleteSupplierByLocalId } from '../lib/repository';
 
 interface SuppliersScreenProps {
   onBack: () => void;
@@ -25,10 +26,8 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
   }, []);
 
   async function loadSuppliers() {
-    const list = await db.suppliers
-      .where('business_id').equals(activeBusinessId ?? '')
-      .toArray();
-    setSuppliers(list);
+    const result = await getSuppliersByBusinessId(activeBusinessId ?? '');
+    if (result.ok) setSuppliers(result.value);
   }
 
   async function handleSave() {
@@ -45,7 +44,7 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
       }
     }
     const now = new Date().toISOString();
-    await db.suppliers.add({
+    await saveSupplier({
       local_id: crypto.randomUUID(),
       business_id: activeBusinessId,
       name: name.trim(),
@@ -63,7 +62,7 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
   }
 
   async function handleDelete(localId: string) {
-    await db.suppliers.where('local_id').equals(localId).delete();
+    await deleteSupplierByLocalId(localId);
     setDeleteId(null);
     await loadSuppliers();
   }

@@ -5,7 +5,7 @@ import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { supabase } from '../lib/supabase';
-import { db } from '../lib/db';
+import { getBusiness, updateBusiness as repoUpdateBusiness, addBusiness } from '../lib/repository';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
@@ -92,9 +92,9 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
       products: [],
     });
     try {
-      const biz = await db.business.toCollection().first();
-      if (biz?.id) {
-        await db.business.update(biz.id, {
+      const bizResult = await getBusiness();
+      if (bizResult.ok && bizResult.value?.id) {
+        await repoUpdateBusiness(bizResult.value.id, {
           category: pickCategory,
           subcategory: pickSubcategory,
           products: '[]',
@@ -319,7 +319,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               if (!user) return;
               const localId = crypto.randomUUID();
               const now = new Date().toISOString();
-              await db.business.add({
+              await addBusiness({
                 local_id: localId,
                 name: language === 'sw' ? 'Biashara Mpya' : 'New Business',
                 currency: 'KES',

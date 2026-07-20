@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { db } from '../lib/db';
+import { countUnsyncedQueueItems } from '../lib/repository';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { supabase } from '../lib/supabase';
 import { Check } from 'lucide-react';
@@ -21,7 +21,8 @@ export default function SyncDot() {
 
     async function check() {
       try {
-        const count = await db.sync_queue.where('synced').equals(0).count();
+        const result = await countUnsyncedQueueItems();
+        const count = result.ok ? result.value : 0;
         if (cancelled) return;
 
         if (confirmedIds.size > 0) {

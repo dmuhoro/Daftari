@@ -1,22 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { calculateProfit, calculateFulizaDebt, calculateWeeklyProfits } from './repository'
-import { kes } from './money'
-import type { Transaction } from './types'
-import { asLocalId } from './types'
+import type { Transaction } from './db'
 
 const makeTransaction = (
   type: Transaction['type'],
   amount: number,
   recorded_at = new Date().toISOString()
 ): Transaction => ({
-  local_id:    asLocalId(crypto.randomUUID()),
+  local_id: crypto.randomUUID(),
   type,
-  amount:      kes(amount),
-  category:    'test',
-  source:      'manual',
-  payment_method: 'cash',
+  amount,
+  category: 'test',
+  source: 'manual',
   recorded_at,
-  synced:      0,
+  synced: 0,
 })
 
 describe('calculateProfit()', () => {

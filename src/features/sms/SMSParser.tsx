@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { MessageSquare, CheckCircle, AlertCircle, User, Hash, Banknote, Smartphone, Wallet, Store, Building2, Wifi } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
-import { db } from '../../lib/db';
+import { getCustomerByName, updateCustomer, saveCustomer } from '../../lib/repository';
 import { parseMpesaSMS } from './parseMpesa';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
@@ -83,16 +83,16 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
     track(EVENTS.TRANSACTION_RECORDED, { type: 'income', method: 'sms' })
 
     try {
-      const existing = await db.customers.where('name').equals(parsed.sender).first();
+      const existingResult = await getCustomerByName(parsed.sender);
       const now = new Date().toISOString();
-      if (existing?.id) {
-        await db.customers.update(existing.id, {
-          total_visits: existing.total_visits + 1,
-          total_spent: existing.total_spent + amount,
+      if (existingResult.ok && existingResult.value?.id) {
+        await updateCustomer(existingResult.value.id, {
+          total_visits: existingResult.value.total_visits + 1,
+          total_spent: existingResult.value.total_spent + amount,
           last_visit: now,
         });
       } else {
-        await db.customers.add({
+        await saveCustomer({
           name: parsed.sender,
           phone: parsed.code || undefined,
           total_visits: 1,
