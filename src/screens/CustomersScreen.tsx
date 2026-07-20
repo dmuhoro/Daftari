@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Users, ChevronLeft, Search, Plus, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import type { Customer } from '../lib/db';
-import { getAllCustomers, saveCustomer } from '../lib/repository';
+import { getCustomersByBusinessId, saveCustomer } from '../lib/repository';
+import { useStore } from '../lib/store';
 import { track, EVENTS } from '../lib/analytics';
 import CustomerDetailScreen from './CustomerDetailScreen';
 import { Virtuoso } from 'react-virtuoso';
@@ -18,6 +19,7 @@ function fmt(n: number) {
 
 export default function CustomersScreen({ onBack }: CustomersScreenProps) {
   const { t, language } = useTranslation();
+  const activeBusinessId = useStore((s) => s.activeBusinessId);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -32,19 +34,20 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
   const [addName, setAddName] = useState('');
   const [addPhone, setAddPhone] = useState('');
 
-  async function loadCustomers() {
-    const result = await getAllCustomers();
+  const loadCustomers = useCallback(async () => {
+    if (!activeBusinessId) return;
+    const result = await getCustomersByBusinessId(activeBusinessId);
     if (result.ok) {
       const sorted = result.value.sort((a, b) => b.total_spent - a.total_spent);
       setCustomers(sorted);
     }
     setLoading(false);
-  }
+  }, [activeBusinessId]);
 
   useEffect(() => {
     track(EVENTS.CUSTOMER_LIST_VIEWED);
     loadCustomers();
-  }, []);
+  }, [loadCustomers]);
 
   const filtered = debouncedSearch
     ? customers.filter((c) => c.name.toLowerCase().includes(debouncedSearch.toLowerCase()))
@@ -55,6 +58,7 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
     await saveCustomer({
       name: addName.trim(),
       phone: addPhone.trim() || undefined,
+      business_id: activeBusinessId || undefined,
       total_visits: 0,
       total_spent: 0,
       last_visit: new Date().toISOString(),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllDailyCloses } from '../lib/repository';
+import { getDailyClosesByBusinessId } from '../lib/repository';
 import { useStore } from '../lib/store';
 import { track, EVENTS } from '../lib/analytics';
 
@@ -7,10 +7,12 @@ export function useRecordingStreak() {
   const [streak, setStreak] = useState(0);
   const [lastCloseDate, setLastCloseDate] = useState<string | null>(null);
   const transactions = useStore((s) => s.transactions);
+  const activeBusinessId = useStore((s) => s.activeBusinessId);
 
   useEffect(() => {
+    if (!activeBusinessId) return;
     async function compute() {
-      const closeResult = await getAllDailyCloses();
+      const closeResult = await getDailyClosesByBusinessId(activeBusinessId!);
       const closes = closeResult.ok ? closeResult.value.reverse() : [];
       const closeDates = new Set(closes.map((c) => c.date));
 
@@ -53,7 +55,7 @@ export function useRecordingStreak() {
     }
 
     compute();
-  }, [transactions]);
+  }, [transactions, activeBusinessId]);
 
   return { streak, lastCloseDate };
 }

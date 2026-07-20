@@ -34,6 +34,7 @@ const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
 export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParserProps) {
   const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
+  const activeBusinessId = useStore((s) => s.activeBusinessId);
 
   const [smsText, setSmsText] = useState('');
   const [parsed, setParsed] = useState<ReturnType<typeof parseMpesaSMS>>(null);
@@ -96,6 +97,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
         await saveCustomer({
           name: parsed.sender,
           phone: parsed.code || undefined,
+          business_id: activeBusinessId || undefined,
           total_visits: 1,
           total_spent: amount,
           last_visit: now,

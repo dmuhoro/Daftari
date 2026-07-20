@@ -4,7 +4,7 @@ import DashboardScreen from './DashboardScreen'
 
 vi.mock('../lib/repository', () => ({
   countCustomers: vi.fn(() => Promise.resolve({ ok: true, value: 5 })),
-  getAllDailyCloses: vi.fn(() => Promise.resolve({ ok: true, value: [] })),
+  getDailyClosesByBusinessId: vi.fn(() => Promise.resolve({ ok: true, value: [] })),
   calculateProfit: () => 3000,
   calculateFulizaDebt: () => 0,
   calculateWeeklyProfits: () => [],

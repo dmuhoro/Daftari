@@ -3,7 +3,7 @@ import { X, Search, ShoppingCart, Plus, Minus, User, Printer, Bluetooth, Camera,
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import type { Customer } from '../lib/db';
-import { getBusiness, updateBusiness as repoUpdateBusiness, getAllCustomers, updateCustomer } from '../lib/repository';
+import { getBusiness, updateBusiness as repoUpdateBusiness, getCustomersByBusinessId, updateCustomer } from '../lib/repository';
 import { scanBarcodeWithFallback } from '../lib/barcode';
 import { cents } from '../lib/money';
 import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
@@ -26,6 +26,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
   const { t, language } = useTranslation();
   const addTransaction = useStore((s) => s.addTransaction);
   const business = useStore((s) => s.business);
+  const activeBusinessId = useStore((s) => s.activeBusinessId);
   const updateBusiness = useStore((s) => s.updateBusiness);
   const products = business?.products ?? [];
   const [search, setSearch] = useState('');
@@ -153,7 +154,8 @@ export default function PosScreen({ onBack }: PosScreenProps) {
   }
 
   async function openCustomerPicker() {
-    const custResult = await getAllCustomers();
+    if (!activeBusinessId) return;
+    const custResult = await getCustomersByBusinessId(activeBusinessId);
     if (custResult.ok) setCustomers(custResult.value);
     setShowCustomerPicker(true);
   }

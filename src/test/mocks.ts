@@ -48,6 +48,7 @@ export const mockDb = {
     where: vi.fn(() => ({
       equals: vi.fn(() => ({
         first: vi.fn(() => Promise.resolve(undefined)),
+        toArray: vi.fn(() => Promise.resolve([])),
       })),
     })),
     count: vi.fn(() => Promise.resolve(0)),
@@ -55,17 +56,29 @@ export const mockDb = {
   sync_queue: {
     add: vi.fn(() => Promise.resolve(1)),
     update: vi.fn(() => Promise.resolve()),
+    delete: vi.fn(() => Promise.resolve()),
     where: vi.fn(() => ({
       equals: vi.fn(() => ({
         toArray: vi.fn(() => Promise.resolve([])),
+        modify: vi.fn(() => Promise.resolve()),
       })),
     })),
+    count: vi.fn(() => Promise.resolve(0)),
   },
   daily_closes: {
     add: vi.fn(() => Promise.resolve(1)),
     orderBy: vi.fn(() => ({
       reverse: vi.fn(() => ({
         toArray: vi.fn(() => Promise.resolve([])),
+        first: vi.fn(() => Promise.resolve(null)),
+      })),
+    })),
+    where: vi.fn(() => ({
+      equals: vi.fn(() => ({
+        toArray: vi.fn(() => Promise.resolve([])),
+        reverse: vi.fn(() => ({
+          first: vi.fn(() => Promise.resolve(null)),
+        })),
       })),
     })),
   },

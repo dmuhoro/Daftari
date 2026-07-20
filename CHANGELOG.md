@@ -11,16 +11,33 @@ Format: [Semantic Versioning](https://semver.org)
 - **`synced` field on 3 entity interfaces**: `Business`, `DailyClose`, `Customer` now have `synced: number` matching their Dexie store schema. Prevents silent data loss where `synced` would be `undefined` at runtime.
 - **DB schema v7**: All 8 entity tables now index `synced` for efficient unsynced queries. Upgrade migration preserves existing data.
 - **syncAllTables wired into useSync**: Non-transaction entities (customers, daily closes, businesses) now sync to Supabase on mount and reconnect. Previously dead code — `syncAllTables()` was defined in `src/lib/syncAll.ts` but never called.
+- **Business-scoped daily close & customer queries**: `getDailyClosesByBusinessId`, `getLatestDailyCloseByBusinessId`, `getCustomersByBusinessId` added to repository. Screens now filter by active business.
+- **Sync queue generalized**: `flushQueue()` now uses `item.table_name` instead of hardcoding `daftari_transactions` — supports upsert/delete on any Supabase table.
+- **Exponential backoff**: Failed sync items wait `base * 2^(retries-1)` ms before retry (2s → 4s → 8s → 16s → 32s).
+- **Dead-letter queue**: Items failing 5+ times are marked `synced: 2` and skipped. Inspectable via `getDeadLetterCount()`.
+- **Per-screen error boundaries**: All 22 screens in AppShell wrapped in individual `ErrorBoundary` components. A crash in one screen no longer takes down the entire app.
+- **82 total tests** (up from 73) — 10 new sync queue tests covering backoff, dead-letter, multi-table, and payload stripping.
 
 ### Fixed
 - **`saveBusiness()` type cast**: Removed unsafe `as Business` cast in `repository.ts:208`. Now creates properly typed object literals with all required fields including `synced: 0`.
 - **5 call sites missing `synced: 0`**: DailyClose, SMSParser, CustomersScreen, OnboardingScreen, SettingsScreen — all now pass `synced: 0` when creating entities.
+- **`useRecordingStreak` missing dep**: Added `activeBusinessId` to `useEffect` deps.
+- **`CustomersScreen` stale closure**: `loadCustomers` wrapped in `useCallback` with `activeBusinessId` dep.
+- **2 lint warnings**: Unused `_` variable in syncQueue.ts, missing deps in useRecordingStreak and CustomersScreen.
 
 ### Engineering
 - `package.json` — version 5.2.0 → 5.3.0
 - `src/lib/db.ts` — added synced to Business, DailyClose, Customer; v6→v7
-- `src/lib/repository.ts` — fixed saveBusiness
+- `src/lib/repository.ts` — fixed saveBusiness, added 3 business-scoped queries
 - `src/hooks/useSync.ts` — wired syncAllTables
+- `src/hooks/useRecordingStreak.ts` — business-scoped query, fixed deps
+- `src/features/sync/syncQueue.ts` — generalized QueuePayload, backoff, dead-letter
+- `src/features/sms/SMSParser.tsx` — business_id on customer creation
+- `src/screens/CustomersScreen.tsx` — business-scoped query, useCallback deps
+- `src/screens/PosScreen.tsx` — business-scoped customer query
+- `src/components/AppShell.tsx` — per-screen ErrorBoundary wrapping
+- `src/lib/__tests__/syncQueue.test.ts` — 10 new tests
+- `src/test/mocks.ts` — extended mock for daily_closes.where, sync_queue.delete
 - `docs/changelog/sprint-v5-3-0-beta-readiness.md` — sprint log
 
 ## [5.2.0] — 2026-07-20

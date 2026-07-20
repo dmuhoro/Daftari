@@ -1,33 +1,38 @@
-import { db, type Transaction } from '../../lib/db';
+import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { captureError } from '../../lib/sentry';
 
 const MAX_BATCH = 50
 const CIRCUIT_BREAKER_THRESHOLD = 3
 const CIRCUIT_BREAKER_RESET_MS = 60_000
+const MAX_RETRIES = 5
+const DEAD_LETTER_SYNCED = 2
+
+const BACKOFF_BASE_MS = 2_000
 
 let consecutiveFailures = 0
 let circuitBrokenAt: number | null = null
 let lastError: string | null = null
 
-export interface QueuePayload {
-  local_id: string;
-  type: Transaction['type'];
-  category: string;
-  source: string;
-  amount: number;
-  description?: string;
-  recorded_at: string;
-  synced: number;
-  user_id?: string;
-  mpesa_code?: string;
-  mpesa_sender?: string;
-  payment_method?: string;
-  receipt_id?: string;
-  business_id?: string;
-  product_id?: string;
-  cost_price?: number;
-  updated_at?: string;
+export type QueuePayload = Record<string, unknown>
+
+function getRetries(payload: string): number {
+  try {
+    const data = JSON.parse(payload) as Record<string, unknown>
+    return typeof data._retries === 'number' ? data._retries : 0
+  } catch {
+    return 0
+  }
+}
+
+function incrementRetries(payload: string): string {
+  try {
+    const data = JSON.parse(payload) as Record<string, unknown>
+    data._retries = ((data._retries as number) || 0) + 1
+    return JSON.stringify(data)
+  } catch {
+    return payload
+  }
 }
 
 export async function addToQueue(
@@ -40,7 +45,7 @@ export async function addToQueue(
     operation,
     table_name: tableName,
     record_id: recordId,
-    payload: payload ? JSON.stringify(payload) : '',
+    payload: payload ? JSON.stringify({ ...payload, _retries: 0 }) : '',
     synced: 0,
     created_at: new Date().toISOString(),
   });
@@ -49,7 +54,6 @@ export async function addToQueue(
 export async function flushQueue(): Promise<{ synced: number; failed: number }> {
   const now = Date.now()
 
-  // Circuit breaker: if too many consecutive failures, block for 60s
   if (circuitBrokenAt !== null) {
     if (now - circuitBrokenAt < CIRCUIT_BREAKER_RESET_MS) {
       return { synced: 0, failed: 0 };
@@ -65,7 +69,6 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
     return { synced: 0, failed: 0 };
   }
 
-  // Back-pressure: reject if queue exceeds max batch
   if (unsynced.length > MAX_BATCH) {
     lastError = `Queue overflow: ${unsynced.length} items (max ${MAX_BATCH})`
     circuitBrokenAt = now
@@ -78,32 +81,61 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
   let failedCount = 0;
 
   for (const item of unsynced) {
+    // Exponential backoff: skip items not yet ready for retry
+    // Items at MAX_RETRIES are always processed (moved to dead-letter on failure)
+    const retries = item.payload ? getRetries(item.payload) : 0
+    if (retries > 0 && retries < MAX_RETRIES) {
+      const created = new Date(item.created_at).getTime()
+      const backoffMs = BACKOFF_BASE_MS * Math.pow(2, retries - 1)
+      if (now - created < backoffMs) {
+        continue
+      }
+    }
+
     try {
+      const tableName = item.table_name || 'daftari_transactions'
+
       if (item.operation === 'upsert' && item.payload) {
-        const data = JSON.parse(item.payload) as QueuePayload;
+        const { _retries: _ignore, ...data } = JSON.parse(item.payload) as QueuePayload & { _retries?: number };
+        void _ignore;
         const { error } = await supabase
-          .from('daftari_transactions')
+          .from(tableName)
           .upsert(data, { onConflict: 'local_id' });
 
         if (error) throw error;
-
-        await db.transactions.where('local_id').equals(item.record_id).modify({ synced: 1 });
       } else if (item.operation === 'delete') {
         const { error } = await supabase
-          .from('daftari_transactions')
+          .from(tableName)
           .delete()
           .eq('local_id', item.record_id);
 
         if (error) throw error;
       }
 
-      await db.sync_queue.update(item.id!, { synced: 1 });
       await db.sync_queue.delete(item.id!);
       syncedCount++;
     } catch (cause) {
       failedCount++;
       consecutiveFailures++
       lastError = cause instanceof Error ? cause.message : String(cause)
+
+      // Exponential backoff: increment retry counter in payload
+      if (item.payload) {
+        const newPayload = incrementRetries(item.payload)
+        const newRetries = getRetries(newPayload)
+        if (newRetries >= MAX_RETRIES) {
+          await db.sync_queue.update(item.id!, {
+            synced: DEAD_LETTER_SYNCED,
+            payload: newPayload,
+          })
+          captureError(cause instanceof Error ? cause : new Error(String(cause)), {
+            feature: 'sync',
+            action: 'dead_letter',
+          })
+        } else {
+          await db.sync_queue.update(item.id!, { payload: newPayload })
+        }
+      }
 
       if (consecutiveFailures >= CIRCUIT_BREAKER_THRESHOLD) {
         circuitBrokenAt = Date.now()
@@ -118,6 +150,10 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
 
 export function getPendingCount() {
   return db.sync_queue.where('synced').equals(0).count();
+}
+
+export function getDeadLetterCount() {
+  return db.sync_queue.where('synced').equals(DEAD_LETTER_SYNCED).count();
 }
 
 export async function registerBackgroundSync() {

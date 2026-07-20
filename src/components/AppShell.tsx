@@ -6,6 +6,7 @@ import { useSync } from '../hooks/useSync';
 import { useStore } from '../lib/store';
 import DailyClose from '../features/close/DailyClose';
 import OfflineBanner from './OfflineBanner';
+import ErrorBoundary from './ErrorBoundary';
 
 const DashboardScreen = lazy(() => import('../screens/DashboardScreen'));
 const AddScreen = lazy(() => import('../screens/AddScreen'));
@@ -185,46 +186,48 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {/* Content */}
       <Suspense fallback={<div className="flex-1" />}>
         <main className="flex-1 overflow-y-auto pb-20 max-w-lg mx-auto">
-          {view === 'dashboard' && <DashboardScreen onNavigate={(v) => setView(v as View)} />}
+          {view === 'dashboard' && <ErrorBoundary key="dashboard"><DashboardScreen onNavigate={(v) => setView(v as View)} /></ErrorBoundary>}
           {view === 'add' && (
-            <AddScreen onNavigate={(v) => setView(v)} />
+            <ErrorBoundary key="add"><AddScreen onNavigate={(v) => setView(v)} /></ErrorBoundary>
           )}
           {view === 'add/sale' && (
-            <RecordSale onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+            <ErrorBoundary key="add-sale"><RecordSale onSave={() => setView('dashboard')} onCancel={() => setView('add')} /></ErrorBoundary>
           )}
           {view === 'add/expense' && (
-            <RecordExpense onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+            <ErrorBoundary key="add-expense"><RecordExpense onSave={() => setView('dashboard')} onCancel={() => setView('add')} /></ErrorBoundary>
           )}
           {view === 'add/withdrawal' && (
-            <RecordWithdrawal onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+            <ErrorBoundary key="add-withdrawal"><RecordWithdrawal onSave={() => setView('dashboard')} onCancel={() => setView('add')} /></ErrorBoundary>
           )}
           {view === 'add/sms' && (
-            <SMSParser
-              onSave={() => setView('dashboard')}
-              onCancel={() => setView('add')}
-              onManualEntry={() => setView('add/sale')}
-            />
+            <ErrorBoundary key="add-sms">
+              <SMSParser
+                onSave={() => setView('dashboard')}
+                onCancel={() => setView('add')}
+                onManualEntry={() => setView('add/sale')}
+              />
+            </ErrorBoundary>
           )}
           {view === 'add/fuliza-debt' && (
-            <RecordFulizaDebt onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+            <ErrorBoundary key="add-fuliza-debt"><RecordFulizaDebt onSave={() => setView('dashboard')} onCancel={() => setView('add')} /></ErrorBoundary>
           )}
           {view === 'add/fuliza-repaid' && (
-            <RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} />
+            <ErrorBoundary key="add-fuliza-repaid"><RecordFulizaRepaid onSave={() => setView('dashboard')} onCancel={() => setView('add')} /></ErrorBoundary>
           )}
-          {view === 'history' && <HistoryScreen />}
-          {view === 'settings' && <SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} />}
-          {view === 'catalog' && <ProductCatalogScreen onBack={() => setView('settings')} />}
-          {view === 'profile' && <BusinessProfileScreen onBack={() => setView('settings')} />}
-          {view === 'customers' && <CustomersScreen onBack={() => setView('settings')} />}
-          {view === 'monthly-report' && <MonthlyReportScreen onBack={() => setView('settings')} />}
-          {view === 'product-profitability' && <ProductProfitabilityScreen onBack={() => setView('settings')} />}
-          {view === 'suppliers' && <SuppliersScreen onBack={() => setView('settings')} />}
-          {view === 'purchase-orders' && <PurchaseOrdersScreen onBack={() => setView('settings')} />}
-          {view === 'stock-adjustments' && <StockAdjustmentsScreen onBack={() => setView('settings')} />}
-          {view === 'batch-entry' && <BatchEntryScreen onBack={() => setView('settings')} />}
-          {view === 'pos' && <PosScreen onBack={() => setView('settings')} />}
-          {view === 'help' && <HelpScreen onBack={() => setView('settings')} />}
-          {view === 'admin' && <AdminScreen onBack={() => setView('settings')} />}
+          {view === 'history' && <ErrorBoundary key="history"><HistoryScreen /></ErrorBoundary>}
+          {view === 'settings' && <ErrorBoundary key="settings"><SettingsScreen onSignOut={onSignOut} onNavigate={(v) => setView(v as View)} /></ErrorBoundary>}
+          {view === 'catalog' && <ErrorBoundary key="catalog"><ProductCatalogScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'profile' && <ErrorBoundary key="profile"><BusinessProfileScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'customers' && <ErrorBoundary key="customers"><CustomersScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'monthly-report' && <ErrorBoundary key="monthly-report"><MonthlyReportScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'product-profitability' && <ErrorBoundary key="product-profitability"><ProductProfitabilityScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'suppliers' && <ErrorBoundary key="suppliers"><SuppliersScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'purchase-orders' && <ErrorBoundary key="purchase-orders"><PurchaseOrdersScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'stock-adjustments' && <ErrorBoundary key="stock-adjustments"><StockAdjustmentsScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'batch-entry' && <ErrorBoundary key="batch-entry"><BatchEntryScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'pos' && <ErrorBoundary key="pos"><PosScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'help' && <ErrorBoundary key="help"><HelpScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'admin' && <ErrorBoundary key="admin"><AdminScreen onBack={() => setView('settings')} /></ErrorBoundary>}
         </main>
       </Suspense>
 

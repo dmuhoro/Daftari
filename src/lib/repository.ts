@@ -336,6 +336,33 @@ export const getAllDailyCloses = async (): Promise<Result<DailyClose[], AppError
   }
 }
 
+export const getDailyClosesByBusinessId = async (
+  businessId: string
+): Promise<Result<DailyClose[], AppError>> => {
+  try {
+    const closes = await db.daily_closes.where('business_id').equals(businessId).toArray()
+    return ok(closes)
+  } catch (cause) {
+    logger.error('repository:get_daily_closes_by_business_failed', cause, { businessId })
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read daily closes by business', cause))
+  }
+}
+
+export const getLatestDailyCloseByBusinessId = async (
+  businessId: string
+): Promise<Result<DailyClose | null, AppError>> => {
+  try {
+    const close = await db.daily_closes
+      .where('business_id').equals(businessId)
+      .reverse()
+      .first()
+    return ok(close ?? null)
+  } catch (cause) {
+    logger.error('repository:get_latest_daily_close_by_business_failed', cause, { businessId })
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read latest daily close by business', cause))
+  }
+}
+
 // ─── Customers ───────────────────────────────────────────────────────────────
 
 export const getAllCustomers = async (): Promise<Result<Customer[], AppError>> => {
@@ -345,6 +372,18 @@ export const getAllCustomers = async (): Promise<Result<Customer[], AppError>> =
   } catch (cause) {
     logger.error('repository:get_all_customers_failed', cause)
     return err(appError('DEXIE_READ_FAILED', 'Failed to read customers', cause))
+  }
+}
+
+export const getCustomersByBusinessId = async (
+  businessId: string
+): Promise<Result<Customer[], AppError>> => {
+  try {
+    const customers = await db.customers.where('business_id').equals(businessId).toArray()
+    return ok(customers)
+  } catch (cause) {
+    logger.error('repository:get_customers_by_business_failed', cause, { businessId })
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read customers by business', cause))
   }
 }
 
