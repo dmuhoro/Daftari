@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package, ShoppingCart, ClipboardList, Zap, HelpCircle } from 'lucide-react';
+import { LogOut, ChevronRight, User, Building2, Download, Sun, Moon, Monitor, Check, Calendar, BarChart3, FileDown, Plus, RefreshCw, Building, Package, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
@@ -12,6 +12,7 @@ import { transactionsToCSV, downloadCSV } from '../lib/csv';
 import { exportAllData } from '../lib/backup';
 import { pullFromSupabase } from '../lib/syncAll';
 import { flushQueue } from '../features/sync/syncQueue';
+import { generateReferralUrl, shareViaWhatsApp } from '../lib/referral';
 import { useToast } from '../components/Toast';
 
 interface SettingsScreenProps {
@@ -745,6 +746,45 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               </div>
               <span className="text-sm font-medium text-ink dark:text-stone-100">{language === 'sw' ? 'Msaada' : 'Help'}</span>
             </button>
+          )}
+
+          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+
+          {business && (
+            <button
+              onClick={() => {
+                const url = generateReferralUrl(business.name, business.category);
+                shareViaWhatsApp(url, language);
+              }}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-amber-50 transition-colors dark:hover:bg-stone-800"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center dark:bg-amber-900">
+                  <Share2 className="w-4 h-4 text-amber-600" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">
+                    {language === 'sw' ? 'Mwambie Rafiki' : 'Tell a Friend'}
+                  </span>
+                  <p className="text-xs text-muted dark:text-stone-400">
+                    {language === 'sw' ? 'Saidia mfanyabiashara mwenzako' : 'Help a fellow business owner'}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+            </button>
+          )}
+
+          {import.meta.env.VITE_ADMIN_USER_ID && (
+            <>
+              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+              <button onClick={() => onNavigate?.('admin')} className="w-full flex items-center gap-3 px-4 py-4 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800">
+                <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center dark:bg-purple-900">
+                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                </div>
+                <span className="text-sm font-medium text-ink dark:text-stone-100">Admin</span>
+              </button>
+            </>
           )}
 
           <div className="h-px bg-border mx-4 dark:bg-stone-700" />

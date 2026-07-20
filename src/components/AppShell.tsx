@@ -22,6 +22,7 @@ const StockAdjustmentsScreen = lazy(() => import('../screens/StockAdjustmentsScr
 const BatchEntryScreen = lazy(() => import('../screens/BatchEntryScreen'));
 const PosScreen = lazy(() => import('../screens/PosScreen'));
 const HelpScreen = lazy(() => import('../screens/HelpScreen'));
+const AdminScreen = lazy(() => import('../screens/AdminScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -51,7 +52,8 @@ type View =
   | 'stock-adjustments'
   | 'batch-entry'
   | 'pos'
-  | 'help';
+  | 'help'
+  | 'admin';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -89,6 +91,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string, language: strin
     case 'batch-entry': return t('batch_entry');
     case 'pos': return t('pos') || 'POS';
     case 'help': return language === 'sw' ? 'Msaada' : 'Help';
+    case 'admin': return 'Admin';
   }
 }
 
@@ -104,7 +107,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos' || view === 'help';
+  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos' || view === 'help' || view === 'admin';
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -154,7 +157,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && view !== 'help' && (
+      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && view !== 'help' && view !== 'admin' && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
@@ -221,6 +224,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'batch-entry' && <BatchEntryScreen onBack={() => setView('settings')} />}
           {view === 'pos' && <PosScreen onBack={() => setView('settings')} />}
           {view === 'help' && <HelpScreen onBack={() => setView('settings')} />}
+          {view === 'admin' && <AdminScreen onBack={() => setView('settings')} />}
         </main>
       </Suspense>
 

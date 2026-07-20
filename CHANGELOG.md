@@ -5,6 +5,24 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.1.0] — 2026-07-20
+
+### Added
+- **Referral link generation**: `src/lib/referral.ts` generates UTM-tagged referral URLs with business category pre-selection. First 4 letters of business name used as referral code.
+- **"Tell a Friend" button**: Share2 icon in Settings — opens WhatsApp with pre-filled referral message in Kiswahili or English. Tracks `referral_link_shared` analytics event.
+- **Web Push notifications**: Client-side push subscription utility (`src/lib/pushNotifications.ts`) with permission request, subscribe/unsubscribe, and Supabase storage. Supabase Edge Function `send-daily-close-push` sends scheduled 8pm EAT push reminders to users who recorded transactions but haven't closed their day.
+- **Push permission onboarding step**: Step 4 in OnboardingScreen requests notification permission with opt-in UI — "Receive daily close reminders?" with Notify/Skip buttons. Never requested on app load without context.
+- **Supabase realtime sync confirmation**: SyncDot now subscribes to `postgres_changes` on `daftari_transactions` INSERT events. Shows a green checkmark for 2 seconds when remote insert confirms local data is persisted.
+- **Admin dashboard**: New `AdminScreen` with beta cohort overview — business list, 7-day transaction count, total transactions, last active date. Gated by `VITE_ADMIN_USER_ID` env var. Accessible from Settings Account section.
+- **Domain**: Open Graph tags updated to use `daftari.co.ke`. Meta description improved. `og:image:width`/`height` added. `twitter:card` added for rich link previews.
+
+### Infrastructure
+- `supabase/functions/send-daily-close-push/index.ts` — Edge Function for scheduled push (cron: 5pm UTC)
+- `docs/beta-feedback-view.sql` — Supabase SQL view for beta feedback monitoring
+- `.env.example` — added `VITE_CANONICAL_DOMAIN`, `VITE_VAPID_PUBLIC_KEY`, `VITE_ADMIN_USER_ID`
+- `eslint.config.js` — ignored `supabase/` directory (Deno Edge Functions)
+- **Version**: bumped `package.json` 5.0.1 → 5.1.0
+
 ## [5.0.1] — 2026-07-19
 
 ### Fixed

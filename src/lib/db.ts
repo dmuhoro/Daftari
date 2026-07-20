@@ -47,6 +47,7 @@ export interface Business {
   payment_methods?: string;
   products?: string;
   updated_at?: string;
+  referral_code?: string;
 }
 
 export interface DailyClose {

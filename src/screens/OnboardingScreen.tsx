@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import {
   UtensilsCrossed, ShoppingBag, Hammer, Sprout, Scissors, Bike, Briefcase,
   Banknote, Smartphone, Wallet, Store, Building2, Wifi, Landmark,
-  Check, ChevronLeft, ArrowRight,
+  Check, ChevronLeft, ArrowRight, Bell,
 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import { requestNotificationPermission, subscribeToPush } from '../lib/pushNotifications';
 import { useStore } from '../lib/store';
 import { db } from '../lib/db';
 import { supabase } from '../lib/supabase';
@@ -49,7 +50,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
   useEffect(() => { track(EVENTS.ONBOARDING_STARTED) }, [])
 
-  const progress = ((step + 1) / 4) * 100;
+  const progress = ((step + 1) / 5) * 100;
   const categoryEntries = Object.entries(BUSINESS_CATEGORIES) as [BusinessCategoryKey, typeof BUSINESS_CATEGORIES[BusinessCategoryKey]][];
 
   async function handleSubmit() {
@@ -252,6 +253,45 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 {t('continue')} <ArrowRight className="w-4 h-4" />
               </button>
             )}
+          </div>
+        )}
+
+        {/* Step 4: Notification Permission */}
+        {step === 4 && (
+          <div className="flex flex-col items-center gap-6 py-6">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
+              <Bell className="w-8 h-8 text-green-600" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-lg font-bold text-ink dark:text-stone-100 mb-2">
+                {language === 'sw' ? 'Pokea ukumbusho wa kufunga siku?' : 'Receive daily close reminders?'}
+              </h2>
+              <p className="text-sm text-muted dark:text-stone-400">
+                {language === 'sw'
+                  ? 'Tutakukumbusha saa 2 usiku kufunga siku yako ya biashara.'
+                  : "We'll remind you at 8pm to close your business day."}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 w-full">
+              <button
+                onClick={async () => {
+                  const granted = await requestNotificationPermission();
+                  if (granted) {
+                    await subscribeToPush();
+                  }
+                  onComplete();
+                }}
+                className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-700 text-white text-base font-semibold transition-colors"
+              >
+                {language === 'sw' ? 'Ndio, Niarifu' : 'Yes, Notify Me'}
+              </button>
+              <button
+                onClick={onComplete}
+                className="w-full py-4 rounded-2xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400 transition-colors"
+              >
+                {language === 'sw' ? 'Achilia' : 'Skip'}
+              </button>
+            </div>
           </div>
         )}
 

@@ -64,4 +64,6 @@ export const EVENTS = {
   PASSWORD_RESET_REQUESTED:  'password_reset_requested',
   SIGNOUT:                   'signout',
   FEEDBACK_SUBMITTED:        'feedback_submitted',
+  REFERRAL_LINK_SHARED:      'referral_link_shared',
+  REFERRAL_SIGNUP_COMPLETED: 'referral_signup_completed',
 } as const
