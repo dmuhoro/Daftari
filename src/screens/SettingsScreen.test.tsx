@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import SettingsScreen from './SettingsScreen'
 
 vi.mock('../lib/store', () => {
@@ -53,9 +53,9 @@ describe('SettingsScreen', () => {
   const onSignOut = vi.fn()
   beforeEach(() => { vi.clearAllMocks() })
 
-  it('renders user profile section', async () => {
+  it('renders Account section heading', async () => {
     render(<SettingsScreen onSignOut={onSignOut} />)
-    await waitFor(() => expect(screen.getByText('user_profile')).toBeDefined())
+    expect(screen.getByText('Account')).toBeDefined()
   })
 
   it('shows language section', () => {

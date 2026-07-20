@@ -1,23 +1,18 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, TrendingDown, ArrowDownCircle, ClipboardList, Loader2, Smartphone, Wallet, Store, Building2, Banknote, X, Hash, User, Receipt, Search, SlidersHorizontal, Pencil, Trash2, Undo2, FileDown } from 'lucide-react';
+import { ClipboardList, Search, X, SlidersHorizontal, FileDown, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { flushQueue } from '../features/sync/syncQueue';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
 import type { Transaction } from '../lib/db';
+import TransactionRow from '../components/history/TransactionRow';
+import ReceiptSheet from '../components/history/ReceiptSheet';
+import EditSheet from '../components/history/EditSheet';
+import DeleteConfirmModal from '../components/history/DeleteConfirmModal';
+import UndoSnackbar from '../components/history/UndoSnackbar';
 
 const PAGE_SIZE = 50;
-
-const PAYMENT_ICONS: Record<string, typeof Smartphone> = {
-  cash: Banknote,
-  mpesa_send_money: Smartphone,
-  pochi_la_biashara: Wallet,
-  till_number: Store,
-  paybill: Building2,
-  airtel_money: Smartphone,
-  bank_transfer: Wallet,
-};
 
 const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
   cash: { sw: 'Taslimu', en: 'Cash' },
@@ -35,10 +30,6 @@ const TYPE_OPTIONS: Array<{ key: string; sw: string; en: string }> = [
   { key: 'expense', sw: 'Gharama', en: 'Expenses' },
   { key: 'withdrawal', sw: 'Kutoa', en: 'Withdrawals' },
 ];
-
-function fmt(n: number) {
-  return `KES ${n.toLocaleString('en-KE')}`;
-}
 
 function groupByDate(txs: { recorded_at: string }[]) {
   const groups: Record<string, typeof txs> = {};
@@ -292,30 +283,6 @@ export default function HistoryScreen() {
 
   const filters: FilterTab[] = ['week', 'month', 'all'];
 
-  function typeIcon(type: string) {
-    if (type === 'income') return TrendingUp;
-    if (type === 'expense') return TrendingDown;
-    return ArrowDownCircle;
-  }
-
-  function typeColor(type: string) {
-    if (type === 'income') return 'text-primary-600';
-    if (type === 'expense') return 'text-danger';
-    return 'text-amber-500';
-  }
-
-  function typeBg(type: string) {
-    if (type === 'income') return 'bg-primary-50';
-    if (type === 'expense') return 'bg-red-50';
-    return 'bg-amber-50';
-  }
-
-  function typeLabel(type: string) {
-    if (type === 'income') return t('sale');
-    if (type === 'expense') return t('expense');
-    return t('withdrawal');
-  }
-
   function formatDate(dateStr: string) {
     const today = new Date().toISOString().slice(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
@@ -372,7 +339,7 @@ export default function HistoryScreen() {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={language === 'sw' ? 'Tafuta kiasi, maelezo...' : 'Search amount, description...'}
             aria-label={t('search') || 'Search transactions'}
-            className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-10 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-10 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600"
           />
           {searchQuery && (
             <button
@@ -429,7 +396,6 @@ export default function HistoryScreen() {
         {/* Expanded filters */}
         {showFilters && (
           <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-4 flex flex-col gap-3">
-            {/* Type filter */}
             <div className="flex gap-2 flex-wrap">
               {TYPE_OPTIONS.map((opt) => (
                   <button
@@ -447,7 +413,6 @@ export default function HistoryScreen() {
               ))}
             </div>
 
-            {/* Category filter */}
             {allCategories.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('category')}</p>
@@ -464,7 +429,6 @@ export default function HistoryScreen() {
               </div>
             )}
 
-            {/* Payment method filter */}
             {allPaymentMethods.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('payment_method_label')}</p>
@@ -483,7 +447,6 @@ export default function HistoryScreen() {
               </div>
             )}
 
-            {/* Date range */}
             <div className="flex gap-2">
               <div className="flex-1">
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{language === 'sw' ? 'Kuanzia' : 'From'}</p>
@@ -505,7 +468,6 @@ export default function HistoryScreen() {
               </div>
             </div>
 
-            {/* Clear filters */}
             <button
               onClick={() => { setTypeFilter('all'); setCategoryFilter(''); setPaymentFilter(''); setDateFrom(''); setDateTo(''); setSearchQuery(''); }}
               className="self-end text-xs font-medium text-primary-600 hover:underline"
@@ -532,63 +494,16 @@ export default function HistoryScreen() {
               {formatDate(date)}
             </p>
             <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
-              {(groups[date] as Transaction[]).map((tx, i, arr) => {
-                const Icon = typeIcon(tx.type);
-                const color = typeColor(tx.type);
-                const bg = typeBg(tx.type);
-                const isLast = i === arr.length - 1;
-                const PayIcon = tx.payment_method ? PAYMENT_ICONS[tx.payment_method] : null;
-                return (
-                  <div key={tx.local_id}>
-                    <div className="flex items-center gap-1 group">
-                      <div
-                        className="flex-1 flex items-center gap-3 px-4 py-3.5 cursor-pointer active:bg-stone-50 dark:active:bg-stone-800 transition-colors"
-                        onClick={() => setSelectedTx(tx)}
-                      >
-                        <div className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
-                          <Icon className={`w-4 h-4 ${color}`} strokeWidth={2} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-ink dark:text-stone-100 truncate">
-                            {tx.description || typeLabel(tx.type)}
-                          </p>
-                          <p className="text-xs text-muted dark:text-stone-400 flex items-center gap-1">
-                            {tx.category}
-                            {PayIcon && tx.payment_method && (
-                              <>
-                                <span>·</span>
-                                <PayIcon className="w-3 h-3" />
-                                <span>{(language === 'sw' ? PAYMENT_LABELS[tx.payment_method]?.sw : PAYMENT_LABELS[tx.payment_method]?.en) ?? tx.payment_method}</span>
-                              </>
-                            )}
-                            <span>·</span>
-                            {new Date(tx.recorded_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                        <p className={`text-sm font-semibold ${color} flex-shrink-0`}>
-                          {tx.type === 'income' ? '+' : '-'}{fmt(tx.amount)}
-                        </p>
-                      </div>
-                      {/* Action buttons on hover */}
-                      <div className="flex gap-1 pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); openEditSheet(tx); }}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-muted"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setDeleteConfirm(tx.local_id); }}
-                          className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-50 hover:bg-red-100 text-danger"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    {!isLast && <div className="h-px bg-border mx-4" />}
-                  </div>
-                );
-              })}
+              {(groups[date] as Transaction[]).map((tx, i, arr) => (
+                <TransactionRow
+                  key={tx.local_id}
+                  tx={tx}
+                  isLast={i === arr.length - 1}
+                  onSelect={setSelectedTx}
+                  onEdit={openEditSheet}
+                  onDelete={setDeleteConfirm}
+                />
+              ))}
             </div>
           </div>
         ))}
@@ -596,14 +511,12 @@ export default function HistoryScreen() {
         {/* Sentinel for infinite scroll */}
         {hasMore && <div ref={sentinelRef} className="h-4" />}
 
-        {/* Loading more */}
         {hasMore && (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="w-5 h-5 animate-spin text-muted" />
           </div>
         )}
 
-        {/* End of list */}
         {!hasMore && sorted.length > 0 && (
           <p className="text-center text-xs text-muted dark:text-stone-400 py-4">
             {language === 'sw' ? 'Mwisho wa miamala' : 'End of transactions'}
@@ -613,259 +526,43 @@ export default function HistoryScreen() {
 
       {/* Undo snackbar */}
       {undoMsg && (
-        <div className="fixed bottom-24 left-4 right-4 z-50 flex items-center justify-between bg-stone-900 dark:bg-stone-700 text-white rounded-2xl px-4 py-3 shadow-2xl max-w-lg mx-auto">
-          <span className="text-sm">{undoMsg}</span>
-          <button
-            onClick={handleUndoDelete}
-            className="flex items-center gap-1 text-sm font-semibold text-green-400 hover:text-green-300"
-          >
-            <Undo2 className="w-4 h-4" />
-            {language === 'sw' ? 'Tengua' : 'Undo'}
-          </button>
-        </div>
+        <UndoSnackbar message={undoMsg} onUndo={handleUndoDelete} />
       )}
 
       {/* Receipt detail bottom sheet */}
       {selectedTx && !editTx && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          onClick={() => setSelectedTx(null)}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-white dark:bg-stone-900 rounded-t-3xl w-full max-w-lg p-6 pb-8 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-green-600" />
-                <span className="text-base font-bold text-ink dark:text-stone-100">{t('receipt') || 'Receipt'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => { setSelectedTx(null); openEditSheet(selectedTx); }}
-                  className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800"
-                >
-                  <Pencil className="w-4 h-4 text-muted" />
-                </button>
-                <button onClick={() => setSelectedTx(null)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
-                  <X className="w-5 h-5 text-muted dark:text-stone-400" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-center py-4">
-                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                  <span className="text-2xl font-black text-green-600">D</span>
-                </div>
-              </div>
-
-              {selectedTx.receipt_id && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-stone-50 dark:bg-stone-800 rounded-2xl">
-                  <Hash className="w-5 h-5 text-muted dark:text-stone-400" />
-                  <div>
-                    <p className="text-xs text-muted dark:text-stone-400">{t('receipt_no') || 'Receipt No.'}</p>
-                    <p className="text-sm font-mono font-bold text-ink dark:text-stone-100">{selectedTx.receipt_id}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center justify-center py-2">
-                <p className={`text-3xl font-bold ${typeColor(selectedTx.type)}`}>
-                  {selectedTx.type === 'income' ? '+' : '-'}{'KES '}{selectedTx.amount.toLocaleString('en-KE')}
-                </p>
-              </div>
-
-              <div className="h-px bg-border" />
-
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
-                    {(() => { const Icn = typeIcon(selectedTx.type); return <Icn className={`w-4 h-4 ${typeColor(selectedTx.type)}`} />; })()}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-muted dark:text-stone-400">{t('type') || 'Type'}</p>
-                    <p className="text-sm font-medium text-ink dark:text-stone-100">{typeLabel(selectedTx.type)}</p>
-                  </div>
-                </div>
-
-                {selectedTx.description && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
-                      <ClipboardList className="w-4 h-4 text-muted dark:text-stone-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-muted dark:text-stone-400">{t('description')}</p>
-                      <p className="text-sm font-medium text-ink dark:text-stone-100">{selectedTx.description}</p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTx.mpesa_sender && (
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
-                      <User className="w-4 h-4 text-muted dark:text-stone-400" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-muted dark:text-stone-400">{t('sender')}</p>
-                      <p className="text-sm font-medium text-ink dark:text-stone-100">{selectedTx.mpesa_sender}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center">
-                    <Smartphone className="w-4 h-4 text-muted dark:text-stone-400" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs text-muted dark:text-stone-400">{t('time') || 'Time'}</p>
-                    <p className="text-sm font-medium text-ink dark:text-stone-100">
-                      {new Date(selectedTx.recorded_at).toLocaleString('en-KE', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ReceiptSheet
+          tx={selectedTx}
+          onClose={() => setSelectedTx(null)}
+          onEdit={(tx) => { setSelectedTx(null); openEditSheet(tx); }}
+        />
       )}
 
       {/* Edit transaction sheet */}
       {editTx && (
-        <div
-          className="fixed inset-0 z-50 flex items-end justify-center"
-          onClick={() => setEditTx(null)}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-white dark:bg-stone-900 rounded-t-3xl w-full max-w-lg p-6 pb-8 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Pencil className="w-5 h-5 text-green-600" />
-                <span className="text-base font-bold text-ink dark:text-stone-100">{language === 'sw' ? 'Hariri' : 'Edit'} {typeLabel(editTx.type)}</span>
-              </div>
-              <button onClick={() => setEditTx(null)} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
-                <X className="w-5 h-5 text-muted dark:text-stone-400" />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('amount')}</p>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted dark:text-stone-400">KES</span>
-                  <input
-                    type="number"
-                    value={editingAmount}
-                    onChange={(e) => setEditingAmount(e.target.value)}
-                    className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-12 pr-4 py-3 text-sm font-semibold text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('description')}</p>
-                <input
-                  type="text"
-                  value={editingDescription}
-                  onChange={(e) => setEditingDescription(e.target.value)}
-                  className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
-              </div>
-
-              <div>
-                <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('category')}</p>
-                <input
-                  type="text"
-                  value={editingCategory}
-                  onChange={(e) => setEditingCategory(e.target.value)}
-                  className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('leo')}</p>
-                  <input
-                    type="date"
-                    value={editingDate}
-                    onChange={(e) => setEditingDate(e.target.value)}
-                    className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                  />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('time') || 'Time'}</p>
-                  <input
-                    type="time"
-                    value={editingTime}
-                    onChange={(e) => setEditingTime(e.target.value)}
-                    className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-2">
-                <button
-                  onClick={() => setEditTx(null)}
-                  className="flex-1 py-3 px-4 rounded-xl border border-border dark:border-stone-700 text-sm font-semibold text-ink dark:text-stone-100"
-                >
-                  {t('cancel')}
-                </button>
-                <button
-                  onClick={handleSaveEdit}
-                  className="flex-1 py-3 px-4 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700"
-                >
-                  {t('save')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <EditSheet
+          tx={editTx}
+          amount={editingAmount}
+          description={editingDescription}
+          category={editingCategory}
+          date={editingDate}
+          time={editingTime}
+          onClose={() => setEditTx(null)}
+          onAmountChange={setEditingAmount}
+          onDescriptionChange={setEditingDescription}
+          onCategoryChange={setEditingCategory}
+          onDateChange={setEditingDate}
+          onTimeChange={setEditingTime}
+          onSave={handleSaveEdit}
+        />
       )}
 
       {/* Delete confirmation */}
       {deleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setDeleteConfirm(null)}
-        >
-          <div className="absolute inset-0 bg-black/40" />
-          <div
-            className="relative bg-white dark:bg-stone-900 rounded-3xl w-full max-w-sm p-6 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-danger" />
-              </div>
-              <div>
-                <p className="text-base font-bold text-ink dark:text-stone-100">
-                  {language === 'sw' ? 'Futa miamala hii?' : 'Delete this transaction?'}
-                </p>
-                <p className="text-sm text-muted dark:text-stone-400 mt-1">
-                  {language === 'sw' ? 'Huwezi kurejesha tena.' : 'This cannot be undone.'}
-                </p>
-              </div>
-              <div className="flex gap-3 w-full mt-2">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 py-3 px-4 rounded-xl border border-border dark:border-stone-700 text-sm font-semibold text-ink dark:text-stone-100"
-                >
-                  {t('cancel')}
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  className="flex-1 py-3 px-4 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600"
-                >
-                  {language === 'sw' ? 'Futa' : 'Delete'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeleteConfirmModal
+          onClose={() => setDeleteConfirm(null)}
+          onConfirm={() => handleDelete(deleteConfirm)}
+        />
       )}
     </div>
   );
