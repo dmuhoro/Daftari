@@ -209,7 +209,8 @@ export const saveBusiness = async (name: string): Promise<Result<number, AppErro
       name,
       currency: 'KES',
       created_at: new Date().toISOString(),
-    } as Business)
+      synced: 0,
+    })
     return ok(id as number)
   } catch (cause) {
     logger.error('repository:save_business_failed', cause)

@@ -59,6 +59,7 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
       total_spent: 0,
       last_visit: new Date().toISOString(),
       created_at: new Date().toISOString(),
+      synced: 0,
     });
     setAddName('');
     setAddPhone('');

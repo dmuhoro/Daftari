@@ -100,6 +100,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
           total_spent: amount,
           last_visit: now,
           created_at: now,
+          synced: 0,
         });
       }
     } catch (e) { console.warn('Failed to upsert customer from SMS:', e); }

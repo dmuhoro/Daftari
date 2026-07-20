@@ -77,6 +77,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         products: '[]',
         user_id: userId,
         created_at: new Date().toISOString(),
+        synced: 0,
       });
 
       setBusiness({

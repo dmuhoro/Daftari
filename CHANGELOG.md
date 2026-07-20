@@ -5,6 +5,24 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.3.0] — 2026-07-20
+
+### Added
+- **`synced` field on 3 entity interfaces**: `Business`, `DailyClose`, `Customer` now have `synced: number` matching their Dexie store schema. Prevents silent data loss where `synced` would be `undefined` at runtime.
+- **DB schema v7**: All 8 entity tables now index `synced` for efficient unsynced queries. Upgrade migration preserves existing data.
+- **syncAllTables wired into useSync**: Non-transaction entities (customers, daily closes, businesses) now sync to Supabase on mount and reconnect. Previously dead code — `syncAllTables()` was defined in `src/lib/syncAll.ts` but never called.
+
+### Fixed
+- **`saveBusiness()` type cast**: Removed unsafe `as Business` cast in `repository.ts:208`. Now creates properly typed object literals with all required fields including `synced: 0`.
+- **5 call sites missing `synced: 0`**: DailyClose, SMSParser, CustomersScreen, OnboardingScreen, SettingsScreen — all now pass `synced: 0` when creating entities.
+
+### Engineering
+- `package.json` — version 5.2.0 → 5.3.0
+- `src/lib/db.ts` — added synced to Business, DailyClose, Customer; v6→v7
+- `src/lib/repository.ts` — fixed saveBusiness
+- `src/hooks/useSync.ts` — wired syncAllTables
+- `docs/changelog/sprint-v5-3-0-beta-readiness.md` — sprint log
+
 ## [5.2.0] — 2026-07-20
 
 ### Changed

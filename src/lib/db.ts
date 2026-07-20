@@ -48,6 +48,7 @@ export interface Business {
   products?: string;
   updated_at?: string;
   referral_code?: string;
+  synced: number;
 }
 
 export interface DailyClose {
@@ -60,6 +61,7 @@ export interface DailyClose {
   expenses: number;
   created_at: string;
   updated_at?: string;
+  synced: number;
 }
 
 export interface Customer {
@@ -74,6 +76,7 @@ export interface Customer {
   created_at: string;
   updated_at?: string;
   loyalty_points?: number;
+  synced: number;
 }
 
 export interface Supplier {
@@ -142,15 +145,15 @@ class DaftariDB extends Dexie {
 
   constructor() {
     super('DaftariDB');
-    this.version(6).stores({
+    this.version(7).stores({
       transactions: '++id, &local_id, type, category, source, recorded_at, synced, business_id, product_id',
       sync_queue: '++id, operation, synced, created_at',
-      business: '++id, &local_id',
-      daily_closes: '++id, &date, business_id',
-      customers: '++id, &name, phone, business_id',
-      purchase_orders: '++id, &local_id, business_id, supplier_id, status, created_at',
-      suppliers: '++id, &local_id, business_id, name',
-      stock_adjustments: '++id, &local_id, business_id, product_id, created_at, reason',
+      business: '++id, &local_id, synced',
+      daily_closes: '++id, &date, business_id, synced',
+      customers: '++id, &name, phone, business_id, synced',
+      purchase_orders: '++id, &local_id, business_id, supplier_id, status, created_at, synced',
+      suppliers: '++id, &local_id, business_id, name, synced',
+      stock_adjustments: '++id, &local_id, business_id, product_id, created_at, reason, synced',
     }).upgrade(async (tx) => {
       // Migrate purchase_orders from v5 (single product) to v6 (multi-item JSON)
       await tx.table('purchase_orders').toCollection().modify((po: Record<string, unknown>) => {

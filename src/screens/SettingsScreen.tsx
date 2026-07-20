@@ -155,6 +155,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
                 user_id: user.id,
                 created_at: now,
                 updated_at: now,
+                synced: 0,
               });
               window.location.reload();
             }}

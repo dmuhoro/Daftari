@@ -51,6 +51,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
       revenue,
       expenses,
       created_at: new Date().toISOString(),
+      synced: 0,
     });
     setLastCloseDate(todayStr);
     setSaving(false);
