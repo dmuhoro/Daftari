@@ -5,6 +5,7 @@ import { useStore } from '../lib/store';
 import type { Customer } from '../lib/db';
 import { getBusiness, updateBusiness as repoUpdateBusiness, getAllCustomers, updateCustomer } from '../lib/repository';
 import { scanBarcodeWithFallback } from '../lib/barcode';
+import { cents } from '../lib/money';
 import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
 
 interface CartItem {
@@ -47,10 +48,10 @@ export default function PosScreen({ onBack }: PosScreenProps) {
     ? products.filter(p => p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || (p.barcode && p.barcode.includes(debouncedSearch)))
     : products;
 
-  const cartTotal = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
+  const cartTotal = useMemo(() => cents(cart.reduce((s, i) => s + i.price * i.qty, 0)), [cart]);
   const maxRedeem = selectedCustomer ? Math.floor((selectedCustomer.loyalty_points ?? 0) / POINTS_REDEEM_RATE) : 0;
-  const discount = redeemPoints ? Math.min(maxRedeem, cartTotal) : 0;
-  const finalTotal = Math.max(0, cartTotal - discount);
+  const discount = cents(redeemPoints ? Math.min(maxRedeem, cartTotal) : 0);
+  const finalTotal = cents(Math.max(0, cartTotal - discount));
   const pointsEarned = Math.floor(finalTotal / POINTS_PER_KES);
 
   function addToCart(product: typeof products[0]) {

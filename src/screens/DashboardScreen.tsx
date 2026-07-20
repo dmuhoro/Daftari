@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { countCustomers } from '../lib/repository';
+import { cents } from '../lib/money';
 import { BUSINESS_CATEGORIES, categoryEmoji, CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import SyncDot from '../components/SyncDot';
@@ -106,32 +107,32 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
   function getWeekData() {
     return weekDates.map((date) => {
       const dayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === date);
-      const revenue = dayTxs.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
-      const expenses = dayTxs.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
-      const withdrawals = dayTxs.filter((tx) => tx.type === 'withdrawal').reduce((sum, tx) => sum + tx.amount, 0);
-      const profit = revenue - expenses - withdrawals;
+      const revenue = cents(dayTxs.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0));
+      const expenses = cents(dayTxs.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0));
+      const withdrawals = cents(dayTxs.filter((tx) => tx.type === 'withdrawal').reduce((sum, tx) => sum + tx.amount, 0));
+      const profit = cents(revenue - expenses - withdrawals);
       return { date, day: getDayName(date, true), profit, revenue, expenses };
     });
   }
 
   const weekData = getWeekData();
-  const weekRevenue = weekData.reduce((sum, d) => sum + d.revenue, 0);
-  const weekExpenses = weekData.reduce((sum, d) => sum + d.expenses, 0);
-  const weekProfit = weekData.reduce((sum, d) => sum + d.profit, 0);
+  const weekRevenue = cents(weekData.reduce((sum, d) => sum + d.revenue, 0));
+  const weekExpenses = cents(weekData.reduce((sum, d) => sum + d.expenses, 0));
+  const weekProfit = cents(weekData.reduce((sum, d) => sum + d.profit, 0));
   const bestDay = weekData.reduce((best, d) => d.profit > best.profit ? d : best, weekData[0]);
 
   const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
 
-  const revenue = todayTxs.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0);
-  const expenses = todayTxs.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0);
-  const withdrawals = todayTxs.filter((tx) => tx.type === 'withdrawal').reduce((sum, tx) => sum + tx.amount, 0);
-  const profit = revenue - expenses - withdrawals;
-  const cashAvailable = revenue - expenses;
+  const revenue = cents(todayTxs.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0));
+  const expenses = cents(todayTxs.filter((tx) => tx.type === 'expense').reduce((sum, tx) => sum + tx.amount, 0));
+  const withdrawals = cents(todayTxs.filter((tx) => tx.type === 'withdrawal').reduce((sum, tx) => sum + tx.amount, 0));
+  const profit = cents(revenue - expenses - withdrawals);
+  const cashAvailable = cents(revenue - expenses);
   const txCount = todayTxs.length;
 
-  const fulizaTaken = todayTxs.filter((tx) => tx.type === 'debt_taken').reduce((sum, tx) => sum + tx.amount, 0);
-  const fulizaRepaid = todayTxs.filter((tx) => tx.type === 'debt_repaid').reduce((sum, tx) => sum + tx.amount, 0);
-  const fulizaDebt = fulizaTaken - fulizaRepaid;
+  const fulizaTaken = cents(todayTxs.filter((tx) => tx.type === 'debt_taken').reduce((sum, tx) => sum + tx.amount, 0));
+  const fulizaRepaid = cents(todayTxs.filter((tx) => tx.type === 'debt_repaid').reduce((sum, tx) => sum + tx.amount, 0));
+  const fulizaDebt = cents(fulizaTaken - fulizaRepaid);
   const hasFulizaDebt = fulizaDebt > 0;
 
   const todayHasData = txCount > 0;
@@ -151,8 +152,8 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
     const todayTxsFull = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr && tx.type === 'income');
     for (const tx of todayTxsFull) {
       if (tx.product_id && productRevenue[tx.product_id]) {
-        productRevenue[tx.product_id].rev += tx.amount;
-        productRevenue[tx.product_id].cost += tx.cost_price ?? 0;
+        productRevenue[tx.product_id].rev = cents(productRevenue[tx.product_id].rev + tx.amount);
+        productRevenue[tx.product_id].cost = cents(productRevenue[tx.product_id].cost + (tx.cost_price ?? 0));
         productRevenue[tx.product_id].qty += 1;
       }
     }
@@ -160,7 +161,7 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
       .filter(([, v]) => v.qty > 0)
       .map(([id, v]) => {
         const p = prods.find(p => p.id === id);
-        return { id, name: p?.name ?? id, revenue: v.rev, cost: v.cost, margin: v.rev - v.cost, qty: v.qty };
+        return { id, name: p?.name ?? id, revenue: v.rev, cost: v.cost, margin: cents(v.rev - v.cost), qty: v.qty };
       })
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
@@ -327,13 +328,13 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
 
               {/* Fuliza section */}
               {(() => {
-                const allFulizaTaken = transactions
+                const allFulizaTaken = cents(transactions
                   .filter((tx) => tx.type === 'debt_taken')
-                  .reduce((s, tx) => s + tx.amount, 0);
-                const allFulizaRepaid = transactions
+                  .reduce((s, tx) => s + tx.amount, 0));
+                const allFulizaRepaid = cents(transactions
                   .filter((tx) => tx.type === 'debt_repaid')
-                  .reduce((s, tx) => s + tx.amount, 0);
-                const runningFuliza = allFulizaTaken - allFulizaRepaid;
+                  .reduce((s, tx) => s + tx.amount, 0));
+                const runningFuliza = cents(allFulizaTaken - allFulizaRepaid);
                 const hasFulizaHistory = allFulizaTaken > 0;
                 const estInterest = Math.round(runningFuliza * 0.05);
                 const monthFulizaCost = fulizaTaken > 0 ? Math.round(fulizaTaken * 0.05) : 0;

@@ -5,6 +5,7 @@ import type {
 import { logger } from './logger'
 import { ok, err, appError } from './types'
 import type { Result, AppError } from './types'
+import { cents } from './money'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -687,13 +688,13 @@ export const calculateProfit = (transactions: Transaction[]): number => {
   const outflow = transactions
     .filter(t => t.type === 'expense' || t.type === 'withdrawal' || t.type === 'debt_repaid')
     .reduce((sum, t) => sum + t.amount, 0)
-  return income - outflow
+  return cents(income - outflow)
 }
 
 export const calculateFulizaDebt = (transactions: Transaction[]): number => {
   const taken   = transactions.filter(t => t.type === 'debt_taken').reduce((s, t) => s + t.amount, 0)
   const repaid  = transactions.filter(t => t.type === 'debt_repaid').reduce((s, t) => s + t.amount, 0)
-  return taken - repaid
+  return cents(taken - repaid)
 }
 
 export const calculateWeeklyProfits = (

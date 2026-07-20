@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie, 
 import { Calendar, TrendingUp, TrendingDown, BarChart3, PieChart as PieChartIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { cents } from '../lib/money';
 
 const SW_MONTHS = ['Januari', 'Februari', 'Machi', 'Aprili', 'Mei', 'Juni', 'Julai', 'Agosti', 'Septemba', 'Oktoba', 'Novemba', 'Desemba'];
 const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -40,28 +41,28 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
   }, [transactions, year, month]);
 
   const revenue = useMemo(
-    () => monthTxs.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0),
+    () => cents(monthTxs.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0)),
     [monthTxs]
   );
   const expenses = useMemo(
-    () => monthTxs.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0),
+    () => cents(monthTxs.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0)),
     [monthTxs]
   );
   const withdrawals = useMemo(
-    () => monthTxs.filter((tx) => tx.type === 'withdrawal').reduce((s, tx) => s + tx.amount, 0),
+    () => cents(monthTxs.filter((tx) => tx.type === 'withdrawal').reduce((s, tx) => s + tx.amount, 0)),
     [monthTxs]
   );
-  const profit = revenue - expenses - withdrawals;
+  const profit = cents(revenue - expenses - withdrawals);
 
   const prevRevenue = useMemo(
-    () => prevMonth.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0),
+    () => cents(prevMonth.filter((tx) => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0)),
     [prevMonth]
   );
   const prevExpenses = useMemo(
-    () => prevMonth.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0),
+    () => cents(prevMonth.filter((tx) => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0)),
     [prevMonth]
   );
-  const prevProfit = prevRevenue - prevExpenses;
+  const prevProfit = cents(prevRevenue - prevExpenses);
 
   const revenueChange = prevRevenue > 0 ? ((revenue - prevRevenue) / prevRevenue * 100).toFixed(1) : '—';
   const expenseChange = prevExpenses > 0 ? ((expenses - prevExpenses) / prevExpenses * 100).toFixed(1) : '—';
@@ -72,9 +73,9 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
     const expenseByCat: Record<string, number> = {};
     for (const tx of monthTxs) {
       if (tx.type === 'income') {
-        incomeByCat[tx.category] = (incomeByCat[tx.category] || 0) + tx.amount;
+        incomeByCat[tx.category] = cents((incomeByCat[tx.category] || 0) + tx.amount);
       } else if (tx.type === 'expense') {
-        expenseByCat[tx.category] = (expenseByCat[tx.category] || 0) + tx.amount;
+        expenseByCat[tx.category] = cents((expenseByCat[tx.category] || 0) + tx.amount);
       }
     }
     const incomeCats = Object.entries(incomeByCat)
@@ -98,13 +99,13 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
     for (const tx of monthTxs) {
       const key = tx.recorded_at.slice(0, 10);
       if (byDay[key]) {
-        if (tx.type === 'income') byDay[key].revenue += tx.amount;
-        else if (tx.type === 'expense') byDay[key].expenses += tx.amount;
+        if (tx.type === 'income') byDay[key].revenue = cents(byDay[key].revenue + tx.amount);
+        else if (tx.type === 'expense') byDay[key].expenses = cents(byDay[key].expenses + tx.amount);
       }
     }
     return Object.entries(byDay).map(([date, data]) => ({
       date: new Date(date + 'T12:00:00').getDate().toString(),
-      profit: data.revenue - data.expenses,
+      profit: cents(data.revenue - data.expenses),
     }));
   }, [monthTxs, year, month]);
 

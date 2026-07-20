@@ -3,6 +3,7 @@ import { ChevronLeft, Package, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { cents } from '../lib/money';
 
 const COLORS = ['#16a34a', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444', '#6366f1'];
 
@@ -31,8 +32,8 @@ export default function ProductProfitabilityScreen({ onBack }: ProductProfitabil
     const incomeTxs = transactions.filter((tx) => tx.type === 'income' && tx.product_id);
     for (const tx of incomeTxs) {
       if (tx.product_id && byProduct[tx.product_id]) {
-        byProduct[tx.product_id].revenue += tx.amount;
-        byProduct[tx.product_id].cost += tx.cost_price ?? 0;
+        byProduct[tx.product_id].revenue = cents(byProduct[tx.product_id].revenue + tx.amount);
+        byProduct[tx.product_id].cost = cents(byProduct[tx.product_id].cost + (tx.cost_price ?? 0));
         byProduct[tx.product_id].qty += 1;
       }
     }
@@ -41,15 +42,15 @@ export default function ProductProfitabilityScreen({ onBack }: ProductProfitabil
       .filter((p) => p.qty > 0)
       .map((p) => ({
         ...p,
-        margin: p.revenue - p.cost,
+        margin: cents(p.revenue - p.cost),
         marginPct: p.revenue > 0 ? Math.round(((p.revenue - p.cost) / p.revenue) * 100) : 0,
       }))
       .sort((a, b) => b.revenue - a.revenue);
   }, [transactions, business]);
 
-  const totalRevenue = productData.reduce((s, p) => s + p.revenue, 0);
-  const totalCost = productData.reduce((s, p) => s + p.cost, 0);
-  const totalMargin = totalRevenue - totalCost;
+  const totalRevenue = cents(productData.reduce((s, p) => s + p.revenue, 0));
+  const totalCost = cents(productData.reduce((s, p) => s + p.cost, 0));
+  const totalMargin = cents(totalRevenue - totalCost);
 
   const chartData = productData.slice(0, 10).map((p) => ({
     name: p.name.length > 10 ? p.name.slice(0, 10) + '…' : p.name,

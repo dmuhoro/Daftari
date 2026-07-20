@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronLeft, TrendingUp, TrendingDown, ArrowDownCircle, Phone, MessageCircle, Smartphone, Wallet, Store, Building2, Banknote, Search } from 'lucide-react';
 import { useTranslation, type TranslationKey } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { cents } from '../lib/money';
 import type { Customer } from '../lib/db';
 
 const PAYMENT_ICONS: Record<string, typeof Smartphone> = {
@@ -66,9 +67,9 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
       )
     : sortedTxs;
 
-  const totalSpent = customerTxs
+  const totalSpent = cents(customerTxs
     .filter((tx) => tx.type === 'income')
-    .reduce((s, tx) => s + tx.amount, 0);
+    .reduce((s, tx) => s + tx.amount, 0));
 
   const lastVisit = customerTxs.length > 0
     ? new Date(customerTxs[0].recorded_at).toLocaleDateString(language === 'sw' ? 'sw-KE' : 'en-KE', {

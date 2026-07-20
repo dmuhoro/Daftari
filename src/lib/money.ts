@@ -44,6 +44,11 @@ export const parseKESInput = (raw: string): KES | null => {
   return kes(parsed)
 }
 
+/** Safe integer: rounds to nearest whole number. Use as the last step in any KES aggregation.
+ *  Unlike `kes()`, returns a plain `number` so it can be used in display/state code without
+ *  branded-type friction. */
+export const cents = (amount: number): number => Math.round(amount)
+
 /** True if amount is positive profit */
 export const isProfit = (amount: KES): boolean => amount > 0
 

@@ -5,6 +5,27 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.2.0] — 2026-07-20
+
+### Changed
+- **Repository pattern (full migration)**: All 17 feature files migrated from direct `import { db }` to repository imports. Only infrastructure files (`repository.ts`, `syncAll.ts`, `syncQueue.ts`, `backup.ts`) still reference Dexie directly. Repository layer extended to cover all 8 entity types — 45+ CRUD + query functions.
+- **Store.ts refactored**: `addTransaction`, `updateTransaction`, `deleteTransaction` in Zustand store now call repository functions instead of operating on Dexie directly.
+- **Money safety pass**: `cents()` helper (wraps `Math.round()`) applied at all aggregation boundaries across DashboardScreen, DailyClose, MonthlyReportScreen, PosScreen, PurchaseOrdersScreen, ProductProfitabilityScreen, CustomerDetailScreen, and SMSParser.
+
+### Fixed
+- **DB version mismatch**: Corrected `DB.VERSION` in `constants.ts` from 5 to 6 to match actual schema.
+- **Receipt text format**: Line count and formatting corrected in `print.ts` for reliable thermal printer output.
+
+### Removed
+- **Direct Dexie imports**: No feature-level component imports `db` directly — all data access goes through the repository abstraction layer.
+
+### Engineering
+- `src/lib/money.ts` — added `cents()` helper
+- `src/lib/repository.ts` — extended with 45+ functions for all entities
+- `src/lib/store.ts` — refactored to use repository
+- `docs/changelog/sprint-v5-2-0-architectural-debt.md` — sprint log
+- `package.json` — version 5.1.0 → 5.2.0
+
 ## [5.1.0] — 2026-07-20
 
 ### Added

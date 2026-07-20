@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, Plus, ShoppingCart, Check, X, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import { cents } from '../lib/money';
 import type { PurchaseOrder as POrder, PurchaseOrderItem, Supplier } from '../lib/db';
 import { getPurchaseOrdersByBusinessId, getSuppliersByBusinessId, savePurchaseOrder, updatePurchaseOrderByLocalId, getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 
@@ -91,7 +92,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
   }
 
   function poTotal(): number {
-    return poItems.reduce((s, i) => s + i.total_cost, 0);
+    return cents(poItems.reduce((s, i) => s + i.total_cost, 0));
   }
 
   async function handleCreatePO() {

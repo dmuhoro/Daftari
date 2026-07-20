@@ -3,6 +3,7 @@ import { MessageSquare, CheckCircle, AlertCircle, User, Hash, Banknote, Smartpho
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { getCustomerByName, updateCustomer, saveCustomer } from '../../lib/repository';
+import { cents } from '../../lib/money';
 import { parseMpesaSMS } from './parseMpesa';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
@@ -88,7 +89,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       if (existingResult.ok && existingResult.value?.id) {
         await updateCustomer(existingResult.value.id, {
           total_visits: existingResult.value.total_visits + 1,
-          total_spent: existingResult.value.total_spent + amount,
+          total_spent: cents(existingResult.value.total_spent + amount),
           last_visit: now,
         });
       } else {

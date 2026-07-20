@@ -3,6 +3,7 @@ import { X, CheckCircle, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import { saveDailyClose } from '../../lib/repository';
+import { cents } from '../../lib/money';
 import { track, EVENTS } from '../../lib/analytics';
 
 function fmtKES(n: number) {
@@ -32,15 +33,15 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
   const todayStr = getTodayNairobi();
   const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
 
-  const revenue = todayTxs
+  const revenue = cents(todayTxs
     .filter((tx) => tx.type === 'income')
-    .reduce((sum, tx) => sum + tx.amount, 0);
+    .reduce((sum, tx) => sum + tx.amount, 0));
 
-  const expenses = todayTxs
+  const expenses = cents(todayTxs
     .filter((tx) => tx.type === 'expense')
-    .reduce((sum, tx) => sum + tx.amount, 0);
+    .reduce((sum, tx) => sum + tx.amount, 0));
 
-  const profit = revenue - expenses;
+  const profit = cents(revenue - expenses);
 
   async function handleClose() {
     setSaving(true);
