@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ClipboardList, Search, X, SlidersHorizontal, FileDown, Loader2 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import { flushQueue } from '../features/sync/syncQueue';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
@@ -295,13 +297,13 @@ export default function HistoryScreen() {
   if (allTransactions.length === 0) {
     return (
       <div className="flex flex-col gap-4 px-4 pt-2 pb-4">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-8 flex flex-col items-center justify-center gap-3 mt-4">
+        <Card padding="p-8" className="flex flex-col items-center justify-center gap-3 mt-4">
           <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center">
             <ClipboardList className="w-7 h-7 text-primary-400" />
           </div>
           <p className="text-base font-semibold text-ink dark:text-stone-100">{t('no_transactions_history')}</p>
           <p className="text-sm text-muted dark:text-stone-400 text-center">{t('transactions_will_appear')}</p>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -332,14 +334,14 @@ export default function HistoryScreen() {
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-stone-400" />
-          <input
+          <TextField
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={language === 'sw' ? 'Tafuta kiasi, maelezo...' : 'Search amount, description...'}
             aria-label={t('search') || 'Search transactions'}
-            className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-10 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600"
+            icon
           />
           {searchQuery && (
             <button
@@ -395,7 +397,7 @@ export default function HistoryScreen() {
 
         {/* Expanded filters */}
         {showFilters && (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-4 flex flex-col gap-3">
+          <Card padding="p-4" className="flex flex-col gap-3">
             <div className="flex gap-2 flex-wrap">
               {TYPE_OPTIONS.map((opt) => (
                   <button
@@ -450,21 +452,11 @@ export default function HistoryScreen() {
             <div className="flex gap-2">
               <div className="flex-1">
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{language === 'sw' ? 'Kuanzia' : 'From'}</p>
-                <input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
+                <TextField type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{language === 'sw' ? 'Hadi' : 'To'}</p>
-                <input
-                  type="date"
-                  value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
+                <TextField type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
               </div>
             </div>
 
@@ -474,7 +466,7 @@ export default function HistoryScreen() {
             >
               {language === 'sw' ? 'Futa vichujio' : 'Clear filters'}
             </button>
-          </div>
+          </Card>
         )}
 
         {/* Count */}
@@ -493,7 +485,7 @@ export default function HistoryScreen() {
             <p className="text-xs font-semibold text-muted dark:text-stone-400 uppercase tracking-widest mb-2 mt-2">
               {formatDate(date)}
             </p>
-            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+            <Card padding="none" overflow>
               {(groups[date] as Transaction[]).map((tx, i, arr) => (
                 <TransactionRow
                   key={tx.local_id}
@@ -504,7 +496,7 @@ export default function HistoryScreen() {
                   onDelete={setDeleteConfirm}
                 />
               ))}
-            </div>
+            </Card>
           </div>
         ))}
 

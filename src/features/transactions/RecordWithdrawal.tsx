@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import TextField from '../../components/ui/TextField';
 import SuccessFlash from '../../components/SuccessFlash';
 import { track, EVENTS } from '../../lib/analytics';
 
@@ -64,7 +65,7 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
 
       <div>
         <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
-        <input
+        <TextField
           type="number"
           inputMode="decimal"
           value={amount}
@@ -73,7 +74,8 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
           placeholder="0"
           min="1"
           required
-          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          accent="primary"
+          className="text-base"
         />
         {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
       </div>
@@ -82,13 +84,14 @@ export default function RecordWithdrawal({ onSave, onCancel }: RecordWithdrawalP
         <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
           {t('note')} <span className="font-normal">({t('optional')})</span>
         </label>
-        <input
+        <TextField
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder={t('note')}
           maxLength={200}
-          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          accent="primary"
+          className="text-base"
         />
       </div>
 

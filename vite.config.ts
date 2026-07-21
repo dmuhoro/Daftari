@@ -47,7 +47,21 @@ export default defineConfig({
       },
     }),
   ],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/@supabase/')) {
+            return 'vendor-supabase'
+          }
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons'
+          }
+        },
+      },
+    },
   },
 });

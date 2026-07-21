@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Package, Plus, Trash2, ChevronLeft, Check, RefreshCw } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import { getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import { captureError } from '../lib/sentry';
@@ -144,7 +146,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
         ) : (
           <div className="flex flex-col gap-2">
             {products.map((product) => (
-              <div key={product.id} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5 flex items-center gap-3">
+              <Card key={product.id} variant="subtle" padding="none" className="px-4 py-3.5 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-ink dark:text-stone-100 truncate">{product.name}</p>
                   <p className="text-xs text-muted dark:text-stone-400">
@@ -177,52 +179,51 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
                     </button>
                   )}
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
         {showForm && (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm p-4 mt-4">
+          <Card variant="subtle" padding="p-4" className="mt-4">
             <div className="flex flex-col gap-3">
-              <input
+              <TextField
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t('add_product')}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
                 autoFocus
               />
               <div className="flex gap-2">
-                <input
+                <TextField
                   type="number"
                   value={newPrice}
                   onChange={(e) => setNewPrice(e.target.value)}
                   placeholder="KES"
-                  className="flex-1 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="flex-1"
                 />
-                <input
+                <TextField
                   type="text"
                   value={newUnit}
                   onChange={(e) => setNewUnit(e.target.value)}
                   placeholder="pc/kg"
-                  className="w-24 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="w-24"
                 />
               </div>
               <div className="flex gap-2">
-                <input
+                <TextField
                   type="number"
                   value={newStock}
                   onChange={(e) => setNewStock(e.target.value)}
                   placeholder={t('initial_stock') || 'Initial stock'}
-                  className="flex-1 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="flex-1"
                 />
-                <input
+                <TextField
                   type="number"
                   value={newThreshold}
                   onChange={(e) => setNewThreshold(e.target.value)}
                   placeholder={t('low_stock_at') || 'Alert at'}
-                  className="w-24 rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  className="w-24"
                 />
               </div>
               <div className="flex gap-2">
@@ -252,7 +253,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
                 </button>
               </div>
             </div>
-          </div>
+          </Card>
         )}
 
         {!showForm && (
@@ -268,12 +269,12 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setRestockId(null)}>
             <div className="bg-white dark:bg-stone-900 rounded-2xl p-6 w-full max-w-xs shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <p className="text-sm font-semibold text-ink dark:text-stone-100 mb-3">{t('restock') || 'Restock'}</p>
-              <input
+              <TextField
                 type="number"
                 value={restockQty}
                 onChange={(e) => setRestockQty(e.target.value)}
                 placeholder={t('quantity') || 'Quantity'}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent mb-3"
+                className="mb-3"
                 autoFocus
               />
               <div className="flex gap-2">

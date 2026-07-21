@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import TextField from '../../components/ui/TextField';
 import { getBusiness, updateBusiness as repoUpdateBusiness } from '../../lib/repository';
 import { BUSINESS_CATEGORIES, getTemplateProducts } from '../../lib/businessCategories';
 import type { BusinessCategoryKey } from '../../lib/businessCategories';
@@ -248,7 +249,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
       <form onSubmit={handleSave} className="flex flex-col gap-4">
         <div>
           <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
-          <input
+          <TextField
             type="number"
             inputMode="decimal"
             value={amount}
@@ -257,7 +258,8 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
             placeholder="0"
             min="1"
             required
-            className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            accent="primary"
+            className="text-base"
           />
           {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
         </div>
@@ -311,13 +313,14 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
           <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
             {t('description')} <span className="text-muted dark:text-stone-400 font-normal">({t('optional')})</span>
           </label>
-          <input
+          <TextField
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('description')}
             maxLength={200}
-            className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+            accent="primary"
+            className="text-base"
           />
         </div>
 

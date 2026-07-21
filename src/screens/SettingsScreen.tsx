@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronRight, Building2, Package, Check, BarChart3, FileDown, Download, RefreshCw, Plus, Building, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2, LogOut } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { supabase } from '../lib/supabase';
@@ -85,7 +86,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 mt-2 dark:text-stone-400">
           {t('business_name')}
         </p>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           <div className="flex items-center gap-3 px-4 py-4">
             <div className="w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-900 flex items-center justify-center">
               <Building2 className="w-4 h-4 text-primary-600" />
@@ -110,7 +111,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               />
             </>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Manage Businesses section */}
@@ -118,7 +119,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
           {language === 'sw' ? 'Biashara Zangu' : 'My Businesses'}
         </p>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           {useStore.getState().businesses.map((biz) => {
             const isActive = biz.id === useStore.getState().activeBusinessId;
             return (
@@ -168,7 +169,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               {language === 'sw' ? 'Ongeza Biashara Mpya' : 'Add New Business'}
             </span>
           </button>
-        </div>
+        </Card>
       </div>
 
       <AppearanceSection />
@@ -178,7 +179,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
           {language === 'sw' ? 'Usimamizi wa Bidhaa' : 'Inventory Management'}
         </p>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           {onNavigate && (
             <>
               <NavRow icon={<Building2 className="w-4 h-4 text-purple-600" />} label={t('suppliers')} desc={language === 'sw' ? 'Wasambazaji na wauzaji' : 'Manage your suppliers'} onClick={() => onNavigate('suppliers')} />
@@ -192,7 +193,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               <NavRow icon={<Zap className="w-4 h-4 text-cyan-600" />} label={t('pos') || 'POS Mode'} desc={language === 'sw' ? 'Sehemu ya kuuza bila taabu' : 'Touch-friendly point of sale'} onClick={() => onNavigate('pos')} />
             </>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Data & Reports section */}
@@ -200,7 +201,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
           {language === 'sw' ? 'Data & Ripoti' : 'Data & Reports'}
         </p>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           {onNavigate && (
             <>
               <NavRow icon={<BarChart3 className="w-4 h-4 text-green-600" />} label={language === 'sw' ? 'Ripoti ya Mwezi' : 'Monthly Report'} desc={language === 'sw' ? 'Faida, gharama, na kulinganisha' : 'Profit, expenses & comparison'} onClick={() => onNavigate('monthly-report')} />
@@ -236,7 +237,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             </div>
             {syncing && <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />}
           </button>
-        </div>
+        </Card>
       </div>
 
       {/* PWA Install section */}
@@ -245,7 +246,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
             {t('install_daftari')}
           </p>
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+          <Card padding="none" overflow>
             <button onClick={install} className="w-full flex items-center justify-between px-4 py-4 hover:bg-blue-50 transition-colors dark:hover:bg-stone-800">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center dark:bg-blue-900">
@@ -258,14 +259,14 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               </div>
               <div className="bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">{t('install')}</div>
             </button>
-          </div>
+          </Card>
         </div>
       )}
 
       {/* Account section */}
       <div>
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">Account</p>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           {onNavigate ? (
             <NavRow icon={<Building2 className="w-4 h-4 text-muted dark:text-stone-400" />} label={t('business_profile')} onClick={() => onNavigate('profile')} />
           ) : (
@@ -301,7 +302,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             </div>
             <span className="text-sm font-medium text-danger">{t('sign_out')}</span>
           </button>
-        </div>
+        </Card>
       </div>
 
       <p className="text-center text-xs text-muted pb-4 dark:text-stone-400">{t('made_in_kenya')}</p>

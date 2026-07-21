@@ -1,5 +1,6 @@
 import { Pencil, X } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import TextField from '../ui/TextField';
 import type { Transaction } from '../../lib/db';
 
 interface EditSheetProps {
@@ -46,52 +47,52 @@ export default function EditSheet({
             <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('amount')}</p>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted dark:text-stone-400">KES</span>
-              <input
+              <TextField
                 type="number"
                 value={amount}
                 onChange={(e) => onAmountChange(e.target.value)}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-12 pr-4 py-3 text-sm font-semibold text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
+                className="pl-12 pr-4 font-semibold"
               />
             </div>
           </div>
 
           <div>
             <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('description')}</p>
-            <input
+            <TextField
               type="text"
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
-              className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
+              variant="inline"
             />
           </div>
 
           <div>
             <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('category')}</p>
-            <input
+            <TextField
               type="text"
               value={category}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
+              variant="inline"
             />
           </div>
 
           <div className="flex gap-2">
             <div className="flex-1">
               <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('leo')}</p>
-              <input
+              <TextField
                 type="date"
                 value={date}
                 onChange={(e) => onDateChange(e.target.value)}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
+                variant="inline"
               />
             </div>
             <div className="flex-1">
               <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1">{t('time') || 'Time'}</p>
-              <input
+              <TextField
                 type="time"
                 value={time}
                 onChange={(e) => onTimeChange(e.target.value)}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-green-600"
+                variant="inline"
               />
             </div>
           </div>

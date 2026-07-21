@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { X, Search, ShoppingCart, Plus, Minus, User, Printer, Bluetooth, Camera, Zap } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import TextField from '../components/ui/TextField';
 import type { Customer } from '../lib/db';
 import { getBusiness, updateBusiness as repoUpdateBusiness, getCustomersByBusinessId, updateCustomer } from '../lib/repository';
 import { scanBarcodeWithFallback } from '../lib/barcode';
@@ -204,7 +205,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
         <div className="px-4 py-2 bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-stone-400" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('search') || 'Search...'} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 pl-10 pr-4 py-2.5 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <TextField type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t('search') || 'Search...'} icon accent="blue" className="py-2.5" />
           </div>
         </div>
 

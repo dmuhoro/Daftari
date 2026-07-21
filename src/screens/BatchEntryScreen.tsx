@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ChevronLeft, Plus, Zap } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 
 interface BatchEntryScreenProps {
   onBack: () => void;
@@ -64,7 +66,7 @@ export default function BatchEntryScreen({ onBack }: BatchEntryScreenProps) {
           </div>
         )}
 
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm p-4">
+        <Card variant="subtle" padding="p-4">
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('batch_select_type')}</p>
@@ -78,16 +80,16 @@ export default function BatchEntryScreen({ onBack }: BatchEntryScreenProps) {
               </div>
             </div>
 
-            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={t('batch_amount')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <TextField type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={t('batch_amount')} accent="blue" className="text-base" />
 
-            <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('batch_description')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+            <TextField type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('batch_description')} accent="blue" className="text-base" />
 
             <div className="flex gap-2">
               <button onClick={onBack} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('batch_done')}</button>
               <button onClick={handleAdd} disabled={!amount || Number(amount) <= 0 || saving} className="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> {t('batch_add')}</button>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

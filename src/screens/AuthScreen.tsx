@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import { BookOpen, AlertCircle, Eye, EyeOff, ChevronLeft, CheckCircle } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
 
@@ -111,7 +113,7 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
           </div>
 
           {/* Card */}
-          <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-card border border-border dark:border-stone-700 p-6">
+          <Card padding="p-6">
             {mode === 'reset' && resetSent ? (
               <div className="flex flex-col items-center gap-4 py-4">
                 <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
@@ -139,15 +141,16 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                   <div>
                     <label className="block text-xs font-medium text-muted dark:text-stone-400 dark:text-stone-500 mb-1.5">{t('password')}</label>
                     <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition pr-11"
-                      />
+<TextField
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      accent="primary"
+                      className="pr-11"
+                    />
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
@@ -179,14 +182,14 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-xs font-medium text-muted dark:text-stone-400 dark:text-stone-500 mb-1.5">{t('email')}</label>
-                    <input
+                    <TextField
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       autoComplete="email"
                       placeholder="you@example.com"
-                      className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+                      accent="primary"
                     />
                   </div>
                   <button
@@ -216,14 +219,14 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                     <label className="block text-xs font-medium text-muted dark:text-stone-400 dark:text-stone-500 mb-1.5">
                       {t('email')}
                     </label>
-                    <input
+                    <TextField
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       autoComplete="email"
                       placeholder="you@example.com"
-                      className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+                      accent="primary"
                     />
                   </div>
 
@@ -232,14 +235,15 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                       {t('password')}
                     </label>
                     <div className="relative">
-                      <input
+                      <TextField
                         type={showPassword ? 'text' : 'password'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition pr-11"
+                        accent="primary"
+                        className="pr-11"
                       />
                       <button
                         type="button"
@@ -295,7 +299,7 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                 )}
               </>
             )}
-          </div>
+          </Card>
 
           {/* Toggle mode (only on signin/signup) */}
           {mode !== 'reset' && mode !== 'recovery' && (

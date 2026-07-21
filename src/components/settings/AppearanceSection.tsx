@@ -1,6 +1,7 @@
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import Card from '../ui/Card';
 
 export default function AppearanceSection() {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ export default function AppearanceSection() {
       <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
         {t('appearance_settings')}
       </p>
-      <div className="bg-white rounded-2xl border border-border shadow-card p-4 space-y-4 dark:bg-stone-900 dark:border-stone-700">
+      <Card padding="p-4" className="space-y-4">
         <div>
           <p className="text-xs font-medium text-muted mb-2 dark:text-stone-400">{t('language')}</p>
           <div className="flex gap-3">
@@ -64,7 +65,7 @@ export default function AppearanceSection() {
             })}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

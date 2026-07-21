@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+
 import { CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 

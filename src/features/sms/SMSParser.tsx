@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { MessageSquare, CheckCircle, AlertCircle, User, Hash, Banknote, Smartphone, Wallet, Store, Building2, Wifi } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import Card from '../../components/ui/Card';
+import TextField from '../../components/ui/TextField';
 import { getCustomerByName, updateCustomer, saveCustomer } from '../../lib/repository';
 import { cents } from '../../lib/money';
 import { parseMpesaSMS } from './parseMpesa';
@@ -166,7 +168,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
       )}
 
       {parsed && (
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-4 space-y-4">
+        <Card padding="p-4" className="space-y-4">
           <div className="flex items-center gap-2 text-primary-600">
             <CheckCircle className="w-4 h-4" />
             <span className="text-sm font-medium">{t('mpesa_income')}</span>
@@ -174,12 +176,13 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
 
           <div>
             <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
-            <input
+            <TextField
               type="number"
               inputMode="decimal"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-lg font-bold text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+              accent="primary"
+              className="text-lg font-bold"
             />
           </div>
 
@@ -223,8 +226,8 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
                 </div>
               </div>
             </div>
-          )}
-        </div>
+        )}
+</Card>
       )}
 
       <div className="flex gap-3 pt-1">

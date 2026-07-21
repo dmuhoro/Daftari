@@ -3,6 +3,7 @@ import { TrendingUp, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import Card from '../ui/Card';
 import { cents } from '../../lib/money';
 
 const SW_DAYS_SHORT = ['Jpl', 'Jt', 'Jn', 'Jt', 'Al', 'Ij', 'Jm'];
@@ -99,7 +100,7 @@ export default function WeekSection() {
         )}
       </div>
 
-      <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+      <Card padding="p-4">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="w-4 h-4 text-muted dark:text-stone-400" />
           <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">7 {language === 'sw' ? 'Siku' : 'Days'}</span>
@@ -117,24 +118,24 @@ export default function WeekSection() {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-3 gap-2">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+        <Card padding="p-3">
           <p className="text-xs text-muted dark:text-stone-400">{t('revenue')}</p>
           <p className="text-sm font-bold text-primary-600 mt-0.5">{fmtKES(weekRevenue)}</p>
-        </div>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+        </Card>
+        <Card padding="p-3">
           <p className="text-xs text-muted dark:text-stone-400">{t('expenses')}</p>
           <p className="text-sm font-bold text-danger mt-0.5">{fmtKES(weekExpenses)}</p>
-        </div>
-        <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+        </Card>
+        <Card padding="p-3">
           <p className="text-xs text-muted dark:text-stone-400">{t('profit')}</p>
           <p className={`text-sm font-bold mt-0.5 ${weekProfit >= 0 ? 'text-primary-600' : 'text-danger'}`} aria-label={weekProfit >= 0 ? `${language === 'sw' ? 'Faida' : 'Profit'} ${fmtKES(weekProfit)}` : `${language === 'sw' ? 'Hasara' : 'Loss'} ${fmtKES(weekProfit)}`}>
             <span>{weekProfit >= 0 ? (language === 'sw' ? 'Faida ' : 'Profit ') : (language === 'sw' ? 'Hasara ' : 'Loss ')}</span>
             {fmtKES(weekProfit)}
           </p>
-        </div>
+        </Card>
       </div>
     </>
   );

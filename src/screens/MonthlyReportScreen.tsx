@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, PieChart, Pie, 
 import { Calendar, TrendingUp, TrendingDown, BarChart3, PieChart as PieChartIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
 import { cents } from '../lib/money';
 
 const SW_MONTHS = ['Januari', 'Februari', 'Machi', 'Aprili', 'Mei', 'Juni', 'Julai', 'Agosti', 'Septemba', 'Oktoba', 'Novemba', 'Desemba'];
@@ -139,24 +140,26 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
 
       <div className="flex flex-col gap-4 p-4">
         {/* Month navigator */}
-        <div className="flex items-center justify-between bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-4">
-          <button onClick={() => navigateMonth(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
-            <ChevronLeft className="w-5 h-5 text-ink dark:text-stone-100" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary-600" />
-            <span className="text-base font-bold text-ink dark:text-stone-100">
-              {months[month]} {year}
-            </span>
+        <Card padding="p-4">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigateMonth(-1)} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800">
+              <ChevronLeft className="w-5 h-5 text-ink dark:text-stone-100" />
+            </button>
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-primary-600" />
+              <span className="text-base font-bold text-ink dark:text-stone-100">
+                {months[month]} {year}
+              </span>
+            </div>
+            <button
+              onClick={() => navigateMonth(1)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800"
+              disabled={year === now.getFullYear() && month === now.getMonth()}
+            >
+              <ChevronRight className="w-5 h-5 text-ink dark:text-stone-100" />
+            </button>
           </div>
-          <button
-            onClick={() => navigateMonth(1)}
-            className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-stone-100 dark:hover:bg-stone-800"
-            disabled={year === now.getFullYear() && month === now.getMonth()}
-          >
-            <ChevronRight className="w-5 h-5 text-ink dark:text-stone-100" />
-          </button>
-        </div>
+        </Card>
 
         {!hasData ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
@@ -188,7 +191,7 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
 
             {/* Summary cards */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+              <Card padding="p-3">
                 <p className="text-xs text-muted dark:text-stone-400">{t('revenue')}</p>
                 <p className="text-sm font-bold text-primary-600 mt-0.5">{fmtKES(revenue)}</p>
                 {revenueChange !== '—' && (
@@ -196,8 +199,8 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
                     {revenueChange}%
                   </p>
                 )}
-              </div>
-              <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+              </Card>
+              <Card padding="p-3">
                 <p className="text-xs text-muted dark:text-stone-400">{t('expenses')}</p>
                 <p className="text-sm font-bold text-danger mt-0.5">{fmtKES(expenses)}</p>
                 {expenseChange !== '—' && (
@@ -205,15 +208,15 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
                     {expenseChange}%
                   </p>
                 )}
-              </div>
-              <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+              </Card>
+              <Card padding="p-3">
                 <p className="text-xs text-muted dark:text-stone-400">{t('withdrawal')}</p>
                 <p className="text-sm font-bold text-amber-500 mt-0.5">{fmtKES(withdrawals)}</p>
-              </div>
+              </Card>
             </div>
 
             {/* Daily profit bar chart */}
-            <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+            <Card padding="p-4">
               <div className="flex items-center gap-2 mb-4">
                 <BarChart3 className="w-4 h-4 text-muted dark:text-stone-400" />
                 <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
@@ -237,12 +240,12 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            </Card>
 
             {/* Category breakdown */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {categoryData.incomeCats.length > 0 && (
-                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                <Card padding="p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <PieChartIcon className="w-4 h-4 text-primary-600" />
                     <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
@@ -272,11 +275,11 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               )}
 
               {categoryData.expenseCats.length > 0 && (
-                <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+                <Card padding="p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <PieChartIcon className="w-4 h-4 text-danger" />
                     <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
@@ -306,7 +309,7 @@ export default function MonthlyReportScreen({ onBack }: MonthlyReportScreenProps
                       </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               )}
             </div>
           </>

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Plus, Trash2, Building2, Phone, Mail, MapPin, FileText, Check } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import type { Supplier } from '../lib/db';
 import { getSuppliersByBusinessId, saveSupplier, deleteSupplierByLocalId } from '../lib/repository';
 
@@ -95,7 +97,7 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
         ) : (
           <div className="flex flex-col gap-2">
             {suppliers.map((s) => (
-              <div key={s.local_id} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5">
+              <Card key={s.local_id} variant="subtle" padding="none" className="px-4 py-3.5">
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-ink dark:text-stone-100">{s.name}</p>
@@ -131,25 +133,25 @@ export default function SuppliersScreen({ onBack }: SuppliersScreenProps) {
                     </button>
                   )}
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
 
         {showForm && (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm p-4 mt-4">
+          <Card variant="subtle" padding="p-4" className="mt-4">
             <div className="flex flex-col gap-3">
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('supplier_name')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" autoFocus />
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('supplier_phone')} pattern="[0-9+\-\s()]+" title="Enter a valid phone number" className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('supplier_email')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t('supplier_address')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent" />
+              <TextField type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('supplier_name')} autoFocus />
+              <TextField type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('supplier_phone')} pattern="[0-9+\-\s()]+" title="Enter a valid phone number" />
+              <TextField type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('supplier_email')} />
+              <TextField type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t('supplier_address')} />
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('supplier_notes')} rows={2} maxLength={200} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none" />
               <div className="flex gap-2">
                 <button onClick={() => { setShowForm(false); setName(''); setPhone(''); setEmail(''); setAddress(''); setNotes(''); }} className="flex-1 py-3 rounded-xl border border-border dark:border-stone-700 text-sm font-medium text-muted dark:text-stone-400">{t('cancel')}</button>
                 <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 rounded-xl bg-purple-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><Check className="w-4 h-4" /> {t('save')}</button>
               </div>
             </div>
-          </div>
+          </Card>
         )}
 
         {!showForm && (

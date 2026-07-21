@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Package, Plus, ClipboardList } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import type { StockAdjustment } from '../lib/db';
 import { getStockAdjustmentsByBusinessId, saveStockAdjustment, getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
 
@@ -102,7 +104,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
 
       <div className="flex-1 overflow-y-auto px-4 py-4">
         {showForm ? (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm p-4">
+          <Card variant="subtle" padding="p-4">
             <div className="flex flex-col gap-3">
               <select value={selProductId} onChange={(e) => setSelProductId(e.target.value)} className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm text-ink dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
                 <option value="">{t('po_select_product')}...</option>
@@ -113,7 +115,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
                 <p className="text-xs text-muted dark:text-stone-400">{t('stock_current')}: <span className="font-semibold text-ink dark:text-stone-100">{currentStock}</span> → {t('stock_new')}: <span className={`font-semibold ${newStock >= 0 ? 'text-green-600' : 'text-red-500'}`}>{newStock}</span></p>
               )}
 
-              <input type="number" value={changeQty} onChange={(e) => setChangeQty(e.target.value)} placeholder={t('stock_change_qty')} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" />
+              <TextField type="number" value={changeQty} onChange={(e) => setChangeQty(e.target.value)} placeholder={t('stock_change_qty')} accent="amber" />
 
               <div>
                 <p className="text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('category')}</p>
@@ -133,7 +135,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
                 <button onClick={handleSave} disabled={!selProductId || !changeQty} aria-label={t('stock_adjust_save') || 'Save adjustment'} className="flex-1 py-3 rounded-xl bg-amber-600 text-white text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"><ClipboardList className="w-4 h-4" /> {t('stock_adjust_save')}</button>
               </div>
             </div>
-          </div>
+          </Card>
         ) : (
           <>
             {adjustments.length === 0 ? (
@@ -146,7 +148,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
             ) : (
               <div className="flex flex-col gap-2">
                 {adjustments.map((a) => (
-                  <div key={a.local_id} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5">
+                  <Card key={a.local_id} variant="subtle" padding="none" className="px-4 py-3.5">
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-ink dark:text-stone-100">{a.product_name}</p>
@@ -159,7 +161,7 @@ export default function StockAdjustmentsScreen({ onBack }: StockAdjustmentsScree
                       </div>
                       <Package className="w-4 h-4 text-muted dark:text-stone-400 flex-shrink-0" />
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}

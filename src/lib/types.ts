@@ -4,20 +4,6 @@
  * All shared interfaces, branded IDs, and discriminated unions live here.
  */
 
-import type { KES } from './money'
-
-// ─── Branded ID Types ──────────────────────────────────────────────────────
-// Prevents passing a BusinessId where a TransactionId is expected at compile time.
-
-export type Brand<T, B extends string> = T & { readonly __brand: B }
-export type TransactionId  = Brand<string, 'TransactionId'>
-export type BusinessId     = Brand<string, 'BusinessId'>
-export type UserId         = Brand<string, 'UserId'>
-export type LocalId        = Brand<string, 'LocalId'>
-export type SyncQueueId    = Brand<string, 'SyncQueueId'>
-
-export const asLocalId = (s: string): LocalId => s as LocalId
-
 // ─── Result Type ──────────────────────────────────────────────────────────
 // All async operations in Daftari return Result<T, AppError> instead of throwing.
 // This makes error paths explicit and type-checked.
@@ -78,22 +64,6 @@ export type PaymentMethod =
   | 'bank_transfer'
   | 'card_pos'
 
-export interface Transaction {
-  readonly id?: number
-  readonly local_id: LocalId
-  readonly type: TransactionType
-  readonly amount: KES
-  readonly category: string
-  readonly source: TransactionSource
-  readonly payment_method?: PaymentMethod
-  readonly description?: string
-  readonly mpesa_code?: string
-  readonly mpesa_sender?: string
-  readonly recorded_at: string   // ISO 8601
-  readonly synced: 0 | 1
-  readonly receipt_id?: string
-}
-
 // ─── Business Types ───────────────────────────────────────────────────────
 
 export type BusinessCategoryKey =
@@ -108,7 +78,7 @@ export type BusinessCategoryKey =
 export interface Product {
   readonly id: string
   readonly name: string
-  readonly price: KES
+  readonly price: number
   readonly unit?: string
   readonly stock?: number
   readonly low_stock_threshold?: number
@@ -116,7 +86,7 @@ export interface Product {
 
 export interface Business {
   readonly id?: number
-  readonly owner_id: UserId
+  readonly owner_id: string
   readonly name: string
   readonly type: string            // legacy field, keep for compat
   readonly category?: BusinessCategoryKey

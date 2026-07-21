@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Users, ChevronLeft, Search, Plus, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import type { Customer } from '../lib/db';
 import { getCustomersByBusinessId, saveCustomer } from '../lib/repository';
 import { useStore } from '../lib/store';
@@ -105,20 +107,20 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
       <div className="flex flex-col gap-4 px-4 py-4 flex-1 min-h-0">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-stone-400" />
-          <input
+          <TextField
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('tafuta_mteja') || 'Search customer...'}
             aria-label={t('search') || 'Search customers'}
-            className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            icon
           />
         </div>
 
         {loading ? (
           <div className="flex flex-col gap-3 px-1">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5 flex items-center gap-3">
+              <Card key={i} variant="subtle" padding="none" className="px-4 py-3.5 flex items-center gap-3">
                 <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
                 <div className="flex-1 min-w-0 space-y-2">
                   <Skeleton className="h-4 w-3/5" />
@@ -127,8 +129,8 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
                 <div className="text-right space-y-1.5">
                   <Skeleton className="h-4 w-16 ml-auto" />
                   <Skeleton className="h-3 w-10 ml-auto" />
-                </div>
-              </div>
+</div>
+              </Card>
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -148,11 +150,12 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
               <Virtuoso
                 data={filtered}
                 itemContent={(_, customer) => (
-                  <div
-                    key={customer.id}
-                    onClick={() => setSelectedCustomer(customer)}
-                    className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5 flex items-center gap-3 cursor-pointer active:bg-stone-50 dark:active:bg-stone-800 transition-colors mb-2 mx-1"
-                  >
+<Card
+                      variant="subtle"
+                      padding="none"
+                      className="px-4 py-3.5 flex items-center gap-3 cursor-pointer active:bg-stone-50 dark:active:bg-stone-800 transition-colors mb-2 mx-1"
+                      onClick={() => setSelectedCustomer(customer)}
+                    >
                     <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
                       <span className="text-sm font-bold text-green-700 dark:text-green-300">
                         {customer.name.charAt(0).toUpperCase()}
@@ -173,7 +176,7 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
                       <p className="text-sm font-semibold text-primary-600">{fmt(customer.total_spent)}</p>
                       <p className="text-xs text-muted dark:text-stone-400">{t('total') || 'Total'}</p>
                     </div>
-                  </div>
+                  </Card>
                 )}
               />
             </div>
@@ -195,19 +198,17 @@ export default function CustomersScreen({ onBack }: CustomersScreenProps) {
               </button>
             </div>
             <div className="flex flex-col gap-3">
-              <input
+              <TextField
                 type="text"
                 value={addName}
                 onChange={(e) => setAddName(e.target.value)}
                 placeholder={language === 'sw' ? 'Jina la mteja' : 'Customer name'}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600"
               />
-              <input
+              <TextField
                 type="tel"
                 value={addPhone}
                 onChange={(e) => setAddPhone(e.target.value)}
                 placeholder={language === 'sw' ? 'Nambari ya simu (si lazima)' : 'Phone number (optional)'}
-                className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600"
               />
               <button
                 onClick={handleAddCustomer}

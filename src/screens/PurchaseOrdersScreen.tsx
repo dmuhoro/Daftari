@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, Plus, ShoppingCart, Check, X, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
 import { cents } from '../lib/money';
 import type { PurchaseOrder as POrder, PurchaseOrderItem, Supplier } from '../lib/db';
 import { getPurchaseOrdersByBusinessId, getSuppliersByBusinessId, savePurchaseOrder, updatePurchaseOrderByLocalId, getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
@@ -191,7 +192,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
             </div>
 
             {poItems.length > 0 && (
-              <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 overflow-hidden">
+              <Card padding="none" overflow>
                 {poItems.map((item, i) => (
                   <div key={i} className="flex gap-2 items-center px-4 py-3 border-b border-border dark:border-stone-700 last:border-b-0">
                     <div className="flex-1 min-w-0">
@@ -209,7 +210,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
                   <span className="text-xs font-semibold text-ink dark:text-stone-100">{t('po_total')}</span>
                   <span className="text-xs font-bold text-orange-600">KES {poTotal().toLocaleString('en-KE')}</span>
                 </div>
-              </div>
+              </Card>
             )}
 
             <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={t('po_notes')} rows={2} maxLength={200} className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none" />
@@ -234,7 +235,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
                   const items = parseItems(po);
                   const isReceivable = po.status === 'pending' || po.status === 'partial';
                   return (
-                    <div key={po.local_id} className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-sm px-4 py-3.5">
+                    <Card key={po.local_id} variant="subtle" padding="none" className="px-4 py-3.5">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -254,7 +255,7 @@ export default function PurchaseOrdersScreen({ onBack }: PurchaseOrdersScreenPro
                           <span className="text-xs font-medium text-green-600 flex items-center gap-1 flex-shrink-0"><Check className="w-3 h-3" /> {t('po_received_all')}</span>
                         )}
                       </div>
-                    </div>
+                    </Card>
                   );
                 })}
               </div>

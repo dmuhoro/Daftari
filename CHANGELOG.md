@@ -5,6 +5,42 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.5.0] — 2026-07-22
+
+### Added
+
+#### Revenue-path tests (Layer 5 — core transaction coverage)
+- **11 RecordSale tests**: Quick-sale buttons, category/payment-method rendering, amount/description inputs, validation guards (empty, invalid), cancel callback, form enabled state, single-method auto-selection.
+- **9 DailyClose tests**: Conditional rendering, revenue/expense/profit calculations (KES 8,000 / 2,000 / 6,000), button rendering, backdrop dismiss, "baadaye" dismiss, "funga" close flow.
+
+#### Reusable component kit (Layer 4 — UI pattern consistency)
+- **`Card`** (`src/components/ui/Card.tsx`): `variant` (default/subtle), `padding` (p-3/p-4/p-5/p-6/p-8/none), `overflow`, `onClick` with interactive mode. Replaces inline div+shadow+rounded patterns across 30+ files.
+- **`TextField`** (`src/components/ui/TextField.tsx`): `accent` ring color, `variant` (default/inline), `icon` padding, `forwardRef` for parent-controlled focus. Wraps all `InputHTMLAttributes`.
+
+### Changed
+
+#### Bundle optimization (Layer 3 — critical path reduction)
+- **Removed `optimizeDeps.exclude: ['lucide-react']`** — enables tree-shaking of lucide-react barrel. Icon footprint drops from ~200 KB → 31 KB.
+- **Added `manualChunks`**: React/Supabase/lucide-icons split into independently cached vendor chunks. Main chunk shrinks from **564 KB → 201 KB**. Total critical path: ~558 KB.
+
+#### Money type safety purge (Layer 2 — risk elimination)
+- **`money.ts`** stripped from 11 exports to single `cents()` helper. Removed: `KES`, `kes()`, `kesAdd()`, `kesSubtract()`, `kesSum()`, `formatKES()`, `formatKESCompact()`, `parseKESInput()`, `isProfit()`, `isLoss()`, `KES_ZERO`.
+- **`types.ts`** branded types removed: `Brand<>`, `TransactionId`, `BusinessId`, `UserId`, `LocalId`, `SyncQueueId`, `asLocalId()`, `Transaction` interface. `Product.price` → `number`, `Business.owner_id` → `string`.
+- **`money.test.ts`** reduced from 18 tests to 3 (only `cents()` coverage).
+
+### Fixed
+
+#### JSX nesting errors from automated refactoring
+- **5 mismatches** across `CustomersScreen`, `DailyClose` (3), `SMSParser`, `CustomerDetailScreen` — incorrect `</Card>`/`</div>` tags and missing expression closures resolved.
+
+### Engineering
+
+- `src/features/transactions/RecordSale.test.tsx` — new file, 11 tests
+- `src/features/close/DailyClose.test.tsx` — new file, 9 tests
+- `src/components/ui/Card.tsx` — new reusable component
+- `src/components/ui/TextField.tsx` — new reusable component with `forwardRef`
+- `vite.config.ts` — `manualChunks` vendor splitting
+
 ## [5.4.0] — 2026-07-21
 
 ### Added

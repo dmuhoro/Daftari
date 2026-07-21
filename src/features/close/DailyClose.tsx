@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, CheckCircle, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import Card from '../../components/ui/Card';
 import { saveDailyClose } from '../../lib/repository';
 import { cents } from '../../lib/money';
 import { track, EVENTS } from '../../lib/analytics';
@@ -87,7 +88,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
           </div>
 
           {/* Summary */}
-          <div className="bg-gray-50 dark:bg-stone-900 rounded-2xl p-4 mb-4">
+          <Card variant="subtle" padding="p-4" className="mb-4">
             <p className="text-xs text-muted dark:text-stone-400 mb-3">{t('funga_summary')}</p>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -114,8 +115,8 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
                   {fmtKES(profit)}
                 </span>
               </div>
-            </div>
-          </div>
+              </div>
+            </Card>
 
           {/* Buttons */}
           <div className="flex gap-3">

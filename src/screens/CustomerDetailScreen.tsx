@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ChevronLeft, TrendingUp, TrendingDown, ArrowDownCircle, Phone, MessageCircle, Smartphone, Wallet, Store, Building2, Banknote, Search } from 'lucide-react';
 import { useTranslation, type TranslationKey } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
+import TextField from '../components/ui/TextField';
 import { cents } from '../lib/money';
 import type { Customer } from '../lib/db';
 
@@ -107,7 +109,7 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
 
       <div className="flex flex-col gap-4 p-4">
         {/* Customer profile card */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card p-5">
+        <Card padding="p-5">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center flex-shrink-0">
               <span className="text-2xl font-bold text-green-700 dark:text-green-300">
@@ -143,41 +145,41 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
               </button>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+          <Card padding="p-4">
             <p className="text-xs text-muted dark:text-stone-400">{t('total') || 'Total'}</p>
             <p className="text-xl font-bold text-primary-600 mt-1">{fmt(totalSpent)}</p>
-          </div>
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+          </Card>
+          <Card padding="p-4">
             <p className="text-xs text-muted dark:text-stone-400">{t('visits') || 'Visits'}</p>
             <p className="text-xl font-bold text-ink dark:text-stone-100 mt-1">{customer.total_visits}</p>
-          </div>
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+          </Card>
+          <Card padding="p-4">
             <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Pointi' : 'Points'}</p>
             <p className="text-xl font-bold text-amber-500 mt-1">{customer.loyalty_points ?? 0}</p>
-          </div>
+          </Card>
         </div>
 
         {/* Search transactions */}
         {customerTxs.length > 0 && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted dark:text-stone-400" />
-            <input
+            <TextField
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={language === 'sw' ? 'Tafuta kiasi, maelezo...' : 'Search amount, description...'}
-              className="w-full rounded-xl border border-border dark:border-stone-700 bg-white dark:bg-stone-900 pl-10 pr-4 py-3 text-sm text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-green-600"
+              icon
             />
           </div>
         )}
 
         {/* Transaction history */}
         {filtered.length > 0 ? (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+          <Card padding="none" overflow>
             <div className="px-4 py-3 border-b border-border dark:border-stone-700">
               <p className="text-xs font-semibold text-muted dark:text-stone-400 uppercase tracking-widest">
                 {language === 'sw' ? 'Historia ya Miamala' : 'Transaction History'} ({filtered.length})
@@ -216,7 +218,7 @@ export default function CustomerDetailScreen({ customer, onBack }: CustomerDetai
                 </div>
               );
             })}
-          </div>
+          </Card>
         ) : customerTxs.length > 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-sm text-muted dark:text-stone-400">

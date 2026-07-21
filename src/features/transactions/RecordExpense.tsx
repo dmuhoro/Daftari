@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import TextField from '../../components/ui/TextField';
 import { BUSINESS_CATEGORIES } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
 import { track, EVENTS } from '../../lib/analytics';
@@ -68,7 +69,7 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
     <form onSubmit={handleSave} className="flex flex-col gap-4 px-4 pt-2 pb-6">
       <div>
         <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">{t('amount')} (KES)</label>
-        <input
+        <TextField
           type="number"
           inputMode="decimal"
           value={amount}
@@ -77,7 +78,8 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
           placeholder="0"
           min="1"
           required
-          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          accent="primary"
+          className="text-base"
         />
         {amountError && <p className="text-red-500 text-sm mt-1">{amountError}</p>}
       </div>
@@ -106,13 +108,14 @@ export default function RecordExpense({ onSave, onCancel }: RecordExpenseProps) 
         <label className="block text-xs font-medium text-muted dark:text-stone-400 mb-1.5">
           {t('description')} <span className="font-normal">({t('optional')})</span>
         </label>
-        <input
+        <TextField
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder={t('description')}
           maxLength={200}
-          className="w-full rounded-xl border border-border dark:border-stone-700 bg-background dark:bg-stone-950 px-4 py-3 text-base text-ink dark:text-stone-100 placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-transparent transition"
+          accent="primary"
+          className="text-base"
         />
       </div>
 

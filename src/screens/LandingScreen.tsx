@@ -3,6 +3,7 @@ import {
   X, Check, Banknote, Smartphone, Wallet, Store, Building2, Wifi,
 } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
+import Card from '../components/ui/Card';
 
 interface LandingScreenProps {
   onSignUp: () => void;
@@ -83,12 +84,12 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
             language === 'sw' ? 'Daftari ya karatasi inachukua muda' : 'Paper records are exhausting',
             language === 'sw' ? 'Fuliza inakula pesa bila kujua' : 'Fuliza eats profit silently',
           ].map((text, i) => (
-            <div key={i} className="flex items-center gap-3 bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-sm">
+            <Card key={i} variant="subtle" padding="p-4" className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
                 <X className="w-4 h-4 text-red-500" />
               </div>
               <span className="text-sm text-ink dark:text-stone-100">{text}</span>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -133,13 +134,13 @@ export default function LandingScreen({ onSignUp, onSignIn }: LandingScreenProps
 
       {/* QUOTE */}
       <div className="bg-stone-50 dark:bg-stone-950 py-10 px-6">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-sm p-5 max-w-sm mx-auto">
+        <Card variant="subtle" padding="p-5" className="max-w-sm mx-auto">
           <p className="text-sm text-ink dark:text-stone-100 italic">
             "The manual process of going through transaction records to track sales profits and the money to keep the business running is tiring."
           </p>
-          <p className="text-xs text-muted dark:text-stone-400 mt-3 font-medium">— Chapati vendor, Nairobi</p>
+<p className="text-xs text-muted dark:text-stone-400 mt-3 font-medium">— Chapati vendor, Nairobi</p>
+          </Card>
         </div>
-      </div>
 
       {/* FINAL CTA */}
       <div className="bg-green-600 py-12 px-6 text-center">

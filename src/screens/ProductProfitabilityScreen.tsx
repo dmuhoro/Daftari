@@ -3,6 +3,7 @@ import { ChevronLeft, Package, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
+import Card from '../components/ui/Card';
 import { cents } from '../lib/money';
 
 const COLORS = ['#16a34a', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444', '#6366f1'];
@@ -111,25 +112,25 @@ export default function ProductProfitabilityScreen({ onBack }: ProductProfitabil
       <div className="flex flex-col gap-4 p-4">
         {/* Summary */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+          <Card padding="p-3">
             <p className="text-xs text-muted dark:text-stone-400">{t('revenue')}</p>
             <p className="text-sm font-bold text-primary-600 mt-0.5">{fmtKES(totalRevenue)}</p>
-          </div>
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+          </Card>
+          <Card padding="p-3">
             <p className="text-xs text-muted dark:text-stone-400">{language === 'sw' ? 'Gharama' : 'Cost'}</p>
             <p className="text-sm font-bold text-danger mt-0.5">{fmtKES(totalCost)}</p>
-          </div>
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-3 shadow-card border border-border dark:border-stone-700">
+          </Card>
+          <Card padding="p-3">
             <p className="text-xs text-muted dark:text-stone-400">{t('profit')}</p>
             <p className={`text-sm font-bold mt-0.5 ${totalMargin >= 0 ? 'text-primary-600' : 'text-danger'}`}>
               {totalMargin >= 0 ? '+' : ''}{fmtKES(totalMargin)}
             </p>
-          </div>
+          </Card>
         </div>
 
         {/* Margin bar chart */}
         {chartData.length > 0 && (
-          <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+          <Card padding="p-4">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 className="w-4 h-4 text-muted dark:text-stone-400" />
               <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
@@ -153,11 +154,11 @@ export default function ProductProfitabilityScreen({ onBack }: ProductProfitabil
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Product list */}
-        <div className="bg-white dark:bg-stone-900 rounded-2xl border border-border dark:border-stone-700 shadow-card overflow-hidden">
+        <Card padding="none" overflow>
           <div className="px-4 py-3 border-b border-border dark:border-stone-700">
             <p className="text-xs font-semibold text-muted dark:text-stone-400 uppercase tracking-widest">
               {language === 'sw' ? 'Maelezo ya Bidhaa' : 'Product Details'} ({productData.length})
@@ -186,7 +187,7 @@ export default function ProductProfitabilityScreen({ onBack }: ProductProfitabil
               </div>
             </div>
           ))}
-        </div>
+        </Card>
       </div>
     </div>
   );

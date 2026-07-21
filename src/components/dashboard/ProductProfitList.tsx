@@ -1,5 +1,6 @@
 import { Package } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
+import Card from '../ui/Card';
 
 function fmtKES(n: number) {
   return `KES ${n.toLocaleString('en-KE')}`;
@@ -24,7 +25,7 @@ export default function ProductProfitList({ data }: ProductProfitListProps) {
   if (data.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-stone-900 rounded-2xl p-4 shadow-card border border-border dark:border-stone-700">
+    <Card padding="p-4">
       <div className="flex items-center gap-2 mb-3">
         <Package className="w-4 h-4 text-primary-600" />
         <span className="text-xs font-medium text-muted dark:text-stone-400 uppercase tracking-wider">
@@ -48,6 +49,6 @@ export default function ProductProfitList({ data }: ProductProfitListProps) {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
