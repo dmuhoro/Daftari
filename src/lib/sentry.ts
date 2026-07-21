@@ -48,6 +48,20 @@ export const captureError = (
   })
 }
 
+export const captureBreadcrumb = (
+  message: string,
+  category?: string,
+  data?: Record<string, unknown>
+): void => {
+  if (!DSN) return
+  Sentry.addBreadcrumb({
+    message,
+    category: category ?? 'app',
+    data,
+    level: 'info' as Sentry.SeverityLevel,
+  })
+}
+
 export const setSentryUser = (userId: string): void => {
   if (!DSN) return
   Sentry.setUser({ id: userId })

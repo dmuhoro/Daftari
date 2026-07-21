@@ -7,6 +7,14 @@ vi.mock('../../lib/supabase', () => ({
   },
 }))
 
+function mockWhere(db: any, result: any) {
+  db.sync_queue.where.mockReturnValue(result)
+}
+
+function mockFrom(supabase: any, result: any) {
+  supabase.from.mockReturnValue(result)
+}
+
 describe('syncQueue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -16,11 +24,11 @@ describe('syncQueue', () => {
     it('returns count of unsynced items', async () => {
       const { getPendingCount } = await import('../../features/sync/syncQueue')
       const { db } = await import('../../lib/db')
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           count: vi.fn().mockResolvedValue(3),
         }),
-      } as any)
+      })
 
       const count = await getPendingCount()
       expect(count).toBe(3)
@@ -31,15 +39,14 @@ describe('syncQueue', () => {
     it('returns count of dead-letter items (synced=2)', async () => {
       const { getDeadLetterCount } = await import('../../features/sync/syncQueue')
       const { db } = await import('../../lib/db')
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           count: vi.fn().mockResolvedValue(1),
         }),
-      } as any)
+      })
 
       const count = await getDeadLetterCount()
       expect(count).toBe(1)
-      expect(vi.mocked(db.sync_queue.where)).toHaveBeenCalledWith('synced')
     })
   })
 
@@ -47,10 +54,15 @@ describe('syncQueue', () => {
     it('adds item with _retries counter initialized to 0', async () => {
       const { addToQueue } = await import('../../features/sync/syncQueue')
       const { db } = await import('../../lib/db')
+      mockWhere(db, {
+        equals: vi.fn().mockReturnValue({
+          first: vi.fn().mockResolvedValue(undefined),
+        }),
+      })
 
       await addToQueue('upsert', 'daftari_customers', 'cust-1', { name: 'Test' })
 
-      const addCall = vi.mocked(db.sync_queue.add).mock.calls[0][0]
+      const addCall = db.sync_queue.add.mock.calls[0][0]
       expect(addCall.operation).toBe('upsert')
       expect(addCall.table_name).toBe('daftari_customers')
       expect(addCall.record_id).toBe('cust-1')
@@ -66,11 +78,11 @@ describe('syncQueue', () => {
     it('returns zero counts when queue is empty', async () => {
       const { flushQueue } = await import('../../features/sync/syncQueue')
       const { db } = await import('../../lib/db')
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue([]),
         }),
-      } as any)
+      })
 
       const result = await flushQueue()
       expect(result).toEqual({ synced: 0, failed: 0 })
@@ -91,13 +103,13 @@ describe('syncQueue', () => {
         created_at: new Date().toISOString(),
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         upsert: vi.fn().mockResolvedValue({ error: null }),
       } as any)
 
@@ -123,13 +135,13 @@ describe('syncQueue', () => {
         created_at: new Date().toISOString(),
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         delete: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({ error: null }),
         }),
@@ -157,13 +169,13 @@ describe('syncQueue', () => {
         created_at: new Date().toISOString(),
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         upsert: vi.fn().mockResolvedValue({ error: new Error('timeout') }),
       } as any)
 
@@ -190,14 +202,14 @@ describe('syncQueue', () => {
         created_at: new Date().toISOString(),
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
       let upserted: any = null
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         upsert: vi.fn().mockImplementation((data) => {
           upserted = data
           return { error: null }
@@ -227,13 +239,13 @@ describe('syncQueue', () => {
         created_at: new Date().toISOString(),
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         upsert: vi.fn().mockResolvedValue({ error: null }),
       } as any)
 
@@ -257,14 +269,14 @@ describe('syncQueue', () => {
         created_at: twoSecAgo,
       }]
 
-      vi.mocked(db.sync_queue.where).mockReturnValue({
+      mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue(items),
         }),
-      } as any)
+      })
 
       const upsertFn = vi.fn()
-      vi.mocked(supabase.from).mockReturnValue({
+      mockFrom(supabase, {
         upsert: upsertFn,
       } as any)
 

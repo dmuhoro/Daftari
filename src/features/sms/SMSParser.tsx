@@ -8,6 +8,7 @@ import { parseMpesaSMS } from './parseMpesa';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
 import { track, EVENTS } from '../../lib/analytics';
+import { captureError } from '../../lib/sentry';
 
 interface SMSParserProps {
   onSave: () => void;
@@ -105,7 +106,7 @@ export default function SMSParser({ onSave, onCancel, onManualEntry }: SMSParser
           synced: 0,
         });
       }
-    } catch (e) { console.warn('Failed to upsert customer from SMS:', e); }
+    } catch (e) { captureError(e, { feature: 'sms_parser', action: 'upsert_customer' }) }
   }
 
   if (flashAmount !== null) {

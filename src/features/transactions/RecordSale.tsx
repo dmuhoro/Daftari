@@ -8,6 +8,7 @@ import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SuccessFlash from '../../components/SuccessFlash';
 import { shareViaWhatsApp, formatReceiptText } from '../../lib/whatsapp';
 import { track, EVENTS } from '../../lib/analytics';
+import { captureError } from '../../lib/sentry';
 
 interface RecordSaleProps {
   onSave: () => void;
@@ -108,7 +109,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
         if (bizResult.ok && bizResult.value?.id) {
           await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updatedProducts) });
         }
-      } catch (e) { console.warn('Failed to sync product stock to cloud:', e); }
+      } catch (e) { captureError(e, { feature: 'record_sale', action: 'sync_stock' }) }
     }
   }
 

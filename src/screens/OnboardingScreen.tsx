@@ -12,6 +12,7 @@ import { supabase } from '../lib/supabase';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { track, EVENTS } from '../lib/analytics';
+import { captureError } from '../lib/sentry';
 import OnboardingSessionCounter from '../components/OnboardingSessionCounter';
 
 const CATEGORY_ICONS: Record<string, typeof UtensilsCrossed> = {
@@ -66,7 +67,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       try {
         const { data: { user } } = await supabase.auth.getUser();
         userId = user?.id;
-      } catch (e) { console.warn('Failed to get user for onboarding', e); }
+      } catch (e) { captureError(e, { feature: 'onboarding', action: 'get_user' }) }
 
       await addBusiness({
         name,
@@ -92,19 +93,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
       onComplete();
       track(EVENTS.ONBOARDING_COMPLETED, { category: selectedCategory ?? '' })
-
-      supabase.from('daftari_businesses').upsert({
-        name,
-        currency: 'KES',
-        category: selectedCategory,
-        subcategory: selectedSubcategory,
-        payment_methods: selectedPayments,
-        products: [],
-        owner_id: userId,
-      }, { onConflict: 'owner_id' }).then(({ error }) => {
-        if (error) console.warn('Background sync failed:', error);
-      });
-    } catch (e) { console.warn('Failed to create business in Supabase:', e); setSaving(false); }
+    } catch (e) { captureError(e, { feature: 'onboarding', action: 'create_business' }); setSaving(false); }
   }
 
   return (

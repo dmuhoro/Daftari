@@ -5,6 +5,39 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.4.0] — 2026-07-21
+
+### Added
+
+#### Store tests (Layer 1 — 0% → 100% coverage)
+- **23 Zustand store integration tests**: All 16 store actions covered — sync setters (language, business, businesses, transactions, theme, etc.), async transaction operations (add/update/delete with persistence + sync queue), and persist middleware (saves language/business/theme, does NOT save transactions, restores from localStorage).
+
+#### syncAll orchestrator tests (Layer 2 — 0% → 100% coverage)
+- **13 syncAll tests**: `syncAllTables` (empty sync, full sync, upsert failure, multi-entity sync) and `pullFromSupabase` (auth guard, per-table pulls, tenant-scoped pulls, error recovery, missing table handling, conflict resolution with `updated_at` comparison).
+
+### Fixed
+
+#### Push notification data routing (Layer 3 — architectural compliance)
+- **2 direct `supabase.from()` calls** in `pushNotifications.ts` replaced with `upsertPushSubscription()` and `deletePushSubscription()` repository functions. Only `supabase.auth.getUser()` remains direct (auth concern, not data access).
+
+#### Dead code removal (Layer 5 — risk reduction)
+- **6 empty `catch {}` blocks** replaced with structured logging: `pushNotifications.ts` (unsubscribe), `analytics.ts` (flush), `syncQueue.ts` (background sync), `syncAll.ts` (3 optional tables). Silent data loss windows now emit `logger.warn()` / `captureError()` breadcrumbs.
+
+### Engineering
+
+#### Test infrastructure
+- `src/lib/store.test.ts` — new file, 23 tests (async beforeEach store reset, module-level vi.mock for repository, queryFromResult pattern for mock chains)
+- `src/lib/__tests__/syncAll.test.ts` — new file, 13 tests (selectResultsQueue, tablesThatThrow, resetMockDb, queryFromResult thenable)
+
+#### Bundle analysis
+- Confirmed recharts (309 KB BarChart + 47.5 KB Tooltip) is **already code-split**: all 3 consumers are `React.lazy()` loaded, Vite auto-extracts shared recharts into separate chunks. Only 574 KB main bundle is in the critical path.
+
+#### Version bump
+- `package.json` — 5.3.0 → 5.4.0
+- `changelogs/v5.4.0-hardening-two.md` — detailed sprint log
+
+---
+
 ## [5.3.0] — 2026-07-20
 
 ### Added

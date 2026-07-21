@@ -38,7 +38,7 @@ export const flush = async (): Promise<void> => {
       if (queue.length < 50) queue.unshift(...events)
     }
   } catch {
-    // never user-visible
+    logger.warn('analytics:flush_exception')
   }
 }
 

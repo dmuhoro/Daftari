@@ -161,6 +161,6 @@ export async function registerBackgroundSync() {
     try {
       const registration = await navigator.serviceWorker.ready;
       await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('sync-transactions');
-    } catch { /* background sync not supported */ }
+    } catch (cause) { captureError(cause, { feature: 'sync', action: 'registerBackgroundSync' }) }
   }
 }

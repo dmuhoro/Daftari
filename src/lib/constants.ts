@@ -7,7 +7,7 @@
 /** App metadata */
 export const APP = {
   NAME:     'Daftari' as const,
-  VERSION:  '1.0.0'  as const,
+  VERSION:  '5.3.0'  as const,
   LOCALE:   'en-KE'  as const,
   TIMEZONE: 'Africa/Nairobi' as const,
 } as const
@@ -22,7 +22,7 @@ export const TABLES = {
 /** Dexie DB name and version */
 export const DB = {
   NAME:    'DaftariDB' as const,
-  VERSION: 6           as const,  // increment in db.ts when schema changes
+  VERSION: 7           as const,  // increment in db.ts when schema changes
 } as const
 
 /** LocalStorage keys — single place, prevents typos */

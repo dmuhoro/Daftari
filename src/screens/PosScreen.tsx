@@ -6,6 +6,7 @@ import type { Customer } from '../lib/db';
 import { getBusiness, updateBusiness as repoUpdateBusiness, getCustomersByBusinessId, updateCustomer } from '../lib/repository';
 import { scanBarcodeWithFallback } from '../lib/barcode';
 import { cents } from '../lib/money';
+import { captureError } from '../lib/sentry';
 import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
 
 interface CartItem {
@@ -149,7 +150,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
     setPrinting(true);
     try {
       await printBluetoothReceipt(receiptData);
-    } catch (e) { console.warn('Bluetooth print failed:', e); }
+    } catch (e) { captureError(e, { feature: 'pos', action: 'bluetooth_print' }) }
     setPrinting(false);
   }
 

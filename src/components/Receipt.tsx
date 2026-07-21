@@ -3,6 +3,7 @@ import { Check, Printer, Bluetooth, X } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
 import { track, EVENTS } from '../lib/analytics';
+import { captureError } from '../lib/sentry';
 import { printBrowserReceipt, printBluetoothReceipt, type ReceiptData } from '../lib/print';
 
 interface ReceiptProps {
@@ -52,7 +53,7 @@ export default function Receipt({ receiptId, amount, type, description, onDismis
     setPrinting(true);
     try {
       await printBluetoothReceipt(receiptData);
-    } catch (e) { console.warn('Bluetooth print failed:', e); }
+    } catch (e) { captureError(e, { feature: 'receipt', action: 'bluetooth_print' }) }
     setPrinting(false);
   }
 

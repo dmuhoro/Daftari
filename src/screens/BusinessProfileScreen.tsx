@@ -5,7 +5,7 @@ import { useStore } from '../lib/store';
 import { BUSINESS_CATEGORIES, categoryEmoji } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
-import { supabase } from '../lib/supabase';
+import { captureError } from '../lib/sentry';
 
 const PAYMENT_LABELS: Record<string, { sw: string; en: string }> = {
   cash: { sw: 'Pesa Taslimu', en: 'Cash' },
@@ -62,15 +62,7 @@ export default function BusinessProfileScreen({ onBack }: BusinessProfileScreenP
       if (bizResult.ok && bizResult.value?.id) {
         await repoUpdateBusiness(bizResult.value.id, { name: name.trim(), owner_name: ownerName.trim() || undefined });
       }
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('daftari_businesses').upsert({
-          owner_id: user.id,
-          name: name.trim(),
-          owner_name: ownerName.trim() || undefined,
-        }, { onConflict: 'owner_id' });
-      }
-    } catch (e) { console.warn('Profile save background sync failed', e); }
+    } catch (e) { captureError(e, { feature: 'business_profile', action: 'save' }) }
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);

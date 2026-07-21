@@ -3,8 +3,8 @@ import { Package, Plus, Trash2, ChevronLeft, Check, RefreshCw } from 'lucide-rea
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { getBusiness, updateBusiness as repoUpdateBusiness } from '../lib/repository';
-import { supabase } from '../lib/supabase';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
+import { captureError } from '../lib/sentry';
 
 interface LocalProduct {
   id: string;
@@ -54,14 +54,7 @@ export default function ProductCatalogScreen({ onBack }: ProductCatalogScreenPro
       if (bizResult.ok && bizResult.value?.id) {
         await repoUpdateBusiness(bizResult.value.id, { products: JSON.stringify(updated) });
       }
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('daftari_businesses').upsert({
-          owner_id: user.id,
-          products: updated,
-        }, { onConflict: 'owner_id' });
-      }
-    } catch (e) { console.warn('Failed to sync products to cloud:', e); }
+    } catch (e) { captureError(e, { feature: 'product_catalog', action: 'persist_products' }) }
   }
 
   async function addProduct(name: string, price: number, unit: string, stock?: number, threshold?: number) {

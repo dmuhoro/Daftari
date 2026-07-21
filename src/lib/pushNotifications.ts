@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { logger } from './logger';
+import { upsertPushSubscription, deletePushSubscription } from './repository';
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window)) return false;
@@ -21,14 +22,11 @@ export async function subscribeToPush(): Promise<PushSubscription | null> {
       applicationServerKey: publicKey,
     });
 
-    // Store subscription in Supabase
+    const { supabase } = await import('./supabase');
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from('daftari_push_subscriptions').upsert({
-        user_id: user.id,
-        subscription: JSON.stringify(subscription),
-        created_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      const result = await upsertPushSubscription(user.id, subscription);
+      if (!result.ok) throw new Error(result.error.message);
     }
 
     return subscription;
@@ -44,10 +42,11 @@ export async function unsubscribeFromPush(): Promise<void> {
     const subscription = await registration.pushManager.getSubscription();
     if (subscription) {
       await subscription.unsubscribe();
+      const { supabase } = await import('./supabase');
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('daftari_push_subscriptions').delete().eq('user_id', user.id);
+        await deletePushSubscription(user.id);
       }
     }
-  } catch { /* ignore */ }
+  } catch { logger.warn('push:unsubscribe_failed') }
 }

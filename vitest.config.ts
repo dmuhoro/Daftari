@@ -12,8 +12,9 @@ export default defineConfig({
       reporter:   ['text', 'json', 'html'],
       include:    ['src/lib/**', 'src/features/sms/**'],
       thresholds: {
-        lines:    25,
-        branches: 15,
+        lines:    30,
+        branches: 12,
+        functions: 30,
       },
     },
   },

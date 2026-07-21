@@ -1,4 +1,4 @@
-import { db } from './db'
+import { db, type Transaction, type Business, type Customer, type DailyClose, type Supplier, type PurchaseOrder, type StockAdjustment } from './db'
 import { supabase } from './supabase'
 import { logger } from './logger'
 import { captureError } from './sentry'
@@ -42,7 +42,6 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
     }
   }
 
-  // Sync businesses
   const businesses = await db.business.toArray()
   if (businesses.length > 0) {
     results.businesses = await upsertToRemote('daftari_businesses', businesses.map(b => ({
@@ -60,7 +59,6 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
     })))
   }
 
-  // Sync daily closes
   const closes = await db.daily_closes.toArray()
   if (closes.length > 0) {
     results.daily_closes = await upsertToRemote('daftari_daily_closes', closes.map(c => ({
@@ -75,7 +73,6 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
     })))
   }
 
-  // Sync customers
   const customers = await db.customers.toArray()
   if (customers.length > 0) {
     results.customers = await upsertToRemote('daftari_customers', customers.map(c => ({
@@ -98,130 +95,147 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
   return results
 }
 
+const PAGE_SIZE = 500
+
 export async function pullFromSupabase(): Promise<{ restored: string[]; errors: string[] }> {
   const restored: string[] = []
   const errors: string[] = []
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { restored, errors: ['No authenticated user'] }
 
+  async function pullTable(
+    table: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filters?: (q: any) => any
+  ): Promise<{ data: Record<string, unknown>[]; error: unknown }> {
+    const all: Record<string, unknown>[] = []
+    let from = 0
+
+    while (true) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let q: any = supabase.from(table).select('*').range(from, from + PAGE_SIZE - 1)
+      if (filters) q = filters(q)
+      const { data, error } = await q as { data: Record<string, unknown>[] | null; error: unknown }
+      if (error) return { data: [], error }
+      if (!data || data.length === 0) break
+      all.push(...data)
+      if (data.length < PAGE_SIZE) break
+      from += PAGE_SIZE
+    }
+
+    return { data: all, error: null }
+  }
+
   try {
-    // Pull transactions
-    const { data: remoteTx, error: txErr } = await supabase
-      .from('daftari_transactions')
-      .select('*')
-      .eq('user_id', user.id)
-    if (txErr) throw txErr
-    if (remoteTx && remoteTx.length > 0) {
-      for (const tx of remoteTx) {
-        const existing = await db.transactions.where('local_id').equals(tx.local_id).first()
-        if (!existing || (tx.updated_at && existing.updated_at && tx.updated_at > existing.updated_at)) {
-          await db.transactions.put(tx)
+    // Pull transactions (paginated)
+    {
+      const { data: remoteTx, error: txErr } = await pullTable('daftari_transactions', q => q.eq('user_id', user.id))
+      if (txErr) throw txErr
+      if (remoteTx.length > 0) {
+        for (const tx of remoteTx) {
+          const existing = await db.transactions.where('local_id').equals(tx.local_id as string).first()
+          if (!existing || (tx.updated_at && existing.updated_at && tx.updated_at > existing.updated_at)) {
+            await db.transactions.put(tx as unknown as Transaction)
+          }
         }
+        restored.push(`${remoteTx.length} transactions`)
       }
-      restored.push(`${remoteTx.length} transactions`)
     }
 
-    // Pull businesses
-    const { data: remoteBiz, error: bizErr } = await supabase
-      .from('daftari_businesses')
-      .select('*')
-      .eq('user_id', user.id)
-    if (bizErr) throw bizErr
-    if (remoteBiz && remoteBiz.length > 0) {
-      for (const biz of remoteBiz) {
-        const existing = await db.business.where('local_id').equals(biz.local_id).first()
-        if (!existing || (biz.updated_at && existing.updated_at && biz.updated_at > existing.updated_at)) {
-          await db.business.put(biz)
+    // Pull businesses (paginated)
+    let remoteBiz: Record<string, unknown>[] = []
+    {
+      const { data, error: bizErr } = await pullTable('daftari_businesses', q => q.eq('user_id', user.id))
+      if (bizErr) throw bizErr
+      remoteBiz = data
+      if (data.length > 0) {
+        for (const biz of data) {
+          const existing = await db.business.where('local_id').equals(biz.local_id as string).first()
+          if (!existing || (biz.updated_at && existing.updated_at && biz.updated_at > existing.updated_at)) {
+            await db.business.put(biz as unknown as Business)
+          }
         }
+        restored.push(`${data.length} businesses`)
       }
-      restored.push(`${remoteBiz.length} businesses`)
     }
 
-    // Pull customers
-    const { data: remoteCustomers, error: custErr } = await supabase
-      .from('daftari_customers')
-      .select('*')
-    if (!custErr && remoteCustomers && remoteCustomers.length > 0) {
-      let count = 0
-      for (const c of remoteCustomers) {
-        const existing = c.local_id ? await db.customers.where('local_id').equals(c.local_id).first() : null
-        if (!existing) {
-          await db.customers.put(c)
-          count++
+    // Collect user's business IDs for tenant-scoped pulls
+    const bizIds = remoteBiz.map(b => b.local_id as string).filter(Boolean)
+
+    // Pull customers (paginated, scoped to user's businesses)
+    {
+      const { data, error } = bizIds.length > 0
+        ? await pullTable('daftari_customers', q => q.in('business_id', bizIds))
+        : await pullTable('daftari_customers')
+      if (!error && data.length > 0) {
+        let count = 0
+        for (const c of data) {
+          const existing = c.local_id ? await db.customers.where('local_id').equals(c.local_id as string).first() : null
+          if (!existing) { await db.customers.put(c as unknown as Customer); count++ }
         }
+        restored.push(`${count} customers`)
       }
-      restored.push(`${count} customers`)
     }
 
-    // Pull daily closes
-    const { data: remoteCloses, error: closeErr } = await supabase
-      .from('daftari_daily_closes')
-      .select('*')
-    if (!closeErr && remoteCloses && remoteCloses.length > 0) {
-      let count = 0
-      for (const c of remoteCloses) {
-        const existing = c.local_id ? await db.daily_closes.where('local_id').equals(c.local_id).first() : null
-        if (!existing) {
-          await db.daily_closes.put(c)
-          count++
+    // Pull daily closes (paginated, scoped to user's businesses)
+    {
+      const { data, error } = bizIds.length > 0
+        ? await pullTable('daftari_daily_closes', q => q.in('business_id', bizIds))
+        : await pullTable('daftari_daily_closes')
+      if (!error && data.length > 0) {
+        let count = 0
+        for (const c of data) {
+          const existing = c.local_id ? await db.daily_closes.where('local_id').equals(c.local_id as string).first() : null
+          if (!existing) { await db.daily_closes.put(c as unknown as DailyClose); count++ }
         }
+        restored.push(`${count} daily closes`)
       }
-      restored.push(`${count} daily closes`)
     }
 
     // Pull suppliers (table may not exist for older deployments)
     try {
-      const { data: remoteSuppliers, error: suppErr } = await supabase
-        .from('daftari_suppliers')
-        .select('*')
-      if (!suppErr && remoteSuppliers && remoteSuppliers.length > 0) {
+      const { data, error } = bizIds.length > 0
+        ? await pullTable('daftari_suppliers', q => q.in('business_id', bizIds))
+        : await pullTable('daftari_suppliers')
+      if (!error && data.length > 0) {
         let count = 0
-        for (const s of remoteSuppliers) {
-          const existing = s.local_id ? await db.suppliers.where('local_id').equals(s.local_id).first() : null
-          if (!existing) {
-            await db.suppliers.put(s)
-            count++
-          }
+        for (const s of data) {
+          const existing = s.local_id ? await db.suppliers.where('local_id').equals(s.local_id as string).first() : null
+          if (!existing) { await db.suppliers.put(s as unknown as Supplier); count++ }
         }
         restored.push(`${count} suppliers`)
       }
-    } catch { /* table may not exist */ }
+    } catch (cause) { logger.warn('sync:pull_suppliers_table_missing', { error: cause instanceof Error ? cause.message : String(cause) }) }
 
     // Pull purchase orders (table may not exist for older deployments)
     try {
-      const { data: remotePOs, error: poErr } = await supabase
-        .from('daftari_purchase_orders')
-        .select('*')
-      if (!poErr && remotePOs && remotePOs.length > 0) {
+      const { data, error } = bizIds.length > 0
+        ? await pullTable('daftari_purchase_orders', q => q.in('business_id', bizIds))
+        : await pullTable('daftari_purchase_orders')
+      if (!error && data.length > 0) {
         let count = 0
-        for (const po of remotePOs) {
-          const existing = po.local_id ? await db.purchase_orders.where('local_id').equals(po.local_id).first() : null
-          if (!existing) {
-            await db.purchase_orders.put(po)
-            count++
-          }
+        for (const po of data) {
+          const existing = po.local_id ? await db.purchase_orders.where('local_id').equals(po.local_id as string).first() : null
+          if (!existing) { await db.purchase_orders.put(po as unknown as PurchaseOrder); count++ }
         }
         restored.push(`${count} purchase orders`)
       }
-    } catch { /* table may not exist */ }
+    } catch (cause) { logger.warn('sync:pull_purchase_orders_table_missing', { error: cause instanceof Error ? cause.message : String(cause) }) }
 
     // Pull stock adjustments (table may not exist for older deployments)
     try {
-      const { data: remoteAdjustments, error: adjErr } = await supabase
-        .from('daftari_stock_adjustments')
-        .select('*')
-      if (!adjErr && remoteAdjustments && remoteAdjustments.length > 0) {
+      const { data, error } = bizIds.length > 0
+        ? await pullTable('daftari_stock_adjustments', q => q.in('business_id', bizIds))
+        : await pullTable('daftari_stock_adjustments')
+      if (!error && data.length > 0) {
         let count = 0
-        for (const a of remoteAdjustments) {
-          const existing = a.local_id ? await db.stock_adjustments.where('local_id').equals(a.local_id).first() : null
-          if (!existing) {
-            await db.stock_adjustments.put(a)
-            count++
-          }
+        for (const a of data) {
+          const existing = a.local_id ? await db.stock_adjustments.where('local_id').equals(a.local_id as string).first() : null
+          if (!existing) { await db.stock_adjustments.put(a as unknown as StockAdjustment); count++ }
         }
         restored.push(`${count} stock adjustments`)
       }
-    } catch { /* table may not exist */ }
+    } catch (cause) { logger.warn('sync:pull_stock_adjustments_table_missing', { error: cause instanceof Error ? cause.message : String(cause) }) }
   } catch (cause) {
     const msg = cause instanceof Error ? cause.message : String(cause)
     errors.push(msg)

@@ -22,7 +22,7 @@ function mapBusiness(biz: import('./lib/db').Business): {
   payment_methods?: string[]; products?: Array<{ id: string; name: string; price: number; cost_price?: number; unit?: string; stock?: number; low_stock_threshold?: number }>;
 } {
   return {
-    id: biz.user_id ?? biz.local_id ?? crypto.randomUUID(),
+    id: biz.user_id ?? biz.local_id ?? String(biz.id ?? ''),
     local_id: biz.local_id,
     name: biz.name,
     owner_name: biz.owner_name,
