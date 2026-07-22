@@ -15,6 +15,18 @@ function mockFrom(supabase: any, result: any) {
   supabase.from.mockReturnValue(result)
 }
 
+async function importDb(): Promise<any> {
+  return (await import('../../lib/db')).db
+}
+
+async function importSupabase(): Promise<any> {
+  return (await import('../../lib/supabase')).supabase
+}
+
+async function importSyncQueue() {
+  return await import('../../features/sync/syncQueue')
+}
+
 describe('syncQueue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -22,8 +34,8 @@ describe('syncQueue', () => {
 
   describe('getPendingCount', () => {
     it('returns count of unsynced items', async () => {
-      const { getPendingCount } = await import('../../features/sync/syncQueue')
-      const { db } = await import('../../lib/db')
+      const { getPendingCount } = await importSyncQueue()
+      const db = await importDb()
       mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           count: vi.fn().mockResolvedValue(3),
@@ -37,8 +49,8 @@ describe('syncQueue', () => {
 
   describe('getDeadLetterCount', () => {
     it('returns count of dead-letter items (synced=2)', async () => {
-      const { getDeadLetterCount } = await import('../../features/sync/syncQueue')
-      const { db } = await import('../../lib/db')
+      const { getDeadLetterCount } = await importSyncQueue()
+      const db = await importDb()
       mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           count: vi.fn().mockResolvedValue(1),
@@ -52,8 +64,8 @@ describe('syncQueue', () => {
 
   describe('addToQueue', () => {
     it('adds item with _retries counter initialized to 0', async () => {
-      const { addToQueue } = await import('../../features/sync/syncQueue')
-      const { db } = await import('../../lib/db')
+      const { addToQueue } = await importSyncQueue()
+      const db = await importDb()
       mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           first: vi.fn().mockResolvedValue(undefined),
@@ -76,8 +88,8 @@ describe('syncQueue', () => {
 
   describe('flushQueue', () => {
     it('returns zero counts when queue is empty', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const db = await importDb()
       mockWhere(db, {
         equals: vi.fn().mockReturnValue({
           toArray: vi.fn().mockResolvedValue([]),
@@ -89,9 +101,9 @@ describe('syncQueue', () => {
     })
 
     it('processes upsert items and deletes queue entry on success', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const items = [{
         id: 1,
@@ -121,9 +133,9 @@ describe('syncQueue', () => {
     })
 
     it('processes delete items and removes queue entry on success', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const items = [{
         id: 2,
@@ -155,9 +167,9 @@ describe('syncQueue', () => {
     })
 
     it('moves item to dead-letter after MAX_RETRIES', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const items = [{
         id: 3,
@@ -188,9 +200,9 @@ describe('syncQueue', () => {
     })
 
     it('strips _retries before sending to Supabase', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const items = [{
         id: 4,
@@ -225,9 +237,9 @@ describe('syncQueue', () => {
     })
 
     it('uses fallback table name when table_name is empty', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const items = [{
         id: 5,
@@ -254,9 +266,9 @@ describe('syncQueue', () => {
     })
 
     it('skips items in exponential backoff window', async () => {
-      const { flushQueue } = await import('../../features/sync/syncQueue')
-      const { supabase } = await import('../../lib/supabase')
-      const { db } = await import('../../lib/db')
+      const { flushQueue } = await importSyncQueue()
+      const supabase = await importSupabase()
+      const db = await importDb()
 
       const twoSecAgo = new Date(Date.now() - 2000).toISOString()
       const items = [{

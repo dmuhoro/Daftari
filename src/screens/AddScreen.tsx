@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, ArrowDownCircle, MessageSquare, AlertTriangle, CreditCard, Package } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -32,7 +33,7 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
     ? language === 'sw' ? dashboardLabels.incomeLabel.sw : dashboardLabels.incomeLabel.en
     : t('income');
 
-  const cards = [
+  const cards = useMemo(() => [
     {
       view: 'add/sale' as SubView,
       label: t('add_sale'),
@@ -80,7 +81,7 @@ export default function AddScreen({ onNavigate }: AddScreenProps) {
       iconColor: 'text-amber-500',
       border: 'border border-border dark:border-stone-700',
     },
-  ];
+  ], [t, incomeLabel, products.length]);
 
   const visibleCards = isCashOnly
     ? cards.filter((c) => c.view !== 'add/sms')

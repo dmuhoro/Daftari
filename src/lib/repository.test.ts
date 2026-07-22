@@ -3,6 +3,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { calculateProfit, calculateFulizaDebt, calculateWeeklyProfits } from './repository'
 import type { Transaction } from './db'
 
+vi.mock('./supabase', () => ({
+  supabase: {
+    from: vi.fn(),
+    auth: { getUser: vi.fn() },
+  },
+}))
+
 const makeTransaction = (
   type: Transaction['type'],
   amount: number,
@@ -434,5 +441,79 @@ describe('getStockAdjustmentsByBusinessId()', () => {
     const result = await getStockAdjustmentsByBusinessId('biz-1')
     expect(result.ok).toBe(true)
     if (result.ok) expect(result.value).toHaveLength(1)
+  })
+})
+
+describe('updateCustomer()', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('updates customer and returns ok', async () => {
+    const { updateCustomer } = await import('./repository')
+    const { db } = await import('./db')
+    const result = await updateCustomer(1, { name: 'Updated' })
+    expect(result.ok).toBe(true)
+    expect(db.customers.update).toHaveBeenCalledWith(1, { name: 'Updated' })
+  })
+
+  it('returns error on Dexie failure', async () => {
+    const { updateCustomer } = await import('./repository')
+    const { db } = await import('./db')
+    vi.mocked(db.customers.update).mockRejectedValueOnce(new Error('fail'))
+    const result = await updateCustomer(1, { name: 'X' })
+    expect(result.ok).toBe(false)
+  })
+})
+
+describe('upsertPushSubscription()', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('upserts subscription to Supabase', async () => {
+    const { upsertPushSubscription } = await import('./repository')
+    const { supabase } = await import('./supabase')
+    const mockUpserFn = vi.fn().mockResolvedValue({ error: null })
+    vi.mocked(supabase.from).mockReturnValueOnce({ upsert: mockUpserFn } as any)
+
+    const sub = { endpoint: 'https://push.example', keys: {} } as unknown as PushSubscription
+    const result = await upsertPushSubscription('user-1', sub)
+    expect(result.ok).toBe(true)
+    expect(supabase.from).toHaveBeenCalledWith('daftari_push_subscriptions')
+  })
+
+  it('returns error on Supabase failure', async () => {
+    const { upsertPushSubscription } = await import('./repository')
+    const { supabase } = await import('./supabase')
+    vi.mocked(supabase.from).mockReturnValueOnce({
+      upsert: vi.fn().mockResolvedValue({ error: { message: 'fail' } }),
+    } as any)
+
+    const sub = { endpoint: 'https://push.example', keys: {} } as unknown as PushSubscription
+    const result = await upsertPushSubscription('user-1', sub)
+    expect(result.ok).toBe(false)
+  })
+})
+
+describe('deletePushSubscription()', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('deletes subscription from Supabase', async () => {
+    const { deletePushSubscription } = await import('./repository')
+    const { supabase } = await import('./supabase')
+    const mockDeleteFn = vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: null }) })
+    vi.mocked(supabase.from).mockReturnValueOnce({ delete: mockDeleteFn } as any)
+
+    const result = await deletePushSubscription('user-1')
+    expect(result.ok).toBe(true)
+    expect(supabase.from).toHaveBeenCalledWith('daftari_push_subscriptions')
+  })
+
+  it('returns error on Supabase failure', async () => {
+    const { deletePushSubscription } = await import('./repository')
+    const { supabase } = await import('./supabase')
+    vi.mocked(supabase.from).mockReturnValueOnce({
+      delete: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ error: { message: 'fail' } }) }),
+    } as any)
+
+    const result = await deletePushSubscription('user-1')
+    expect(result.ok).toBe(false)
   })
 })

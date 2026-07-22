@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import RecordSale from './RecordSale'
 
 vi.mock('../../lib/store', () => {
@@ -14,6 +14,7 @@ vi.mock('../../lib/store', () => {
         { id: 'p2', name: 'Sukari', price: 300, stock: 30, low_stock_threshold: 5 },
       ],
     },
+    addTransaction: vi.fn(async () => 'receipt-1'),
     updateBusiness: vi.fn(),
     activeBusinessId: 'biz-1',
     transactions: [],
@@ -26,7 +27,6 @@ vi.mock('../../lib/store', () => {
     setLanguage: vi.fn(),
     setTheme: vi.fn(),
   }
-  storeState.addTransaction = vi.fn(async () => 'receipt-1')
   const useStore = Object.assign(
     vi.fn((s?: (state: typeof storeState) => unknown) => s ? s(storeState) : storeState),
     { getState: vi.fn(() => storeState) },

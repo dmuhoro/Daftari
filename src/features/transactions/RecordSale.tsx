@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
@@ -75,9 +75,11 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
 
   const templateProducts = catKey && subKey ? getTemplateProducts(catKey, subKey) : undefined;
 
-  if (!paymentMethod && userPaymentMethods.length === 1) {
-    setPaymentMethod(userPaymentMethods[0]);
-  }
+  useEffect(() => {
+    if (!paymentMethod && userPaymentMethods.length === 1) {
+      setPaymentMethod(userPaymentMethods[0]);
+    }
+  }, [paymentMethod, userPaymentMethods]);
 
   async function handleQuickSale(product: { name: string; price: number; unit?: string; id: string; stock?: number; low_stock_threshold?: number }) {
     setSaving(true);

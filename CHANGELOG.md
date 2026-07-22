@@ -5,6 +5,47 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.6.0] — 2026-07-22
+
+### Added
+
+#### Integration tests for write paths (Layer 2 — push notification + repository coverage)
+- **6 repository tests**: `updateCustomer` (2), `upsertPushSubscription` (2), `deletePushSubscription` (2) — success and failure paths.
+- **11 pushNotifications tests**: `requestNotificationPermission` (3), `subscribeToPush` (5), `unsubscribeFromPush` (3) — browser API availability, error handling, edge cases.
+
+#### Pure function test coverage (Layer 3 — csv + whatsapp)
+- **7 csv tests**: `transactionsToCSV` — empty array, single row, comma/double-quote escaping, date/time extraction, optional fields.
+- **7 whatsapp tests**: `formatReceiptText` (4 variants), `formatDailySummaryText`, `shareViaWhatsApp` (2 variants).
+
+### Fixed
+
+#### Typecheck errors (Layer 1 — 3 → 0)
+- **RecordSale.test.tsx**: Removed unused `waitFor` import, moved `addTransaction` into initial storeState mock object.
+- **syncQueue.test.ts**: Refactored to use `any`-typed import helpers (`importDb()`, `importSupabase()`) — resolves `Property 'mock' does not exist` error on Dexie mock.
+
+#### Money safety violations (Layer 4 — PosScreen)
+- **3 raw arithmetic instances** in `PosScreen.tsx` wrapped in `cents()`: cart total accumulation, receipt item price, display price.
+
+#### React anti-pattern (Layer 4 — RecordSale)
+- **setState-during-render** in `RecordSale.tsx` replaced with `useEffect` — prevents double-render on mount when single payment method exists.
+
+### Changed
+
+#### Bundle optimization (Layer 5)
+- **recharts + d3** added to `manualChunks` as `vendor-charts` (372 KB, independently cacheable, lazy-loaded).
+- **AddScreen** `cards` array wrapped in `useMemo` to prevent unnecessary re-creation.
+
+#### Sync architecture (Layer 6)
+- **Removed redundant `syncAllTables()`** from `useSync` hook — `flushQueue()` is the single sync pathway on mount/reconnect. `syncAllTables()` retained for manual forced sync only.
+
+### Engineering
+
+- `src/lib/csv.test.ts` — new file, 7 tests
+- `src/lib/whatsapp.test.ts` — new file, 7 tests
+- `src/lib/pushNotifications.test.ts` — new file, 11 tests
+
+---
+
 ## [5.5.0] — 2026-07-22
 
 ### Added

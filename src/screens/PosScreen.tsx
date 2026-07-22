@@ -51,7 +51,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
     ? products.filter(p => p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) || (p.barcode && p.barcode.includes(debouncedSearch)))
     : products;
 
-  const cartTotal = useMemo(() => cents(cart.reduce((s, i) => s + i.price * i.qty, 0)), [cart]);
+  const cartTotal = useMemo(() => cents(cart.reduce((s, i) => s + cents(i.price * i.qty), 0)), [cart]);
   const maxRedeem = selectedCustomer ? Math.floor((selectedCustomer.loyalty_points ?? 0) / POINTS_REDEEM_RATE) : 0;
   const discount = cents(redeemPoints ? Math.min(maxRedeem, cartTotal) : 0);
   const finalTotal = cents(Math.max(0, cartTotal - discount));
@@ -129,7 +129,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
       amount: finalTotal,
       type: 'income',
       description: cart.map(i => `${i.name} x${i.qty}`).join(', '),
-      items: cart.map(i => ({ name: i.name, qty: i.qty, price: i.price * i.qty })),
+      items: cart.map(i => ({ name: i.name, qty: i.qty, price: cents(i.price * i.qty) })),
       date: new Date().toISOString(),
       customerName: selectedCustomer?.name,
       loyaltyEarned: pointsEarned,
@@ -256,7 +256,7 @@ export default function PosScreen({ onBack }: PosScreenProps) {
                     <span className="w-6 text-center text-xs font-semibold text-ink dark:text-stone-100">{item.qty}</span>
                     <button onClick={() => updateQty(item.productId, 1)} aria-label="Increase quantity" className="min-w-[44px] min-h-[44px] rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center"><Plus className="w-3 h-3 text-muted" /></button>
                   </div>
-                  <span className="w-20 text-right text-xs text-primary-600 font-semibold">KES {(item.price * item.qty).toLocaleString('en-KE')}</span>
+                  <span className="w-20 text-right text-xs text-primary-600 font-semibold">KES {cents(item.price * item.qty).toLocaleString('en-KE')}</span>
                 </div>
               ))}
             </div>
