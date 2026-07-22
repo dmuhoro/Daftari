@@ -5,6 +5,45 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.7.0] — 2026-07-22
+
+### Added
+
+#### Test coverage expansion (Layer 7 — hardening phase five)
+- **76 new tests** across 7 new test files, growing from 182 → 258 tests (+42%).
+- **Line coverage:** 56.33% → 74.4% (+18.07%).
+
+#### print.ts tests (25 tests)
+- `formatReceiptText` (15): business name, receipt ID, amount, date, customer name, items, description, payment method, loyalty points, discount lines, thank you message.
+- `printBrowserReceipt` (5): window open, HTML write, document close, print call, null window handling.
+- `printBluetoothReceipt` (5): no Bluetooth API, GATT failure, no writable characteristic, writeValue call, non-Error wrapping.
+
+#### analytics.ts tests (8 tests)
+- `track()` (3): logger integration, auto-flush at 10 events, no flush below 10.
+- `flush()` (4): supabase insert, empty queue, error requeue, exception handling.
+- `EVENTS` (1): 23 event constants exported.
+
+#### backup.ts tests (6 tests)
+- `exportAllData()`: all 8 Dexie tables read, JSON blob creation, download trigger, URL create/revoke, empty tables, table read error handling.
+
+#### referral.ts tests (10 tests)
+- `generateReferralUrl()` (6): ref code, canonical domain, category param, lowercase, short names.
+- `shareViaWhatsApp()` (4): Swahili/English messages, URL inclusion, analytics tracking.
+
+#### logger.ts tests (9 tests)
+- All 4 methods tested: `info`, `warn`, `error`, `track` — dev prefix formatting, Error vs non-Error objects, no-data variants.
+
+#### sentry.ts tests (15 tests)
+- `initSentry` (5): no DSN skips init, DSN present, PII stripping, ignoreErrors list.
+- `captureError` (3): no DSN guard, withScope, tag setting.
+- `captureBreadcrumb` (3): no DSN guard, breadcrumb creation, default category.
+- `setSentryUser`/`clearSentryUser` (4): DSN guard, user set/clear.
+
+#### useToast.ts tests (3 tests)
+- Context default no-op, provider override, value shape.
+
+---
+
 ## [5.6.0] — 2026-07-22
 
 ### Added
