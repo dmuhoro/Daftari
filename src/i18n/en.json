@@ -113,15 +113,11 @@
   "filter_this_month": "This Month",
   "filter_all": "All",
   "loading": "Loading...",
-  "change_category": "Change Business Category",
   "business_profile": "Business Profile",
   "owner_name": "Owner Name",
   "owner_name_placeholder": "Your name",
   "payment_methods": "Payment Methods",
   "saved": "Saved",
-  "user_profile": "User Profile",
-  "account_created": "Account created",
-  "last_sign_in": "Last sign in",
   "receipt": "Receipt",
   "receipt_no": "Receipt No.",
   "share": "Share",
@@ -147,7 +143,6 @@
   "reset_email_instructions": "We sent a password reset link to your email.",
   "forgot_password": "Forgot password?",
   "resend_confirmation": "Resend confirmation email",
-  "signed_in_as": "Signed in as",
   "monthly_report": "Monthly Report",
   "transaction_deleted": "Transaction deleted",
   "suppliers": "Suppliers",
@@ -195,6 +190,8 @@
   "pos_checkout": "Checkout",
   "print_receipt": "Print Receipt",
   "print_thermal": "Print Thermal",
-  "search": "Search..."
+  "search": "Search...",
+  "business_tools": "Business Tools",
+  "business_tools_desc": "Advanced features for growing businesses"
 }
 

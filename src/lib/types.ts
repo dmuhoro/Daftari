@@ -4,6 +4,18 @@
  * All shared interfaces, branded IDs, and discriminated unions live here.
  */
 
+// ─── Branded ID Types ──────────────────────────────────────────────────────
+// Prevents mixing up different ID types at compile time.
+
+export type Brand<T, B extends string> = T & { readonly __brand: B }
+export type TransactionId  = Brand<string, 'TransactionId'>
+export type BusinessId     = Brand<string, 'BusinessId'>
+export type UserId         = Brand<string, 'UserId'>
+export type LocalId        = Brand<string, 'LocalId'>
+
+/** Create a branded LocalId from a raw string */
+export const asLocalId = (s: string): LocalId => s as LocalId
+
 // ─── Result Type ──────────────────────────────────────────────────────────
 // All async operations in Daftari return Result<T, AppError> instead of throwing.
 // This makes error paths explicit and type-checked.

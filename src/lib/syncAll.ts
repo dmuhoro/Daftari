@@ -88,6 +88,51 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
     })))
   }
 
+  const suppliers = await db.suppliers.toArray()
+  if (suppliers.length > 0) {
+    results.suppliers = await upsertToRemote('daftari_suppliers', suppliers.map(s => ({
+      local_id: s.local_id,
+      name: s.name,
+      phone: s.phone,
+      email: s.email,
+      address: s.address,
+      notes: s.notes,
+      business_id: s.business_id,
+      created_at: s.created_at,
+      updated_at: new Date().toISOString(),
+    })))
+  }
+
+  const purchaseOrders = await db.purchase_orders.toArray()
+  if (purchaseOrders.length > 0) {
+    results.purchase_orders = await upsertToRemote('daftari_purchase_orders', purchaseOrders.map(po => ({
+      local_id: po.local_id,
+      business_id: po.business_id,
+      supplier_id: po.supplier_id,
+      items: po.items,
+      status: po.status,
+      total_cost: po.total_cost,
+      notes: po.notes,
+      created_at: po.created_at,
+      updated_at: new Date().toISOString(),
+    })))
+  }
+
+  const stockAdjustments = await db.stock_adjustments.toArray()
+  if (stockAdjustments.length > 0) {
+    results.stock_adjustments = await upsertToRemote('daftari_stock_adjustments', stockAdjustments.map(a => ({
+      local_id: a.local_id,
+      business_id: a.business_id,
+      product_id: a.product_id,
+      product_name: a.product_name,
+      quantity_change: a.quantity_change,
+      reason: a.reason,
+      reason_text: a.reason_text,
+      notes: a.notes,
+      created_at: a.created_at,
+    })))
+  }
+
   logger.info('sync:all_tables_complete', Object.fromEntries(
     Object.entries(results).map(([k, v]) => [k, `${v.synced} synced, ${v.failed} failed`])
   ))

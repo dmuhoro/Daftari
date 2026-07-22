@@ -47,6 +47,7 @@ npm run build        # Production build
 npm run test:run     # Run tests
 npm run typecheck    # TypeScript check
 npm run lint         # ESLint
+npm run check:i18n   # i18n key parity check
 ```
 
 ## CI/CD

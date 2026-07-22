@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const mockTrack = vi.fn()
 vi.mock('./analytics', () => ({
-  track: (...args: any[]) => mockTrack(...args),
+  track: (...args: unknown[]) => mockTrack(...args),
   EVENTS: { REFERRAL_LINK_SHARED: 'referral_link_shared' },
 }))
 

@@ -113,15 +113,11 @@
   "filter_this_month": "Mwezi Huu",
   "filter_all": "Yote",
   "loading": "Inasubiri...",
-  "change_category": "Badilisha Aina ya Biashara",
   "business_profile": "Wasifu wa Biashara",
   "owner_name": "Jina la Mmiliki",
   "owner_name_placeholder": "Jina lako",
   "payment_methods": "Njia za Malipo",
   "saved": "Imehifadhiwa",
-  "user_profile": "Wasifu wa Mtumiaji",
-  "account_created": "Imeundwa",
-  "last_sign_in": "Ingia mwisho",
   "receipt": "Risiti",
   "receipt_no": "Nambari ya Risiti",
   "share": "Tuma",
@@ -147,7 +143,6 @@
   "reset_email_instructions": "Tumekutumia kiungo cha kuweka upya nenosiri kwenye barua pepe yako.",
   "forgot_password": "Umesahau nenosiri?",
   "resend_confirmation": "Tuma tena barua ya uthibitishaji",
-  "signed_in_as": "Umeingia kama",
   "monthly_report": "Ripoti ya Mwezi",
   "transaction_deleted": "Miamala imefutwa",
   "suppliers": "Wauzaji",
@@ -195,6 +190,8 @@
   "pos_checkout": "Malipo",
   "print_receipt": "Chapisha Risiti",
   "print_thermal": "Chapisha Thermal",
-  "search": "Tafuta..."
+  "search": "Tafuta...",
+  "business_tools": "Zana za Biashara",
+  "business_tools_desc": "Vipengele vya ziada kwa biashara zinazokua"
 }
 

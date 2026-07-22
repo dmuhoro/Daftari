@@ -5,6 +5,30 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.8.0] — 2026-07-22
+
+### Fixed
+- Lint errors in referral.test.ts and backup.test.ts
+- Supabase schema gap: 5 missing table migrations now committed (daftari_daily_closes, daftari_customers, daftari_suppliers, daftari_purchase_orders, daftari_stock_adjustments)
+- syncAllTables() extended to push all 7 entity types (was 4)
+- money.ts restored from 2-line stub to full safe arithmetic interface (11 functions)
+- Branded ID types restored in types.ts (TransactionId, BusinessId, UserId, LocalId)
+- 5 unused i18n keys removed (change_category, user_profile, account_created, last_sign_in, signed_in_as)
+- tsx pinned in devDependencies, check:i18n script added
+
+### Changed
+- Settings: advanced features collapsed under "Business Tools" section by default
+- Navigation: core ledger path visible by default, POS/inventory/reports collapsed
+
+### Added
+- ARCHITECTURE.md — sync coverage matrix
+- ROADMAP.md — phase gates and feature backlog
+- docs/schema-audit.md — Supabase schema audit
+- supabase/migrations/20260722000000_create_missing_tables.sql — all 5 missing tables with RLS
+- money.test.ts expanded from 3 → 30 tests (all money.ts functions covered)
+
+---
+
 ## [5.7.0] — 2026-07-22
 
 ### Added

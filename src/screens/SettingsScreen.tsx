@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Building2, Package, Check, BarChart3, FileDown, Download, RefreshCw, Plus, Building, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2, LogOut } from 'lucide-react';
+import { ChevronRight, ChevronDown, Building2, Package, Check, BarChart3, FileDown, Download, RefreshCw, Plus, Building, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2, LogOut } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import Card from '../components/ui/Card';
@@ -27,6 +27,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   const business = useStore((s) => s.business);
   const { canInstall, install } = usePWAInstall();
   const [syncing, setSyncing] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const { toast } = useToast();
 
   const catKey = business?.category as BusinessCategoryKey | undefined;
@@ -174,70 +175,81 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
 
       <AppearanceSection />
 
-      {/* Inventory Management section */}
+      {/* Zana za Biashara — collapsed by default */}
       <div>
-        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
-          {language === 'sw' ? 'Usimamizi wa Bidhaa' : 'Inventory Management'}
-        </p>
-        <Card padding="none" overflow>
-          {onNavigate && (
-            <>
-              <NavRow icon={<Building2 className="w-4 h-4 text-purple-600" />} label={t('suppliers')} desc={language === 'sw' ? 'Wasambazaji na wauzaji' : 'Manage your suppliers'} onClick={() => onNavigate('suppliers')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-              <NavRow icon={<ShoppingCart className="w-4 h-4 text-orange-600" />} label={t('purchase_orders')} desc={language === 'sw' ? 'Agiza bidhaa kutoka kwa wauzaji' : 'Order products from suppliers'} onClick={() => onNavigate('purchase-orders')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-              <NavRow icon={<ClipboardList className="w-4 h-4 text-amber-600" />} label={t('stock_adjustments')} desc={language === 'sw' ? 'Rekebisha hesabu za bidhaa' : 'Adjust product stock levels'} onClick={() => onNavigate('stock-adjustments')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-              <NavRow icon={<Zap className="w-4 h-4 text-blue-600" />} label={t('batch_entry')} desc={language === 'sw' ? 'Rekodi miamala mingi mfululizo' : 'Record multiple transactions quickly'} onClick={() => onNavigate('batch-entry')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-              <NavRow icon={<Zap className="w-4 h-4 text-cyan-600" />} label={t('pos') || 'POS Mode'} desc={language === 'sw' ? 'Sehemu ya kuuza bila taabu' : 'Touch-friendly point of sale'} onClick={() => onNavigate('pos')} />
-            </>
-          )}
-        </Card>
-      </div>
+        <button
+          onClick={() => setToolsOpen(!toolsOpen)}
+          className="w-full flex items-center justify-between px-1 py-2"
+        >
+          <div>
+            <p className="text-xs font-medium text-muted uppercase tracking-widest dark:text-stone-400">
+              {t('business_tools')}
+            </p>
+            <p className="text-xs text-muted dark:text-stone-500 mt-0.5">
+              {t('business_tools_desc')}
+            </p>
+          </div>
+          {toolsOpen
+            ? <ChevronDown className="w-4 h-4 text-muted dark:text-stone-400" />
+            : <ChevronRight className="w-4 h-4 text-muted dark:text-stone-400" />
+          }
+        </button>
 
-      {/* Data & Reports section */}
-      <div>
-        <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 dark:text-stone-400">
-          {language === 'sw' ? 'Data & Ripoti' : 'Data & Reports'}
-        </p>
-        <Card padding="none" overflow>
-          {onNavigate && (
-            <>
-              <NavRow icon={<BarChart3 className="w-4 h-4 text-green-600" />} label={language === 'sw' ? 'Ripoti ya Mwezi' : 'Monthly Report'} desc={language === 'sw' ? 'Faida, gharama, na kulinganisha' : 'Profit, expenses & comparison'} onClick={() => onNavigate('monthly-report')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-              <NavRow icon={<Package className="w-4 h-4 text-teal-600" />} label={language === 'sw' ? 'Faida kwa Bidhaa' : 'Product Profitability'} desc={language === 'sw' ? 'Angalia faida kwa kila bidhaa' : 'View margin per product'} onClick={() => onNavigate('product-profitability')} />
-              <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-            </>
-          )}
-          <NavRow icon={<FileDown className="w-4 h-4 text-blue-600" />} label={language === 'sw' ? 'Pakua CSV' : 'Export CSV'} desc={language === 'sw' ? 'Pakua miamala yote kwa Excel' : 'Download all transactions for Excel'} onClick={() => { const csv = transactionsToCSV(useStore.getState().transactions); const filename = `daftari_${new Date().toISOString().slice(0, 10)}.csv`; downloadCSV(csv, filename); }} />
-          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-          <NavRow icon={<Download className="w-4 h-4 text-teal-600" />} label={language === 'sw' ? 'Hifadhi Backup' : 'Export Backup'} desc={language === 'sw' ? 'Pakua data yote kwa JSON' : 'Download all data as JSON'} onClick={exportAllData} />
-          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-          <NavRow icon={<RefreshCw className="w-4 h-4 text-purple-600" />} label={language === 'sw' ? 'Rejesha kutoka Wavuti' : 'Restore from Cloud'} desc={language === 'sw' ? 'Pakua data yako kutoka Supabase' : 'Pull your data from backup'} onClick={async () => { const { restored, errors } = await pullFromSupabase(); if (errors.length > 0) { alert(errors.join('\n')); } else { alert(restored.join('\n') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found')); window.location.reload(); } }} />
-          <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-          <button
-            onClick={handleSyncNow}
-            disabled={syncing}
-            aria-label={language === 'sw' ? 'Sawazisha sasa' : 'Sync now'}
-            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 disabled:opacity-60"
-          >
-            <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${syncing ? 'bg-amber-50 dark:bg-amber-900' : 'bg-cyan-50 dark:bg-cyan-900'}`}>
-                <RefreshCw className={`w-4 h-4 ${syncing ? 'text-amber-600 animate-spin' : 'text-cyan-600'}`} />
+        {toolsOpen && (
+          <Card padding="none" overflow>
+            {/* Inventory Management */}
+            {onNavigate && (
+              <>
+                <NavRow icon={<Building2 className="w-4 h-4 text-purple-600" />} label={t('suppliers')} desc={language === 'sw' ? 'Wasambazaji na wauzaji' : 'Manage your suppliers'} onClick={() => onNavigate('suppliers')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+                <NavRow icon={<ShoppingCart className="w-4 h-4 text-orange-600" />} label={t('purchase_orders')} desc={language === 'sw' ? 'Agiza bidhaa kutoka kwa wauzaji' : 'Order products from suppliers'} onClick={() => onNavigate('purchase-orders')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+                <NavRow icon={<ClipboardList className="w-4 h-4 text-amber-600" />} label={t('stock_adjustments')} desc={language === 'sw' ? 'Rekebisha hesabu za bidhaa' : 'Adjust product stock levels'} onClick={() => onNavigate('stock-adjustments')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+                <NavRow icon={<Zap className="w-4 h-4 text-blue-600" />} label={t('batch_entry')} desc={language === 'sw' ? 'Rekodi miamala mingi mfululizo' : 'Record multiple transactions quickly'} onClick={() => onNavigate('batch-entry')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+                <NavRow icon={<Zap className="w-4 h-4 text-cyan-600" />} label={t('pos') || 'POS Mode'} desc={language === 'sw' ? 'Sehemu ya kuuza bila taabu' : 'Touch-friendly point of sale'} onClick={() => onNavigate('pos')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+              </>
+            )}
+            {/* Reports */}
+            {onNavigate && (
+              <>
+                <NavRow icon={<BarChart3 className="w-4 h-4 text-green-600" />} label={language === 'sw' ? 'Ripoti ya Mwezi' : 'Monthly Report'} desc={language === 'sw' ? 'Faida, gharama, na kulinganisha' : 'Profit, expenses & comparison'} onClick={() => onNavigate('monthly-report')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+                <NavRow icon={<Package className="w-4 h-4 text-teal-600" />} label={language === 'sw' ? 'Faida kwa Bidhaa' : 'Product Profitability'} desc={language === 'sw' ? 'Angalia faida kwa kila bidhaa' : 'View margin per product'} onClick={() => onNavigate('product-profitability')} />
+                <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+              </>
+            )}
+            <NavRow icon={<FileDown className="w-4 h-4 text-blue-600" />} label={language === 'sw' ? 'Pakua CSV' : 'Export CSV'} desc={language === 'sw' ? 'Pakua miamala yote kwa Excel' : 'Download all transactions for Excel'} onClick={() => { const csv = transactionsToCSV(useStore.getState().transactions); const filename = `daftari_${new Date().toISOString().slice(0, 10)}.csv`; downloadCSV(csv, filename); }} />
+            <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            <NavRow icon={<Download className="w-4 h-4 text-teal-600" />} label={language === 'sw' ? 'Hifadhi Backup' : 'Export Backup'} desc={language === 'sw' ? 'Pakua data yote kwa JSON' : 'Download all data as JSON'} onClick={exportAllData} />
+            <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            <NavRow icon={<RefreshCw className="w-4 h-4 text-purple-600" />} label={language === 'sw' ? 'Rejesha kutoka Wavuti' : 'Restore from Cloud'} desc={language === 'sw' ? 'Pakua data yako kutoka Supabase' : 'Pull your data from backup'} onClick={async () => { const { restored, errors } = await pullFromSupabase(); if (errors.length > 0) { alert(errors.join('\n')); } else { alert(restored.join('\n') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found')); window.location.reload(); } }} />
+            <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            <button
+              onClick={handleSyncNow}
+              disabled={syncing}
+              aria-label={language === 'sw' ? 'Sawazisha sasa' : 'Sync now'}
+              className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 disabled:opacity-60"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${syncing ? 'bg-amber-50 dark:bg-amber-900' : 'bg-cyan-50 dark:bg-cyan-900'}`}>
+                  <RefreshCw className={`w-4 h-4 ${syncing ? 'text-amber-600 animate-spin' : 'text-cyan-600'}`} />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-medium text-ink dark:text-stone-100">
+                    {syncing ? (language === 'sw' ? 'Inasawazisha...' : 'Syncing...') : (language === 'sw' ? 'Sawazisha Sasa' : 'Sync Now')}
+                  </span>
+                  <p className="text-xs text-muted dark:text-stone-400">
+                    {language === 'sw' ? 'Sawazisha data na wavuti' : 'Sync pending data to cloud'}
+                  </p>
+                </div>
               </div>
-              <div className="text-left">
-                <span className="text-sm font-medium text-ink dark:text-stone-100">
-                  {syncing ? (language === 'sw' ? 'Inasawazisha...' : 'Syncing...') : (language === 'sw' ? 'Sawazisha Sasa' : 'Sync Now')}
-                </span>
-                <p className="text-xs text-muted dark:text-stone-400">
-                  {language === 'sw' ? 'Sawazisha data na wavuti' : 'Sync pending data to cloud'}
-                </p>
-              </div>
-            </div>
-            {syncing && <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />}
-          </button>
-        </Card>
+              {syncing && <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />}
+            </button>
+          </Card>
+        )}
       </div>
 
       {/* PWA Install section */}

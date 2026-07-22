@@ -38,9 +38,7 @@ describe('backup', () => {
 
     createObjectURLSpy = vi.fn(() => 'blob:mock-url')
     revokeObjectURLSpy = vi.fn()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(URL, 'createObjectURL').mockImplementation(createObjectURLSpy as any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(revokeObjectURLSpy as any)
   })
 
