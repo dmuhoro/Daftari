@@ -103,3 +103,30 @@ vi.mock('../lib/db', () => ({
   db: mockDb,
   default: mockDb,
 }))
+
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: vi.fn(async () => ({ data: { user: null }, error: null })),
+      signUp: vi.fn(async () => ({ data: {}, error: null })),
+      signInWithPassword: vi.fn(async () => ({ data: {}, error: null })),
+      signOut: vi.fn(async () => ({ error: null })),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+      getSession: vi.fn(async () => ({ data: { session: null }, error: null })),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(async () => ({ data: null, error: null })),
+      then: vi.fn(async () => ({ data: [], error: null })),
+    })),
+    channel: vi.fn(() => ({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(async () => {}),
+    })),
+    removeChannel: vi.fn(async () => {}),
+  },
+}))
