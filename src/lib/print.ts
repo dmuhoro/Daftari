@@ -1,3 +1,5 @@
+import { cents } from './money'
+
 // Web Bluetooth API type augmentation
 interface BluetoothRemoteGATTCharacteristic {
   properties: { write: boolean };
@@ -66,7 +68,7 @@ function escpReceipt(data: ReceiptData): Uint8Array {
   lines.push(escpLine(''));
   lines.push(escpLine('─'.repeat(32)));
   if (data.discount) {
-    const subtotal = data.amount + data.discount;
+    const subtotal = cents(data.amount + data.discount);
     lines.push(escpLine(`Subtotal:    KES ${subtotal.toLocaleString('en-KE')}`));
     lines.push(escpLine(`Discount:   -KES ${data.discount.toLocaleString('en-KE')}`));
   }
@@ -106,7 +108,7 @@ export async function printBrowserReceipt(data: ReceiptData): Promise<void> {
     ${data.items ? `<table>${data.items.map(i => `<tr><td>${i.name} x${i.qty}</td><td>KES ${i.price.toLocaleString('en-KE')}</td></tr>`).join('')}</table><div class="line"></div>` : ''}
     ${data.description ? `<p>${data.description}</p>` : ''}
     <div class="line"></div>
-    ${data.discount ? `<p>Subtotal: KES ${(data.amount + data.discount).toLocaleString('en-KE')}</p><p>Discount: -KES ${data.discount.toLocaleString('en-KE')}</p>` : ''}
+    ${data.discount ? `<p>Subtotal: KES ${cents(data.amount + data.discount).toLocaleString('en-KE')}</p><p>Discount: -KES ${data.discount.toLocaleString('en-KE')}</p>` : ''}
     <p class="total">TOTAL: KES ${data.amount.toLocaleString('en-KE')}</p>
     ${data.paymentMethod ? `<p class="center">Payment: ${data.paymentMethod}</p>` : ''}
     ${data.loyaltyEarned ? `<p class="center">Points earned: ${data.loyaltyEarned}</p>` : ''}
@@ -155,7 +157,7 @@ export function formatReceiptText(data: ReceiptData): string {
   }
   if (data.description) lines.push(data.description);
   if (data.discount) {
-    lines.push(`Subtotal: KES ${(data.amount + data.discount).toLocaleString('en-KE')}`);
+    lines.push(`Subtotal: KES ${cents(data.amount + data.discount).toLocaleString('en-KE')}`);
     lines.push(`Discount: -KES ${data.discount.toLocaleString('en-KE')}`);
   }
   lines.push(`TOTAL: KES ${data.amount.toLocaleString('en-KE')}`);

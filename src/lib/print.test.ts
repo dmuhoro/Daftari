@@ -95,6 +95,13 @@ describe('formatReceiptText (print)', () => {
     expect(result).toContain('TOTAL: KES 1,500')
   })
 
+  it('handles floating-point amounts without drift (money safety)', () => {
+    const result = formatReceiptText(makeReceipt({ amount: 1000, discount: 300 }))
+    expect(result).toContain('Subtotal: KES 1,300')
+    expect(result).not.toContain('1,299.9')
+    expect(result).not.toContain('1,300.1')
+  })
+
   it('does not show discount lines when no discount', () => {
     const result = formatReceiptText(makeReceipt({ amount: 1500 }))
     expect(result).not.toContain('Subtotal:')

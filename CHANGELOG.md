@@ -5,6 +5,18 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.8.2] — 2026-07-23
+
+### Fixed
+- **P1 Money Safety**: PosScreen.tsx cart calculations now use `kesSum()`, `kesSubtract()`, `toKES()` instead of raw arithmetic (lines 54, 56-57, 132, 259)
+- **P1 Money Safety**: print.ts receipt subtotal wrapped with `cents()` to prevent floating-point drift (line 63)
+
+### Added
+- PosScreen.test.tsx: 7 money safety tests covering cart totals, mixed items, quantity updates, item removal, and kesSubtract discount calculations
+- print.test.ts: floating-point precision test verifying receipt subtotals have no drift
+
+---
+
 ## [5.8.1] — 2026-07-23
 
 ### Added
