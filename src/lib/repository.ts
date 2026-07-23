@@ -162,7 +162,7 @@ export const getCustomerByName = async (
     const customer = await db.customers.where('name').equals(name).first()
     return ok(customer ?? null)
   } catch (cause) {
-    logger.error('repository:get_customer_by_name_failed', cause, { name })
+    logger.error('repository:get_customer_by_name_failed', cause)
     return err(appError('DEXIE_READ_FAILED', 'Failed to read customer', cause))
   }
 }
