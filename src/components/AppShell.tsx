@@ -108,7 +108,12 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   const tab = activeTab(view);
   const isSubView = view.includes('/');
-  const hideNav = view === 'catalog' || view === 'profile' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos' || view === 'help' || view === 'admin';
+  const selfManagedViews = new Set<View>([
+    'catalog', 'profile', 'monthly-report', 'product-profitability',
+    'suppliers', 'purchase-orders', 'stock-adjustments', 'batch-entry',
+    'pos', 'help', 'admin',
+  ]);
+  const hideNav = selfManagedViews.has(view);
 
   const tabs: { key: BottomTab; icon: typeof Home; labelKey: TranslationKey }[] = [
     { key: 'dashboard', icon: Home, labelKey: 'dashboard' },
@@ -158,7 +163,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
       {!isOnline && <OfflineBanner />}
 
       {/* Header */}
-      {view !== 'dashboard' && view !== 'catalog' && view !== 'profile' && view !== 'monthly-report' && view !== 'customers' && view !== 'product-profitability' && view !== 'suppliers' && view !== 'purchase-orders' && view !== 'stock-adjustments' && view !== 'batch-entry' && view !== 'pos' && view !== 'help' && view !== 'admin' && (
+      {view !== 'dashboard' && view !== 'history' && view !== 'add' && view !== 'settings' && !selfManagedViews.has(view) && !isSubView && (
         <header className="bg-white dark:bg-stone-900 border-b border-border dark:border-stone-700 px-4 pt-safe-top">
           <div className="flex items-center h-14 gap-2">
             {isSubView ? (
