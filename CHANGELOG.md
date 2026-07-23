@@ -5,6 +5,16 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.8.1] — 2026-07-23
+
+### Added
+- CTO full codebase audit (docs/audit/cto-audit-v5-8-0.md)
+- 12-section audit covering: build health, codebase inventory, architecture compliance, data layer integrity, security, test coverage, performance, technical debt, feature completeness, engineering standards, product readiness
+- Audit results: 0 P0, 2 P1, 5 P2, 3 P3 issues identified
+- Core loop viability confirmed: Hellen can use this tomorrow
+
+---
+
 ## [5.8.0] — 2026-07-22
 
 ### Fixed
