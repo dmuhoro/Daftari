@@ -5,6 +5,18 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.8.3] — 2026-07-23
+
+### Added
+- RecordExpense.test.tsx: 8 tests (render, categories, validation, success flash)
+- RecordWithdrawal.test.tsx: 8 tests (render, warning, validation, success flash)
+- RecordFulizaDebt.test.tsx: 6 tests (render, label, validation, success flash)
+- RecordFulizaRepaid.test.tsx: 6 tests (render, label, validation, success flash)
+- BatchEntryScreen.test.tsx: 7 tests (render, toggle, validation, batch count)
+- Screen test coverage: 3/24 → 8/24 (33%)
+
+---
+
 ## [5.8.2] — 2026-07-23
 
 ### Fixed
