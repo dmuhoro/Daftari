@@ -5,6 +5,22 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.8.5] — 2026-07-23
+
+### Fixed
+- Removed dead `learn/index.ts` placeholder (TD-001)
+- `useSync.ts`: Replaced 3x `.catch(console.error)` with `captureError` (TD-008)
+- AppShell: Refactored 14-condition header hide + 11-condition nav hide into `selfManagedViews` Set (TD-009)
+
+### Resolved
+- HistoryScreen virtualization: already has 50-item pagination with IntersectionObserver
+- Recharts lazy-loading: already route-level lazy-loaded in AppShell.tsx
+- StockAdjustmentsScreen arithmetic: stock quantities are unit counts, not KES amounts (false positive)
+- Coverage thresholds: expanded to screens/features/components (46% lines, 27% branches, 36% functions)
+- All 10 audit debt items resolved or deferred
+
+---
+
 ## [5.8.3] — 2026-07-23
 
 ### Added
