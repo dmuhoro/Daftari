@@ -45,7 +45,7 @@ jobs:
       - name: Run E2E tests
         run: npm run test:e2e
         env:
-          CI: true
+          VITE_E2E: 'true'
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
