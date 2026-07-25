@@ -29,6 +29,9 @@ test.describe('Record Sale', () => {
 
     await page.getByRole('button', { name: /hifadhi|save/i }).click()
 
+    // Dismiss the receipt overlay
+    await page.getByRole('button', { name: /funga|close/i }).click()
+
     await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 10000 })
   })
 })
