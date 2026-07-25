@@ -8,8 +8,19 @@ import './index.css';
 initSentry()
 initMonitoring()
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const IS_E2E = import.meta.env.VITE_E2E === 'true';
+
+async function bootstrap() {
+  if (IS_E2E) {
+    const { seedE2eData } = await import('./lib/e2e');
+    await seedE2eData();
+  }
+
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+}
+
+bootstrap();
