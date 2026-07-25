@@ -8,7 +8,7 @@ import './index.css';
 initSentry()
 initMonitoring()
 
-const IS_E2E = import.meta.env.VITE_E2E === 'true' || window.location.search.includes('e2e=true');
+const IS_E2E = import.meta.env.VITE_E2E === 'true' || window.location.search.includes('e2e=true') || !!(window as any).__E2E__;
 
 async function bootstrap() {
   if (IS_E2E) {

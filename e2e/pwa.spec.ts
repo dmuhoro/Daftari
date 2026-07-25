@@ -1,16 +1,18 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('PWA basics', () => {
-  test('app shell renders correctly', async ({ page }) => {
-    await page.goto('/?e2e=true')
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => { (window as any).__E2E__ = true })
+    await page.goto('/')
     await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 15000 })
+  })
+
+  test('app shell renders correctly', async ({ page }) => {
     // Bottom nav should be visible
     await expect(page.locator('nav')).toBeVisible()
   })
 
   test('service worker is registered', async ({ page }) => {
-    await page.goto('/?e2e=true')
-    await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 15000 })
     const swRegistered = await page.evaluate(() =>
       navigator.serviceWorker?.getRegistration().then(r => !!r)
     )
@@ -18,8 +20,6 @@ test.describe('PWA basics', () => {
   })
 
   test('IndexedDB is accessible', async ({ page }) => {
-    await page.goto('/?e2e=true')
-    await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 15000 })
     const dbExists = await page.evaluate(() => {
       return new Promise<boolean>((resolve) => {
         const req = indexedDB.databases?.() ?? Promise.resolve([])
