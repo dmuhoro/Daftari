@@ -1,0 +1,34 @@
+# CodeRabbit configuration
+# Docs: https://docs.coderabbit.ai
+
+language: en-US
+
+reviews:
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  profile: chill
+  request_changes_workflow: true
+  path_instructions:
+    - path: "src/lib/money.ts"
+      instructions: "KES monetary arithmetic — all amounts in integer cents. Never use raw +,-,*,/. Use toKES(), kesAdd(), kesSubtract()."
+    - path: "src/lib/repository.ts"
+      instructions: "Repository pattern — no direct Dexie imports elsewhere. Table names from constants.ts."
+    - path: "src/lib/dates.ts"
+      instructions: "Cached Nairobi timezone (UTC+3). No DST. Never create new Intl.DateTimeFormat inline."
+    - path: "src/i18n/**"
+      instructions: "Every key must exist in both sw.json and en.json. Default language: Kiswahili."
+    - path: "e2e/**"
+      instructions: "Playwright E2E tests. Use VITE_E2E=true mode (bypasses auth). Test critical user flows."
+
+chat:
+  auto_reply: true
+  tone: professional
+
+tools:
+  ruff:
+    enabled: true
+  greptile:
+    enabled: false

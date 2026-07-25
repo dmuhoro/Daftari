@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://daftari.app/sitemap.xml
+Sitemap: https://daftari-amber.vercel.app/sitemap.xml

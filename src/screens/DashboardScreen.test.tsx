@@ -33,6 +33,10 @@ vi.mock('../lib/store', () => {
   return { useStore }
 })
 
+vi.mock('../components/dashboard/WeekSection', () => ({
+  default: () => <div>wiki_faida</div>,
+}))
+
 vi.mock('../lib/businessCategories', () => ({
   BUSINESS_CATEGORIES: {
     retail: { label: { sw: 'Rejareja', en: 'Retail' }, subcategories: { general_retail: { sw: 'Rejareja Kwa Ujumla', en: 'General Retail' } } },
@@ -95,10 +99,10 @@ describe('DashboardScreen', () => {
     expect(screen.getByText('pesa_iliyobaki')).toBeDefined()
   })
 
-  it('switches to wiki tab', () => {
+  it('switches to wiki tab', async () => {
     render(<DashboardScreen />)
     fireEvent.click(screen.getByText('this_week'))
-    expect(screen.getByText('wiki_faida')).toBeDefined()
+    await waitFor(() => expect(screen.getByText('wiki_faida')).toBeDefined())
   })
 
   it('shows customer count section', async () => {

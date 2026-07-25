@@ -39,11 +39,11 @@ jobs:
           echo "Total dist size:"
           du -sh dist/
 
-      # E2E tests — uncomment when Playwright is set up in CI
-      # - name: Install Playwright browsers
-      #   run: npx playwright install --with-deps chromium
-      # - name: Run E2E tests
-      #   run: npm run test:e2e
+      # E2E tests
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: npm run test:e2e
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'

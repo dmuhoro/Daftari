@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { TrendingUp, TrendingDown, Wallet, Users } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
@@ -14,7 +14,7 @@ import FulizaSection from '../components/dashboard/FulizaSection';
 import LowStockAlert from '../components/dashboard/LowStockAlert';
 import MetricCard from '../components/dashboard/MetricCard';
 import ProductProfitList from '../components/dashboard/ProductProfitList';
-import WeekSection from '../components/dashboard/WeekSection';
+const WeekSection = lazy(() => import('../components/dashboard/WeekSection'));
 import EmptyState from '../components/dashboard/EmptyState';
 
 type Tab = 'leo' | 'wiki';
@@ -171,7 +171,9 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
             <EmptyState emptyTitle={emptyTitle} emptyDesc={emptyDesc} />
           )
         ) : (
-          <WeekSection />
+          <Suspense fallback={<div className="h-40 bg-stone-100 dark:bg-stone-800 rounded-2xl animate-pulse" />}>
+            <WeekSection />
+          </Suspense>
         )}
       </div>
     </div>

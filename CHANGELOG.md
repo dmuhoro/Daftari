@@ -5,6 +5,28 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.1] — 2026-07-25
+
+### Added
+- `src/lib/monitoring.ts`: Web Vitals (CLS, LCP, FCP) with OTLP export for Dash0/Grafana
+- `src/lib/monitoring.test.ts`:2 tests
+- `.coderabbit.yaml`: CodeRabbit config with path-specific review instructions
+- `.sourcery.yaml`: Sourcery rules (no raw money arithmetic, no direct Dexie imports)
+- `.github/CODEOWNERS`: ownership rules for critical paths
+- Security headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`
+
+### Changed
+- E2E tests enabled in CI (Playwright install + run on every push/PR)
+- `WeekSection` lazy-loaded in DashboardScreen — recharts chunk (376KB) now fully deferred
+- CSP updated: added `sentry.io` to connect-src, `worker-src 'self'`
+- `playwright.config.ts`: increased timeouts for CI reliability
+
+### Fixed
+- `robots.txt` sitemap URL: `daftari.app` → `daftari-amber.vercel.app`
+- `index.html` OG URL: `daftari.co.ke` → `daftari-amber.vercel.app`
+
+---
+
 ## [5.9.0] — 2026-07-24
 
 ### Added

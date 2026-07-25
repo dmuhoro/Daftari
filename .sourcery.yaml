@@ -1,0 +1,54 @@
+# Sourcery AI configuration
+# Docs: https://docs.sourcery.ai
+
+rules:
+  - id: no-raw-money-arithmetic
+    pattern: "amount [+\-*/] "
+    message: "Use src/lib/money.ts helpers (toKES, kesAdd, kesSubtract) instead of raw arithmetic on KES amounts."
+    severity: error
+    paths:
+      - src/**/*.ts
+      - src/**/*.tsx
+    exclude:
+      - src/lib/money.ts
+      - src/lib/money.test.ts
+
+  - id: no-direct-dexie-import
+    pattern: "from 'dexie'"
+    message: "Use src/lib/repository.ts instead of direct Dexie imports."
+    severity: warning
+    paths:
+      - src/screens/**
+      - src/components/**
+      - src/features/**
+      - src/hooks/**
+    exclude:
+      - src/lib/db.ts
+      - src/lib/repository.ts
+      - src/lib/repository.test.ts
+      - src/**/__tests__/**
+
+  - id: no-console-log
+    pattern: "console\\.log\\("
+    message: "Use src/lib/logger.ts instead of console.log."
+    severity: warning
+    paths:
+      - src/**
+
+  - id: no-hardcoded-strings
+    pattern: "['\"]((?!KES|KES |\\d+)[A-Za-z]{3,})['\"]"
+    message: "Use t() from useTranslation for user-facing strings."
+    severity: suggestion
+    paths:
+      - src/screens/**
+      - src/components/**
+    exclude:
+      - src/i18n/**
+      - src/lib/constants.ts
+
+typecheck:
+  enabled: true
+
+metrics:
+  enabled: true
+  track_rules_usage: true
