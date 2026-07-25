@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getDailyClosesByBusinessId } from '../lib/repository';
 import { useStore } from '../lib/store';
 import { track, EVENTS } from '../lib/analytics';
+import { nowInNairobi, todayNairobi } from '../lib/dates';
 
 export function useRecordingStreak() {
   const [streak, setStreak] = useState(0);
@@ -17,9 +18,8 @@ export function useRecordingStreak() {
       const closeDates = new Set(closes.map((c) => c.date));
 
       let count = 0;
-      const today = new Date();
-      const nairobi = new Date(today.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
-      const todayStr = nairobi.toISOString().slice(0, 10);
+      const nairobi = nowInNairobi();
+      const todayStr = todayNairobi();
 
       // Check if there are transactions today (partial day counts)
       const hasTodayTransactions = transactions.some((tx) => tx.recorded_at.slice(0, 10) === todayStr);

@@ -6,16 +6,12 @@ import Card from '../../components/ui/Card';
 import { saveDailyClose } from '../../lib/repository';
 import { cents } from '../../lib/money';
 import { track, EVENTS } from '../../lib/analytics';
+import { todayNairobi } from '../../lib/dates';
 
 function fmtKES(n: number) {
   return `KES ${n.toLocaleString('en-KE')}`;
 }
 
-function getTodayNairobi(): string {
-  const now = new Date();
-  const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
-  return nairobi.toISOString().slice(0, 10);
-}
 
 interface DailyCloseProps {
   visible: boolean;
@@ -31,7 +27,7 @@ export default function DailyClose({ visible, onClose, onDismiss }: DailyClosePr
 
   if (!visible) return null;
 
-  const todayStr = getTodayNairobi();
+  const todayStr = todayNairobi();
   const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
 
   const revenue = cents(todayTxs

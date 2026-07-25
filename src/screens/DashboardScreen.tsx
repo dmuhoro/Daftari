@@ -4,6 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import { countCustomers } from '../lib/repository';
 import { cents } from '../lib/money';
+import { todayNairobi } from '../lib/dates';
 import { CATEGORY_DASHBOARD_LABELS } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
 import { useRecordingStreak } from '../hooks/useRecordingStreak';
@@ -37,7 +38,7 @@ export default function DashboardScreen({ onNavigate }: DashboardScreenProps) {
 
   const products = business?.products ?? [];
 
-  const todayStr = useMemo(() => new Date(new Date().toLocaleString('en-US', { timeZone: 'Africa/Nairobi' })).toISOString().slice(0, 10), []);
+  const todayStr = useMemo(() => todayNairobi(), []);
   const todayTxs = transactions.filter((tx) => tx.recorded_at.slice(0, 10) === todayStr);
 
   const revenue = cents(todayTxs.filter((tx) => tx.type === 'income').reduce((sum, tx) => sum + tx.amount, 0));

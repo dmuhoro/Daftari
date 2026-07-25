@@ -1,7 +1,7 @@
 {
   "name": "daftari",
   "private": true,
-  "version": "5.8.0",
+  "version": "5.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check:i18n": "tsx scripts/check-i18n.ts"
+    "check:i18n": "tsx scripts/check-i18n.ts",
+    "test:e2e": "E2E=true playwright test",
+    "test:e2e:ui": "E2E=true playwright test --ui"
   },
   "dependencies": {
     "@sentry/react": "^10.66.0",
@@ -29,6 +31,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.5",

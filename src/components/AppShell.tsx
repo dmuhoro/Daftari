@@ -4,6 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
 import { useSync } from '../hooks/useSync';
 import { useStore } from '../lib/store';
+import { todayNairobi, nairobiHour } from '../lib/dates';
 import DailyClose from '../features/close/DailyClose';
 import OfflineBanner from './OfflineBanner';
 import ErrorBoundary from './ErrorBoundary';
@@ -129,10 +130,8 @@ export default function AppShell({ onSignOut }: AppShellProps) {
 
   useEffect(() => {
     function checkDailyClose() {
-      const now = new Date();
-      const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
-      const todayStr = nairobi.toISOString().slice(0, 10);
-      const hours = nairobi.getHours();
+      const todayStr = todayNairobi();
+      const hours = nairobiHour();
 
       if (hours < 20) return;
       if (lastCloseDate === todayStr) return;

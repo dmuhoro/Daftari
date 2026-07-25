@@ -5,6 +5,26 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.0] — 2026-07-24
+
+### Added
+- `src/lib/dates.ts`: cached Nairobi timezone utilities (UTC+3 offset) — eliminates 91ms `Intl.DateTimeFormat` creation per call
+- `src/lib/dates.test.ts`: 8 timezone tests (UTC+3 offset, midnight boundary, format)
+- Playwright E2E framework: `playwright.config.ts`, 4 test suites in `e2e/`
+- `VITE_E2E=true` mode in App.tsx: bypasses auth, seeds test data for E2E
+- CI bundle size budget check (warns if `index.js` >300KB)
+
+### Fixed
+- `SECURITY.md` + `ai-context/devops.md`: corrected production URL from `daftari-olive.vercel.app` to `daftari-amber.vercel.app`
+- Replaced7 inline `new Date(x.toLocaleString(...))` calls with shared `dates.ts` utilities (DashboardScreen, AppShell, WeekSection, DailyClose, useRecordingStreak, HistoryScreen, receiptId)
+
+### Changed
+- CI workflow: added bundle size report step after build
+- `vitest.config.ts`: excluded `e2e/` directory from unit test runs
+- `.gitignore`: added `test-results/` and `playwright-report/`
+
+---
+
 ## [5.8.5] — 2026-07-23
 
 ### Fixed

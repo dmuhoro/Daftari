@@ -7,6 +7,7 @@ import TextField from '../components/ui/TextField';
 import { flushQueue } from '../features/sync/syncQueue';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
+import { nairobiISO } from '../lib/dates';
 import type { Transaction } from '../lib/db';
 import TransactionRow from '../components/history/TransactionRow';
 import ReceiptSheet from '../components/history/ReceiptSheet';
@@ -43,11 +44,6 @@ function groupByDate(txs: { recorded_at: string }[]) {
   return groups;
 }
 
-function getNairobiISO() {
-  const now = new Date();
-  const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
-  return nairobi.toISOString();
-}
 
 type FilterTab = 'week' | 'month' | 'all';
 
@@ -106,7 +102,7 @@ export default function HistoryScreen() {
   }, [allTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    const now = new Date(getNairobiISO());
+    const now = new Date(nairobiISO());
 
     let result = [...allTransactions];
 

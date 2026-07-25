@@ -57,7 +57,7 @@ Production: every push to main
 Preview: every PR (Vercel preview URL auto-generated)
 
 ### Supabase Site URL (required for auth redirect)
-Must match the production Vercel URL: https://daftari-olive.vercel.app
+Must match the production Vercel URL: https://daftari-amber.vercel.app
 Update in: Supabase Dashboard → Auth → URL Configuration
 
 ## Versioning (Semantic Versioning)

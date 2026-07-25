@@ -41,4 +41,4 @@ Response SLA: 48 hours for acknowledgement, 7 days for assessment.
 Do not open a public GitHub issue for security vulnerabilities.
 
 ## Supported Versions
-Only the latest deployed version at daftari-olive.vercel.app is supported.
+Only the latest deployed version at daftari-amber.vercel.app is supported.

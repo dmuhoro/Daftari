@@ -29,6 +29,22 @@ jobs:
       - run: npm run test:run
       - run: npm run build
 
+      - name: Bundle size check
+        run: |
+          SIZE=$(stat -c%s dist/index.js 2>/dev/null || echo 0)
+          echo "index.js bundle size: $SIZE bytes"
+          if [ "$SIZE" -gt 300000 ]; then
+            echo "::warning::Bundle size ($SIZE bytes) exceeds 300KB budget"
+          fi
+          echo "Total dist size:"
+          du -sh dist/
+
+      # E2E tests — uncomment when Playwright is set up in CI
+      # - name: Install Playwright browsers
+      #   run: npx playwright install --with-deps chromium
+      # - name: Run E2E tests
+      #   run: npm run test:e2e
+
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: check

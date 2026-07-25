@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
 import Card from '../ui/Card';
 import { cents } from '../../lib/money';
+import { nowInNairobi, todayNairobi } from '../../lib/dates';
 
 const SW_DAYS_SHORT = ['Jpl', 'Jt', 'Jn', 'Jt', 'Al', 'Ij', 'Jm'];
 
@@ -12,16 +13,9 @@ function fmtKES(n: number) {
   return `KES ${n.toLocaleString('en-KE')}`;
 }
 
-function getNairobiToday(): string {
-  const now = new Date();
-  const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
-  return nairobi.toISOString().slice(0, 10);
-}
-
 function getWeekDates(): string[] {
   const dates: string[] = [];
-  const now = new Date();
-  const nairobi = new Date(now.toLocaleString('en-US', { timeZone: 'Africa/Nairobi' }));
+  const nairobi = nowInNairobi();
   for (let i = 6; i >= 0; i--) {
     const d = new Date(nairobi);
     d.setDate(d.getDate() - i);
@@ -44,7 +38,7 @@ export default function WeekSection() {
   const weekDates = useMemo(() => getWeekDates(), []);
 
   const [, setCurrentDateStr] = useState('');
-  useEffect(() => { setCurrentDateStr(getNairobiToday()); }, []);
+  useEffect(() => { setCurrentDateStr(todayNairobi()); }, []);
 
   const getDayName = (dateStr: string, short = false) => {
     const date = new Date(dateStr + 'T12:00:00');
