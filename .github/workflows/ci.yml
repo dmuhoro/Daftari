@@ -44,6 +44,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run E2E tests
         run: npm run test:e2e
+        env:
+          CI: true
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
