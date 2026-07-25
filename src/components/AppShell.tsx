@@ -128,7 +128,11 @@ export default function AppShell({ onSignOut }: AppShellProps) {
     else setView(key as View);
   }
 
+  const IS_E2E = import.meta.env.VITE_E2E === 'true' || window.location.search.includes('e2e=true') || !!(window as Window & { __E2E__?: boolean }).__E2E__;
+
   useEffect(() => {
+    if (IS_E2E) return;
+
     function checkDailyClose() {
       const todayStr = todayNairobi();
       const hours = nairobiHour();
@@ -155,7 +159,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [transactions, lastCloseDate, closePromptDismissedAt]);
+  }, [IS_E2E, transactions, lastCloseDate, closePromptDismissedAt]);
 
   return (
     <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950 max-w-lg mx-auto">

@@ -15,6 +15,6 @@ test.describe('App loads', () => {
   test('displays today profit/loss card', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 15000 })
-    await expect(page.locator('text=Faida')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByLabel('Faida KES')).toBeVisible({ timeout: 5000 })
   })
 })
