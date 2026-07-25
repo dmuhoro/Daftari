@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 test.describe('Record Sale', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => { (window as any).__E2E__ = true })
+    await page.addInitScript(() => { Object.assign(window, { __E2E__: true }) })
     await page.goto('/')
     await expect(page.locator('text=Test Shop')).toBeVisible({ timeout: 15000 })
   })

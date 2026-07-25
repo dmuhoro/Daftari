@@ -4,7 +4,7 @@ test.describe('App loads', () => {
   test.beforeEach(async ({ page }) => {
     page.on('console', msg => console.log('[PAGE]', msg.type(), msg.text()))
     page.on('pageerror', err => console.log('[PAGE ERROR]', err.message))
-    await page.addInitScript(() => { (window as any).__E2E__ = true })
+    await page.addInitScript(() => { Object.assign(window, { __E2E__: true }) })
   })
 
   test('shows dashboard with test data in E2E mode', async ({ page }) => {
