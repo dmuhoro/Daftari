@@ -133,6 +133,8 @@ export default function App() {
 
   // Load businesses from Dexie when session changes
   useEffect(() => {
+    if (IS_E2E) return; // E2E seeds data in the first useEffect
+
     if (session) {
       setLoadingBusiness(true);
       getAllBusinesses().then(result => {
