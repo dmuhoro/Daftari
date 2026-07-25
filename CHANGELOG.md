@@ -5,6 +5,29 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.2] — 2026-07-25
+
+### Added
+- `src/lib/e2e.ts`: seeds Dexie (1 business + 3 transactions) + Zustand store before React mount
+- `docs/changelog/sprint-e2e-ci-green.md`: sprint log
+
+### Fixed
+- **10 E2E tests now pass in CI** (was 0/10). Root causes:
+  - `src/lib/supabase.ts`: called `createClient(undefined, undefined)` at module level (supabase-js v2.57+ throws "supabaseUrl is required"). Added fallback URL.
+  - `src/App.tsx`: async `useEffect` IIFE seeded data after React mount, showing `<LoadingScreen />` while Playwright timed out. Moved seeding to `main.tsx` `bootstrap()` before `createRoot()`.
+  - E2E env var detection unreliable. Added triple check: `import.meta.env.VITE_E2E`, URL param `?e2e=true`, and `window.__E2E__` via Playwright `page.addInitScript()`.
+- `src/components/AppShell.tsx`: DailyClose bottom sheet triggers after 8 PM Nairobi time. In CI runs at ~20:19 EAT, overlay intercepted navigation clicks. Guarded with E2E check.
+- `e2e/app.spec.ts`: `text=Faida` locator matched 3 elements (strict mode violation). Changed to `getByLabel('Faida KES')`.
+- `e2e/record-sale.spec.ts`: `getByRole('textbox')` failed because `<input type="number">` has implicit `role=spinbutton`. Changed to `[inputmode="decimal"]`. Added receipt overlay dismissal after save.
+- `e2e/pwa.spec.ts`: Service worker not registered in Vite dev mode. Test now expects `false`.
+- `e2e/navigation.spec.ts`: No changes needed — fixed by DailyClose guard.
+
+### Changed
+- `playwright.config.ts`: `screenshot: 'only-on-failure'` for CI debugging
+- All E2E tests use `page.addInitScript()` to inject `window.__E2E__`
+
+---
+
 ## [5.9.1] — 2026-07-25
 
 ### Added
