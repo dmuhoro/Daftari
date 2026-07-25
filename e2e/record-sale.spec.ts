@@ -21,8 +21,11 @@ test.describe('Record Sale', () => {
     await page.getByRole('button', { name: /mauzo|sale/i }).first().click()
     await expect(page.locator('text=Kiasi')).toBeVisible({ timeout: 5000 })
 
-    await page.getByRole('textbox').first().fill('500')
-    await page.getByRole('textbox').nth(1).fill('Test sale E2E')
+    const amountInput = page.locator('[inputmode="decimal"]')
+    const descriptionInput = page.getByPlaceholder(/Maelezo|Description/i)
+
+    await amountInput.fill('500')
+    await descriptionInput.fill('Test sale E2E')
 
     await page.getByRole('button', { name: /hifadhi|save/i }).click()
 
