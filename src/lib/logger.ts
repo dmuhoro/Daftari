@@ -11,7 +11,11 @@
  *   logger.warn('sms:parse_fallback_used', { rawLength: 120 })
  */
 
+import { captureError } from './sentry'
+
 type LogData = Record<string, unknown>
+
+const isSentryEnabled = !!import.meta.env.VITE_SENTRY_DSN
 
 const isDev = import.meta.env.DEV
 
@@ -53,8 +57,12 @@ export const logger = {
       console.error(formatEvent(event), { ...safeError, ...data })
     }
 
-    // Production error tracking integration point:
-    // errorTracker.captureException(cause, { extra: { event, ...data } })
+    if (isSentryEnabled) {
+      captureError(cause instanceof Error ? cause : new Error(String(cause)), {
+        feature: event.split(':')[0] || 'app',
+        action: event,
+      })
+    }
   },
 
   /**

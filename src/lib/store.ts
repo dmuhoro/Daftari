@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Transaction, TransactionType } from './db';
+import { db, type Transaction, type TransactionType } from './db';
 import { saveTransaction, updateTransaction as repoUpdateTransaction, deleteTransaction as repoDeleteTransaction } from './repository';
 import { supabase } from './supabase';
 import { addToQueue, type QueuePayload } from '../features/sync/syncQueue';
 import type { Theme } from './types';
 import { generateReceiptId } from './receiptId';
+import { captureError } from './sentry';
 
 interface Business {
   id: string;
@@ -80,8 +81,6 @@ export const useStore = create<AppStore>()(
           updated_at: new Date().toISOString(),
         };
 
-        await saveTransaction(txWithUser);
-
         const queuePayload: QueuePayload = {
           local_id: txWithUser.local_id,
           type: txWithUser.type as TransactionType,
@@ -99,8 +98,17 @@ export const useStore = create<AppStore>()(
           business_id: txWithUser.business_id,
           product_id: txWithUser.product_id,
           cost_price: txWithUser.cost_price,
+          updated_at: txWithUser.updated_at,
         };
-        await addToQueue('upsert', 'daftari_transactions', txWithUser.local_id, queuePayload);
+
+        await db.transaction('rw', db.transactions, db.sync_queue, async () => {
+          const result = await saveTransaction(txWithUser);
+          if (!result.ok) throw result.error;
+          await addToQueue('upsert', 'daftari_transactions', txWithUser.local_id, queuePayload);
+        }).catch((cause) => {
+          captureError(cause, { feature: 'transaction', action: 'save' });
+          throw cause;
+        });
 
         set((state) => ({ transactions: [txWithUser, ...state.transactions] }));
         return receipt_id;
@@ -108,7 +116,6 @@ export const useStore = create<AppStore>()(
       updateTransaction: async (local_id, updates) => {
         const now = new Date().toISOString();
         const fullUpdates = { ...updates, updated_at: now };
-        await repoUpdateTransaction(local_id, fullUpdates);
         const { data: { user } } = await supabase.auth.getUser();
         const existing = get().transactions.find(t => t.local_id === local_id);
         const queuePayload: QueuePayload = {
@@ -125,8 +132,19 @@ export const useStore = create<AppStore>()(
           business_id: existing?.business_id,
           product_id: existing?.product_id,
           cost_price: existing?.cost_price,
+          updated_at: now,
+          _expected_updated_at: existing?.updated_at,
         };
-        await addToQueue('upsert', 'daftari_transactions', local_id, queuePayload);
+
+        await db.transaction('rw', db.transactions, db.sync_queue, async () => {
+          const updateResult = await repoUpdateTransaction(local_id, fullUpdates);
+          if (!updateResult.ok) throw updateResult.error;
+          await addToQueue('upsert', 'daftari_transactions', local_id, queuePayload);
+        }).catch((cause) => {
+          captureError(cause, { feature: 'transaction', action: 'update' });
+          throw cause;
+        });
+
         set((state) => ({
           transactions: state.transactions.map((tx) =>
             tx.local_id === local_id ? { ...tx, ...fullUpdates } : tx
@@ -134,8 +152,15 @@ export const useStore = create<AppStore>()(
         }));
       },
       deleteTransaction: async (local_id) => {
-        await repoDeleteTransaction(local_id);
-        await addToQueue('delete', 'daftari_transactions', local_id, null);
+        await db.transaction('rw', db.transactions, db.sync_queue, async () => {
+          const deleteResult = await repoDeleteTransaction(local_id);
+          if (!deleteResult.ok) throw deleteResult.error;
+          await addToQueue('delete', 'daftari_transactions', local_id, null);
+        }).catch((cause) => {
+          captureError(cause, { feature: 'transaction', action: 'delete' });
+          throw cause;
+        });
+
         set((state) => ({
           transactions: state.transactions.filter((tx) => tx.local_id !== local_id),
         }));

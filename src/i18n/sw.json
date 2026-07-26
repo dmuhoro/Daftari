@@ -192,6 +192,14 @@
   "print_thermal": "Chapisha Thermal",
   "search": "Tafuta...",
   "business_tools": "Zana za Biashara",
-  "business_tools_desc": "Vipengele vya ziada kwa biashara zinazokua"
+  "business_tools_desc": "Vipengele vya ziada kwa biashara zinazokua",
+  "sync_status": "Hali ya Kulandanisha",
+  "sync_pending": "Inasubiri",
+  "sync_failed": "Imeshindwa",
+  "sync_healthy": "Imelandanishwa",
+  "sync_offline": "Hakuna Mtandao",
+  "sync_online": "Mtandaoni",
+  "pending_sync": "Inasubiri kulandanishwa",
+  "sync_dead_letter_tip": "Baadhi ya data haikuweza kulandanishwa. Angalia muunganisho wako."
 }
 

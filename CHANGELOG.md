@@ -5,6 +5,36 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.3] — 2026-07-26
+
+### Added (Layer 1 — Error Visibility)
+- `src/lib/logger.ts`: wired `logger.error()` → `captureError()` (Sentry). Every repository, sync, and store error now reaches Sentry in production.
+- `src/lib/store.ts`: `addTransaction`, `updateTransaction`, `deleteTransaction` now check `Result<T,E>` return values and capture errors on failure.
+- `src/components/SyncDot.tsx`: rewrite with dead-letter count badge, conflict count, and tap-to-open detail panel (pending/failed/conflict/online status).
+- `src/i18n/{sw,en}.json`: 9 sync health i18n keys (`sync_status`, `sync_pending`, `sync_healthy`, etc.).
+
+### Added (Layer 2 — Conflict Detection)
+- `src/features/sync/syncQueue.ts`: `detectConflict()` — compares remote `updated_at` with locally stored `_expected_updated_at` before every upsert. Mismatch → dead-letter with `_conflict_reason`.
+- `src/features/sync/syncQueue.ts`: `getConflictCount()` — counts dead-letter items with conflict tags.
+- `src/lib/store.ts`: `updateTransaction` now passes `_expected_updated_at` in queue payload for conflict detection.
+- `src/components/SyncDot.tsx`: shows conflict count and warning in detail panel.
+
+### Added (Layer 3 — Atomic Sync)
+- `src/lib/store.ts`: all CRUD methods wrapped in `db.transaction('rw', ...)` — Dexie write + queue enqueue are now atomic (both succeed or both roll back).
+- `src/features/sync/syncQueue.ts`: `flushQueue()` has a promise-based mutex — concurrent flushes are serialized.
+
+### Fixed
+- `src/lib/store.ts`: `addTransaction` queue payload was missing `updated_at` field. Added.
+- `src/screens/DashboardScreen.test.tsx`: stale SyncDot mock path (`../features/sync/SyncDot` → `../components/SyncDot`).
+
+### Changed
+- `src/test/mocks.ts`: added `transaction()` mock to `mockDb` for test compatibility.
+
+### Changelog
+- `docs/changelog/sprint-data-integrity.md`: full sprint log
+
+---
+
 ## [5.9.2] — 2026-07-25
 
 ### Added

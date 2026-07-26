@@ -192,6 +192,14 @@
   "print_thermal": "Print Thermal",
   "search": "Search...",
   "business_tools": "Business Tools",
-  "business_tools_desc": "Advanced features for growing businesses"
+  "business_tools_desc": "Advanced features for growing businesses",
+  "sync_status": "Sync Status",
+  "sync_pending": "Pending",
+  "sync_failed": "Failed",
+  "sync_healthy": "Synced",
+  "sync_offline": "No Internet",
+  "sync_online": "Online",
+  "pending_sync": "Pending sync",
+  "sync_dead_letter_tip": "Some data failed to sync. Check your connection."
 }
 

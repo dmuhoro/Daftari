@@ -10,7 +10,7 @@ vi.mock('../lib/repository', () => ({
   calculateWeeklyProfits: () => [],
 }))
 
-vi.mock('../features/sync/SyncDot', () => ({ default: () => null }))
+vi.mock('../components/SyncDot', () => ({ default: () => null }))
 vi.mock('../lib/analytics', () => ({ track: vi.fn(), EVENTS: {} }))
 
 vi.mock('../lib/store', () => {

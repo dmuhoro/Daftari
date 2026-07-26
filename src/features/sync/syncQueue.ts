@@ -1,6 +1,7 @@
 import { db } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 import { captureError } from '../../lib/sentry';
+import { logger } from '../../lib/logger';
 
 const MAX_BATCH = 50
 const CIRCUIT_BREAKER_THRESHOLD = 3
@@ -13,6 +14,8 @@ const BACKOFF_BASE_MS = 2_000
 let consecutiveFailures = 0
 let circuitBrokenAt: number | null = null
 let lastError: string | null = null
+
+let flushLock: Promise<void> | null = null
 
 export type QueuePayload = Record<string, unknown>
 
@@ -35,6 +38,38 @@ function incrementRetries(payload: string): string {
   }
 }
 
+/**
+ * Before upserting, check if the remote record has been modified
+ * since we last read it. Uses the existing `updated_at` column.
+ * Returns 'conflict' if mismatch, 'ok' if no conflict, 'not_found' if new record.
+ */
+async function detectConflict(
+  tableName: string,
+  localId: string,
+  expectedUpdatedAt: string | undefined,
+): Promise<'ok' | 'conflict' | 'not_found'> {
+  if (!expectedUpdatedAt) return 'not_found'
+
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('updated_at')
+      .eq('local_id', localId)
+      .maybeSingle()
+
+    if (error) throw error
+    if (!data) return 'not_found'
+
+    const remoteUpdatedAt = data.updated_at as string | undefined
+    if (!remoteUpdatedAt) return 'not_found'
+
+    return remoteUpdatedAt === expectedUpdatedAt ? 'ok' : 'conflict'
+  } catch (cause) {
+    logger.error('sync:conflict_check_failed', cause, { localId, tableName })
+    return 'ok'
+  }
+}
+
 export async function addToQueue(
   operation: 'upsert' | 'delete',
   tableName: string,
@@ -52,35 +87,45 @@ export async function addToQueue(
 }
 
 export async function flushQueue(): Promise<{ synced: number; failed: number }> {
-  const now = Date.now()
-
-  if (circuitBrokenAt !== null) {
-    if (now - circuitBrokenAt < CIRCUIT_BREAKER_RESET_MS) {
-      return { synced: 0, failed: 0 };
-    }
-    circuitBrokenAt = null
-    consecutiveFailures = 0
-    lastError = null
-  }
-
-  const unsynced = await db.sync_queue.where('synced').equals(0).toArray();
-
-  if (unsynced.length === 0) {
+  // Mutex: prevent concurrent flushes
+  if (flushLock) {
+    await flushLock
     return { synced: 0, failed: 0 };
   }
 
-  if (unsynced.length > MAX_BATCH) {
-    lastError = `Queue overflow: ${unsynced.length} items (max ${MAX_BATCH})`
-    circuitBrokenAt = now
-    consecutiveFailures = CIRCUIT_BREAKER_THRESHOLD
-    captureError(new Error(lastError), { feature: 'sync', action: 'flushQueue_overflow' })
-    return { synced: 0, failed: unsynced.length };
-  }
+  let resolveLock: () => void
+  flushLock = new Promise<void>((resolve) => { resolveLock = resolve })
 
-  let syncedCount = 0;
-  let failedCount = 0;
+  try {
+    const now = Date.now()
 
-  for (const item of unsynced) {
+    if (circuitBrokenAt !== null) {
+      if (now - circuitBrokenAt < CIRCUIT_BREAKER_RESET_MS) {
+        return { synced: 0, failed: 0 };
+      }
+      circuitBrokenAt = null
+      consecutiveFailures = 0
+      lastError = null
+    }
+
+    const unsynced = await db.sync_queue.where('synced').equals(0).toArray();
+
+    if (unsynced.length === 0) {
+      return { synced: 0, failed: 0 };
+    }
+
+    if (unsynced.length > MAX_BATCH) {
+      lastError = `Queue overflow: ${unsynced.length} items (max ${MAX_BATCH})`
+      circuitBrokenAt = now
+      consecutiveFailures = CIRCUIT_BREAKER_THRESHOLD
+      captureError(new Error(lastError), { feature: 'sync', action: 'flushQueue_overflow' })
+      return { synced: 0, failed: unsynced.length };
+    }
+
+    let syncedCount = 0;
+    let failedCount = 0;
+
+    for (const item of unsynced) {
     // Exponential backoff: skip items not yet ready for retry
     // Items at MAX_RETRIES are always processed (moved to dead-letter on failure)
     const retries = item.payload ? getRetries(item.payload) : 0
@@ -96,8 +141,24 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
       const tableName = item.table_name || 'daftari_transactions'
 
       if (item.operation === 'upsert' && item.payload) {
-        const { _retries: _ignore, ...data } = JSON.parse(item.payload) as QueuePayload & { _retries?: number };
+        const parsed = JSON.parse(item.payload) as QueuePayload & { _retries?: number; _expected_updated_at?: string };
+        const { _retries: _ignore, _expected_updated_at, ...data } = parsed;
         void _ignore;
+
+        const conflictCheck = await detectConflict(tableName, item.record_id, _expected_updated_at);
+        if (conflictCheck === 'conflict') {
+          await db.sync_queue.update(item.id!, {
+            synced: DEAD_LETTER_SYNCED,
+            payload: JSON.stringify({ ...parsed, _conflict_reason: 'updated_at_mismatch' }),
+          })
+          captureError(new Error('Sync conflict: updated_at mismatch'), {
+            feature: 'sync',
+            action: `conflict_${tableName}`,
+          })
+          failedCount++;
+          continue
+        }
+
         const { error } = await supabase
           .from(tableName)
           .upsert(data, { onConflict: 'local_id' });
@@ -145,7 +206,11 @@ export async function flushQueue(): Promise<{ synced: number; failed: number }> 
     }
   }
 
-  return { synced: syncedCount, failed: failedCount };
+    return { synced: syncedCount, failed: failedCount };
+  } finally {
+    flushLock = null
+    resolveLock!()
+  }
 }
 
 export function getPendingCount() {
@@ -154,6 +219,18 @@ export function getPendingCount() {
 
 export function getDeadLetterCount() {
   return db.sync_queue.where('synced').equals(DEAD_LETTER_SYNCED).count();
+}
+
+export async function getConflictCount(): Promise<number> {
+  const items = await db.sync_queue.where('synced').equals(DEAD_LETTER_SYNCED).toArray()
+  return items.filter(item => {
+    try {
+      const p = JSON.parse(item.payload || '{}')
+      return !!p._conflict_reason
+    } catch {
+      return false
+    }
+  }).length
 }
 
 export async function registerBackgroundSync() {

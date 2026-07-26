@@ -97,6 +97,10 @@ export const mockDb = {
     where: mockWhere(),
   },
   open: vi.fn(() => Promise.resolve()),
+  transaction: vi.fn((...args: unknown[]) => {
+    const callback = args[args.length - 1] as () => Promise<unknown>;
+    return callback();
+  }),
 }
 
 vi.mock('../lib/db', () => ({

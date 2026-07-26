@@ -13,9 +13,9 @@ const initialState = {
 }
 
 vi.mock('./repository', () => ({
-  saveTransaction: vi.fn(),
-  updateTransaction: vi.fn(),
-  deleteTransaction: vi.fn(),
+  saveTransaction: vi.fn().mockResolvedValue({ ok: true, value: 1 }),
+  updateTransaction: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
+  deleteTransaction: vi.fn().mockResolvedValue({ ok: true, value: undefined }),
 }))
 
 vi.mock('./supabase', () => ({
