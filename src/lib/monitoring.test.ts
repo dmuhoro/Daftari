@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 
 // Mock sentry before importing monitoring
 vi.mock('../sentry', () => ({
@@ -6,12 +6,7 @@ vi.mock('../sentry', () => ({
 }))
 
 describe('monitoring', () => {
-  beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
   afterEach(() => {
-    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 

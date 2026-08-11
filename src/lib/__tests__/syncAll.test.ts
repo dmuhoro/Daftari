@@ -139,9 +139,17 @@ describe('syncAllTables', () => {
   })
 
   it('syncs businesses', async () => {
-    mockDb.business.toArray = vi.fn(() => Promise.resolve([
+    const chain = (result: unknown[] = []) => ({
+      equals: vi.fn(() => chain(result)),
+      anyOf: vi.fn(() => chain(result)),
+      toArray: vi.fn(() => Promise.resolve(result)),
+      first: vi.fn(() => Promise.resolve(null)),
+      modify: vi.fn(() => Promise.resolve(result.length)),
+    });
+    mockDb.business.where = vi.fn().mockImplementation(() => chain([
       { local_id: 'b-1', name: 'Shop', currency: 'KES', user_id: 'user-1' },
-    ])) as any
+    ])) as any;
+
     mockSupabaseUpsert.mockResolvedValue({ error: null })
 
     const { syncAllTables } = await import('../syncAll')
@@ -151,12 +159,20 @@ describe('syncAllTables', () => {
   })
 
   it('syncs daily closes and customers', async () => {
-    mockDb.daily_closes.toArray = vi.fn(() => Promise.resolve([
+    const chain = (result: unknown[] = []) => ({
+      equals: vi.fn(() => chain(result)),
+      anyOf: vi.fn(() => chain(result)),
+      toArray: vi.fn(() => Promise.resolve(result)),
+      first: vi.fn(() => Promise.resolve(null)),
+      modify: vi.fn(() => Promise.resolve(result.length)),
+    });
+    mockDb.daily_closes.where = vi.fn().mockImplementation(() => chain([
       { date: '2024-01-01', business_id: 'b-1', profit: 100, revenue: 500, expenses: 400 },
-    ])) as any
-    mockDb.customers.toArray = vi.fn(() => Promise.resolve([
+    ])) as any;
+    mockDb.customers.where = vi.fn().mockImplementation(() => chain([
       { name: 'Alice', phone: '123', business_id: 'b-1' },
-    ])) as any
+    ])) as any;
+
     mockSupabaseUpsert.mockResolvedValue({ error: null })
 
     const { syncAllTables } = await import('../syncAll')

@@ -2,6 +2,7 @@ import { db, type Transaction, type Business, type Customer, type DailyClose, ty
 import { supabase } from './supabase'
 import { logger } from './logger'
 import { captureError } from './sentry'
+import { TABLES } from './constants'
 
 interface SyncResult {
   synced: number
@@ -35,16 +36,17 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
   // Sync transactions
   const unsyncedTx = await db.transactions.where('synced').equals(0).toArray()
   if (unsyncedTx.length > 0) {
-    results.transactions = await upsertToRemote('daftari_transactions', unsyncedTx as unknown as Record<string, unknown>[])
+    results.transactions = await upsertToRemote(TABLES.TRANSACTIONS, unsyncedTx as unknown as Record<string, unknown>[])
     if (results.transactions.synced > 0) {
       const ids = unsyncedTx.slice(0, results.transactions.synced).map(t => t.local_id)
       await db.transactions.where('local_id').anyOf(ids).modify({ synced: 1 })
     }
   }
 
-  const businesses = await db.business.toArray()
+  // Sync businesses
+  const businesses = await db.business.where('synced').equals(0).toArray()
   if (businesses.length > 0) {
-    results.businesses = await upsertToRemote('daftari_businesses', businesses.map(b => ({
+    const payload = businesses.map(b => ({
       local_id: b.local_id || b.user_id || crypto.randomUUID(),
       name: b.name,
       owner_name: b.owner_name,
@@ -56,12 +58,20 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       products: b.products,
       created_at: b.created_at,
       updated_at: new Date().toISOString(),
-    })))
+    }))
+    results.businesses = await upsertToRemote(TABLES.BUSINESSES, payload)
+    if (results.businesses.synced > 0) {
+      const ids = businesses.slice(0, results.businesses.synced).map(b => b.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.business.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
-  const closes = await db.daily_closes.toArray()
+  // Sync daily closes
+  const closes = await db.daily_closes.where('synced').equals(0).toArray()
   if (closes.length > 0) {
-    results.daily_closes = await upsertToRemote('daftari_daily_closes', closes.map(c => ({
+    const payload = closes.map(c => ({
       local_id: c.local_id || c.date,
       date: c.date,
       business_id: c.business_id,
@@ -70,12 +80,20 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       expenses: c.expenses,
       created_at: c.created_at,
       updated_at: new Date().toISOString(),
-    })))
+    }))
+    results.daily_closes = await upsertToRemote(TABLES.DAILY_CLOSES, payload)
+    if (results.daily_closes.synced > 0) {
+      const ids = closes.slice(0, results.daily_closes.synced).map(c => c.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.daily_closes.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
-  const customers = await db.customers.toArray()
+  // Sync customers
+  const customers = await db.customers.where('synced').equals(0).toArray()
   if (customers.length > 0) {
-    results.customers = await upsertToRemote('daftari_customers', customers.map(c => ({
+    const payload = customers.map(c => ({
       local_id: c.local_id || c.name,
       name: c.name,
       phone: c.phone,
@@ -85,12 +103,20 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       last_visit: c.last_visit,
       created_at: c.created_at,
       updated_at: new Date().toISOString(),
-    })))
+    }))
+    results.customers = await upsertToRemote(TABLES.CUSTOMERS, payload)
+    if (results.customers.synced > 0) {
+      const ids = customers.slice(0, results.customers.synced).map(c => c.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.customers.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
-  const suppliers = await db.suppliers.toArray()
+  // Sync suppliers
+  const suppliers = await db.suppliers.where('synced').equals(0).toArray()
   if (suppliers.length > 0) {
-    results.suppliers = await upsertToRemote('daftari_suppliers', suppliers.map(s => ({
+    const payload = suppliers.map(s => ({
       local_id: s.local_id,
       name: s.name,
       phone: s.phone,
@@ -100,12 +126,20 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       business_id: s.business_id,
       created_at: s.created_at,
       updated_at: new Date().toISOString(),
-    })))
+    }))
+    results.suppliers = await upsertToRemote(TABLES.SUPPLIERS, payload)
+    if (results.suppliers.synced > 0) {
+      const ids = suppliers.slice(0, results.suppliers.synced).map(s => s.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.suppliers.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
-  const purchaseOrders = await db.purchase_orders.toArray()
+  // Sync purchase orders
+  const purchaseOrders = await db.purchase_orders.where('synced').equals(0).toArray()
   if (purchaseOrders.length > 0) {
-    results.purchase_orders = await upsertToRemote('daftari_purchase_orders', purchaseOrders.map(po => ({
+    const payload = purchaseOrders.map(po => ({
       local_id: po.local_id,
       business_id: po.business_id,
       supplier_id: po.supplier_id,
@@ -115,12 +149,20 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       notes: po.notes,
       created_at: po.created_at,
       updated_at: new Date().toISOString(),
-    })))
+    }))
+    results.purchase_orders = await upsertToRemote(TABLES.PURCHASE_ORDERS, payload)
+    if (results.purchase_orders.synced > 0) {
+      const ids = purchaseOrders.slice(0, results.purchase_orders.synced).map(po => po.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.purchase_orders.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
-  const stockAdjustments = await db.stock_adjustments.toArray()
+  // Sync stock adjustments
+  const stockAdjustments = await db.stock_adjustments.where('synced').equals(0).toArray()
   if (stockAdjustments.length > 0) {
-    results.stock_adjustments = await upsertToRemote('daftari_stock_adjustments', stockAdjustments.map(a => ({
+    const payload = stockAdjustments.map(a => ({
       local_id: a.local_id,
       business_id: a.business_id,
       product_id: a.product_id,
@@ -130,7 +172,14 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       reason_text: a.reason_text,
       notes: a.notes,
       created_at: a.created_at,
-    })))
+    }))
+    results.stock_adjustments = await upsertToRemote(TABLES.STOCK_ADJUSTMENTS, payload)
+    if (results.stock_adjustments.synced > 0) {
+      const ids = stockAdjustments.slice(0, results.stock_adjustments.synced).map(a => a.id!).filter(Boolean)
+      if (ids.length > 0) {
+        await db.stock_adjustments.where('id').anyOf(ids).modify({ synced: 1 })
+      }
+    }
   }
 
   logger.info('sync:all_tables_complete', Object.fromEntries(

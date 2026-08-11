@@ -14,9 +14,16 @@ export const APP = {
 
 /** Supabase table names — never hardcode these strings in queries */
 export const TABLES = {
-  BUSINESSES:   'daftari_businesses'   as const,
-  TRANSACTIONS: 'daftari_transactions' as const,
-  SYNC_QUEUE:   'daftari_sync_queue'   as const,
+  BUSINESSES:         'daftari_businesses'         as const,
+  TRANSACTIONS:       'daftari_transactions'       as const,
+  SYNC_QUEUE:         'daftari_sync_queue'         as const,
+  CUSTOMERS:          'daftari_customers'          as const,
+  DAILY_CLOSES:       'daftari_daily_closes'       as const,
+  SUPPLIERS:          'daftari_suppliers'          as const,
+  PURCHASE_ORDERS:    'daftari_purchase_orders'    as const,
+  STOCK_ADJUSTMENTS:  'daftari_stock_adjustments'  as const,
+  PUSH_SUBSCRIPTIONS: 'daftari_push_subscriptions' as const,
+  ANALYTICS:          'daftari_analytics'          as const,
 } as const
 
 /** Dexie DB name and version */

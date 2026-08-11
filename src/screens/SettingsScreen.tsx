@@ -11,7 +11,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
 import { transactionsToCSV, downloadCSV } from '../lib/csv';
 import { exportAllData } from '../lib/backup';
-import { pullFromSupabase } from '../lib/syncAll';
+import { pullFromSupabase, syncAllTables } from '../lib/syncAll';
 import { flushQueue } from '../features/sync/syncQueue';
 import { generateReferralUrl, shareViaWhatsApp } from '../lib/referral';
 import { useToast } from '../hooks/useToast';
@@ -25,6 +25,7 @@ interface SettingsScreenProps {
 export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreenProps) {
   const { t, language } = useTranslation();
   const business = useStore((s) => s.business);
+  const businesses = useStore((s) => s.businesses);
   const { canInstall, install } = usePWAInstall();
   const [syncing, setSyncing] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -35,19 +36,24 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   async function handleSyncNow() {
     setSyncing(true);
     try {
-      const result = await flushQueue();
-      if (result.failed > 0) {
+      const queueResult = await flushQueue();
+      const tableResults = await syncAllTables();
+      const tableSynced = Object.values(tableResults).reduce((n, r) => n + r.synced, 0);
+      const tableFailed = Object.values(tableResults).reduce((n, r) => n + r.failed, 0);
+      const totalSynced = queueResult.synced + tableSynced;
+      const totalFailed = queueResult.failed + tableFailed;
+      if (totalFailed > 0) {
         toast(
           language === 'sw'
-            ? `Imetaleta ${result.synced}, imeshindwa ${result.failed}`
-            : `Synced ${result.synced}, failed ${result.failed}`,
-          result.failed > 0 ? 'error' : 'success'
+            ? `Imetaleta ${totalSynced}, imeshindwa ${totalFailed}`
+            : `Synced ${totalSynced}, failed ${totalFailed}`,
+          'error'
         );
       } else {
         toast(
           language === 'sw'
-            ? `Imetaleta ${result.synced} kwa mafanikio`
-            : `Synced ${result.synced} successfully`,
+            ? `Imetaleta ${totalSynced} kwa mafanikio`
+            : `Synced ${totalSynced} successfully`,
           'success'
         );
       }
@@ -121,7 +127,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
           {language === 'sw' ? 'Biashara Zangu' : 'My Businesses'}
         </p>
         <Card padding="none" overflow>
-          {useStore.getState().businesses.map((biz) => {
+          {businesses.map((biz) => {
             const isActive = biz.id === useStore.getState().activeBusinessId;
             return (
               <button
@@ -150,7 +156,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               if (!user) return;
               const localId = crypto.randomUUID();
               const now = new Date().toISOString();
-              await addBusiness({
+              const result = await addBusiness({
                 local_id: localId,
                 name: language === 'sw' ? 'Biashara Mpya' : 'New Business',
                 currency: 'KES',
@@ -159,7 +165,19 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
                 updated_at: now,
                 synced: 0,
               });
-              window.location.reload();
+              if (result.ok) {
+                const newBiz = {
+                  id: user.id,
+                  local_id: localId,
+                  name: language === 'sw' ? 'Biashara Mpya' : 'New Business',
+                  currency: 'KES',
+                };
+                useStore.getState().addBusiness(newBiz);
+                useStore.getState().setBusiness(newBiz);
+                useStore.getState().setActiveBusinessId(user.id);
+                toast(language === 'sw' ? 'Biashara mpya imeongezwa' : 'New business added', 'success');
+                onNavigate?.('profile');
+              }
             }}
             className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800"
           >
@@ -225,7 +243,34 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             <div className="h-px bg-border mx-4 dark:bg-stone-700" />
             <NavRow icon={<Download className="w-4 h-4 text-teal-600" />} label={language === 'sw' ? 'Hifadhi Backup' : 'Export Backup'} desc={language === 'sw' ? 'Pakua data yote kwa JSON' : 'Download all data as JSON'} onClick={exportAllData} />
             <div className="h-px bg-border mx-4 dark:bg-stone-700" />
-            <NavRow icon={<RefreshCw className="w-4 h-4 text-purple-600" />} label={language === 'sw' ? 'Rejesha kutoka Wavuti' : 'Restore from Cloud'} desc={language === 'sw' ? 'Pakua data yako kutoka Supabase' : 'Pull your data from backup'} onClick={async () => { const { restored, errors } = await pullFromSupabase(); if (errors.length > 0) { alert(errors.join('\n')); } else { alert(restored.join('\n') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found')); window.location.reload(); } }} />
+            <NavRow icon={<RefreshCw className="w-4 h-4 text-purple-600" />} label={language === 'sw' ? 'Rejesha kutoka Wavuti' : 'Restore from Cloud'} desc={language === 'sw' ? 'Pakua data yako kutoka Supabase' : 'Pull your data from backup'} onClick={async () => {
+              const { restored, errors } = await pullFromSupabase();
+              if (errors.length > 0) {
+                toast(errors[0] || (language === 'sw' ? 'Hitilafu ya kurejesha' : 'Restore failed'), 'error');
+              } else {
+                const msg = restored.join(', ') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found');
+                toast(msg, 'success');
+                // Reload transactions from Dexie to reflect restored data
+                const { getAllTransactions, getAllBusinesses } = await import('../lib/repository');
+                const txResult = await getAllTransactions();
+                if (txResult.ok) useStore.getState().setTransactions(txResult.value);
+                const bizResult = await getAllBusinesses();
+                if (bizResult.ok) {
+                  const mapped = bizResult.value.map((b) => ({
+                    id: b.user_id ?? b.local_id ?? String(b.id ?? ''),
+                    local_id: b.local_id,
+                    name: b.name,
+                    owner_name: b.owner_name,
+                    currency: b.currency,
+                    category: b.category,
+                    subcategory: b.subcategory,
+                    payment_methods: b.payment_methods ? JSON.parse(b.payment_methods) : undefined,
+                    products: b.products ? JSON.parse(b.products) : undefined,
+                  }));
+                  useStore.getState().setBusinesses(mapped);
+                }
+              }
+            }} />
             <div className="h-px bg-border mx-4 dark:bg-stone-700" />
             <button
               onClick={handleSyncNow}

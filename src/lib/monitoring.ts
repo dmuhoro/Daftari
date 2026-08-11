@@ -5,6 +5,7 @@
  */
 
 import { captureError } from './sentry'
+import { APP } from './constants'
 
 const OTLP_ENDPOINT = import.meta.env.VITE_OTLP_ENDPOINT as string | undefined
 
@@ -23,7 +24,7 @@ function sendToOTLP(metric: MetricEntry) {
     resourceSpans: [{
       resource: { attributes: [
         { key: 'service.name', value: { stringValue: 'daftari-web' } },
-        { key: 'service.version', value: { stringValue: '5.9.0' } },
+        { key: 'service.version', value: { stringValue: APP.VERSION } },
       ]},
       scopeSpans: [{
         scope: { name: 'web-vitals' },

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from './lib/supabase';
 import { getAllTransactions, getAllBusinesses } from './lib/repository';
 import { useStore } from './lib/store';
@@ -49,6 +49,8 @@ export default function App() {
   const setActiveBusinessId = useStore((s) => s.setActiveBusinessId);
   const activeBusinessId = useStore((s) => s.activeBusinessId);
   const theme = useStore((s) => s.theme);
+  // Use ref to capture initial activeBusinessId without including it in deps
+  const initialActiveBusinessIdRef = useRef(activeBusinessId);
 
   // Dark mode: apply resolved theme to document
   useEffect(() => {
@@ -104,7 +106,7 @@ export default function App() {
         const mapped = bizList.map(mapBusiness);
         setBusinesses(mapped);
         // Set active business: prefer stored activeBusinessId, fallback to first
-        const storedId = activeBusinessId;
+        const storedId = initialActiveBusinessIdRef.current;
         const target = storedId ? mapped.find(b => b.id === storedId) : mapped[0];
         if (target) {
           setBusiness(target);
@@ -119,7 +121,7 @@ export default function App() {
       setBusiness(null);
       setLoadingBusiness(false);
     }
-  }, [session, activeBusinessId, setBusiness, setBusinesses, setActiveBusinessId]);
+  }, [session, setBusiness, setBusinesses, setActiveBusinessId]);
 
   if (session === null || loadingDexie) {
     return <LoadingScreen />;

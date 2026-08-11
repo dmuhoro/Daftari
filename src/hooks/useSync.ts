@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useOnlineStatus } from './useOnlineStatus';
 import { flushQueue, registerBackgroundSync } from '../features/sync/syncQueue';
+import { syncAllTables } from '../lib/syncAll';
 import { captureError } from '../lib/sentry';
+
+async function syncAll(): Promise<void> {
+  await flushQueue();
+  await syncAllTables();
+}
 
 export function useSync() {
   const { isOnline } = useOnlineStatus();
@@ -12,13 +18,13 @@ export function useSync() {
     if (!hasMounted.current) {
       hasMounted.current = true;
       if (isOnline) {
-        flushQueue().catch((e) => captureError(e, { feature: 'sync', action: 'flush_on_mount' }));
+        syncAll().catch((e) => captureError(e, { feature: 'sync', action: 'flush_on_mount' }));
       }
       return;
     }
 
     if (wasOffline.current && isOnline) {
-      flushQueue().catch((e) => captureError(e, { feature: 'sync', action: 'flush_on_reconnect' }));
+      syncAll().catch((e) => captureError(e, { feature: 'sync', action: 'flush_on_reconnect' }));
       registerBackgroundSync().catch((e) => captureError(e, { feature: 'sync', action: 'register_bg_sync' }));
     }
 

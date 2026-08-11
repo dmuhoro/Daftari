@@ -8,7 +8,7 @@ vi.mock('../../lib/supabase', () => ({
 }))
 
 function mockWhere(db: any, result: any) {
-  db.sync_queue.where.mockReturnValue(result)
+  vi.spyOn(db.sync_queue, 'where').mockReturnValue(result)
 }
 
 function mockFrom(supabase: any, result: any) {

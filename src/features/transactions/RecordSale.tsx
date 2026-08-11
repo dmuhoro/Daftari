@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Zap, Smartphone, Banknote, Wallet, Store, Building2, Wifi, Landmark } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
@@ -60,7 +60,7 @@ export default function RecordSale({ onSave, onCancel }: RecordSaleProps) {
   const [addedTemplates, setAddedTemplates] = useState(false);
 
   const products = business?.products ?? [];
-  const userPaymentMethods = (business?.payment_methods as string[]) ?? [];
+  const userPaymentMethods = useMemo(() => (business?.payment_methods as string[]) ?? [], [business?.payment_methods]);
 
   const catKey = business?.category as BusinessCategoryKey | undefined;
   const subKey = business?.subcategory;

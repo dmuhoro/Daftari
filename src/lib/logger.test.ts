@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
+vi.mock('./sentry', () => ({
+  captureError: vi.fn(),
+}))
+
 describe('logger', () => {
   let infoSpy: ReturnType<typeof vi.fn>
   let warnSpy: ReturnType<typeof vi.fn>
