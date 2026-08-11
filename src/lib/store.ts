@@ -25,6 +25,8 @@ interface AppStore {
   business: Business | null;
   businesses: Business[];
   activeBusinessId: string | null;
+  /** Per Supabase user — survives logout; keyed by user.id */
+  activeBusinessIdByUser: Record<string, string>;
   transactions: Transaction[];
   lastCloseDate: string | null;
   closePromptDismissedAt: number | null;
@@ -33,7 +35,9 @@ interface AppStore {
   setBusiness: (business: Business | null) => void;
   setBusinesses: (businesses: Business[]) => void;
   addBusiness: (business: Business) => void;
-  setActiveBusinessId: (id: string | null) => void;
+  setActiveBusinessId: (id: string | null, userId?: string) => void;
+  getPreferredBusinessId: (userId: string) => string | null;
+  clearSessionState: () => void;
   updateBusiness: (partial: Partial<Business>) => void;
   setTransactions: (transactions: Transaction[]) => void;
   addTransaction: (tx: Omit<Transaction, 'id'>) => Promise<string | undefined>;
@@ -51,6 +55,7 @@ export const useStore = create<AppStore>()(
       business: null,
       businesses: [],
       activeBusinessId: null,
+      activeBusinessIdByUser: {},
       transactions: [],
       lastCloseDate: null,
       closePromptDismissedAt: null,
@@ -61,7 +66,23 @@ export const useStore = create<AppStore>()(
       addBusiness: (business) => set((state) => ({
         businesses: [...state.businesses.filter(b => b.id !== business.id), business],
       })),
-      setActiveBusinessId: (id) => set({ activeBusinessId: id }),
+      setActiveBusinessId: (id, userId) => set((state) => {
+        const patch: Partial<AppStore> = { activeBusinessId: id };
+        if (userId && id) {
+          patch.activeBusinessIdByUser = { ...state.activeBusinessIdByUser, [userId]: id };
+        }
+        return patch;
+      }),
+      getPreferredBusinessId: (userId) => {
+        const state = get();
+        return state.activeBusinessIdByUser[userId] ?? state.activeBusinessId;
+      },
+      clearSessionState: () => set({
+        business: null,
+        businesses: [],
+        transactions: [],
+        activeBusinessId: null,
+      }),
       updateBusiness: (partial) => set((state) => ({
         business: state.business ? { ...state.business, ...partial } : null,
         businesses: state.businesses.map((b) =>
@@ -176,6 +197,7 @@ export const useStore = create<AppStore>()(
         business: state.business,
         businesses: state.businesses,
         activeBusinessId: state.activeBusinessId,
+        activeBusinessIdByUser: state.activeBusinessIdByUser,
         lastCloseDate: state.lastCloseDate,
         closePromptDismissedAt: state.closePromptDismissedAt,
         theme: state.theme,

@@ -1,7 +1,8 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
-import { getAllTransactions, getAllBusinesses } from './lib/repository';
+import { getTransactionsForUser, getBusinessesForUser } from './lib/repository';
 import { useStore } from './lib/store';
+import { mapBusinessToStore, resolveActiveBusiness } from './lib/businessId';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 import AuthScreen from './screens/AuthScreen';
@@ -18,24 +19,6 @@ function getResolvedTheme(theme: string): 'light' | 'dark' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-function mapBusiness(biz: import('./lib/db').Business): {
-  id: string; local_id?: string; name: string; owner_name?: string;
-  currency: string; category?: string; subcategory?: string;
-  payment_methods?: string[]; products?: Array<{ id: string; name: string; price: number; cost_price?: number; unit?: string; stock?: number; low_stock_threshold?: number }>;
-} {
-  return {
-    id: biz.user_id ?? biz.local_id ?? String(biz.id ?? ''),
-    local_id: biz.local_id,
-    name: biz.name,
-    owner_name: biz.owner_name,
-    currency: biz.currency,
-    category: biz.category,
-    subcategory: biz.subcategory,
-    payment_methods: biz.payment_methods ? JSON.parse(biz.payment_methods) : undefined,
-    products: biz.products ? JSON.parse(biz.products) : undefined,
-  };
-}
-
 export default function App() {
   const [session, setSession] = useState<boolean | null>(IS_E2E ? true : null);
   const [showSignIn, setShowSignIn] = useState(false);
@@ -47,10 +30,9 @@ export default function App() {
   const setBusiness = useStore((s) => s.setBusiness);
   const setBusinesses = useStore((s) => s.setBusinesses);
   const setActiveBusinessId = useStore((s) => s.setActiveBusinessId);
-  const activeBusinessId = useStore((s) => s.activeBusinessId);
+  const clearSessionState = useStore((s) => s.clearSessionState);
+  const getPreferredBusinessId = useStore((s) => s.getPreferredBusinessId);
   const theme = useStore((s) => s.theme);
-  // Use ref to capture initial activeBusinessId without including it in deps
-  const initialActiveBusinessIdRef = useRef(activeBusinessId);
 
   // Dark mode: apply resolved theme to document
   useEffect(() => {
@@ -71,14 +53,9 @@ export default function App() {
     }
   }, [theme]);
 
-  // Load data from Dexie on mount
+  // Auth session listener
   useEffect(() => {
     if (IS_E2E) return;
-
-    getAllTransactions().then(result => {
-      if (result.ok) setTransactions(result.value);
-      setLoadingDexie(false);
-    });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(!!data.session);
@@ -93,35 +70,64 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [setTransactions, setBusiness]);
+  }, []);
 
-  // Load businesses from Dexie when session changes
+  // Load tenant-scoped data when session changes
   useEffect(() => {
-    if (IS_E2E) return; // E2E data seeded in main.tsx before React mount
+    if (IS_E2E) return;
 
     if (session) {
       setLoadingBusiness(true);
-      getAllBusinesses().then(result => {
-        const bizList = result.ok ? result.value : [];
-        const mapped = bizList.map(mapBusiness);
+      setLoadingDexie(true);
+      void (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setLoadingBusiness(false);
+          setLoadingDexie(false);
+          return;
+        }
+
+        const [txResult, bizResult] = await Promise.all([
+          getTransactionsForUser(user.id),
+          getBusinessesForUser(user.id),
+        ]);
+
+        if (txResult.ok) setTransactions(txResult.value);
+        setLoadingDexie(false);
+
+        const mapped = (bizResult.ok ? bizResult.value : []).map(mapBusinessToStore);
         setBusinesses(mapped);
-        // Set active business: prefer stored activeBusinessId, fallback to first
-        const storedId = initialActiveBusinessIdRef.current;
-        const target = storedId ? mapped.find(b => b.id === storedId) : mapped[0];
+
+        const preferredId = getPreferredBusinessId(user.id);
+        const target = resolveActiveBusiness(mapped, preferredId);
         if (target) {
           setBusiness(target);
-          setActiveBusinessId(target.id);
+          setActiveBusinessId(target.id, user.id);
         } else {
           setBusiness(null);
           setActiveBusinessId(null);
         }
         setLoadingBusiness(false);
-      });
+      })();
     } else {
-      setBusiness(null);
+      clearSessionState();
       setLoadingBusiness(false);
+      setLoadingDexie(false);
     }
-  }, [session, setBusiness, setBusinesses, setActiveBusinessId]);
+  }, [
+    session,
+    setBusiness,
+    setBusinesses,
+    setActiveBusinessId,
+    setTransactions,
+    clearSessionState,
+    getPreferredBusinessId,
+  ]);
+
+  function handleSignOut() {
+    clearSessionState();
+    setSession(false);
+  }
 
   if (session === null || loadingDexie) {
     return <LoadingScreen />;
@@ -146,7 +152,7 @@ export default function App() {
       ) : !business || !business.category ? (
         <OnboardingScreen onComplete={() => {}} />
       ) : (
-        <AppShell onSignOut={() => setSession(false)} />
+        <AppShell onSignOut={handleSignOut} />
       )}
       </ToastProvider>
     </ErrorBoundary>

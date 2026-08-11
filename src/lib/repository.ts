@@ -78,6 +78,42 @@ export const getAllBusinesses = async (): Promise<Result<Business[], AppError>> 
   }
 }
 
+/** Tenant-scoped read — only businesses owned by this Supabase user. */
+export const getBusinessesForUser = async (
+  userId: string
+): Promise<Result<Business[], AppError>> => {
+  try {
+    const list = await db.business.toArray()
+    return ok(list.filter(b => b.user_id === userId))
+  } catch (cause) {
+    logger.error('repository:get_businesses_for_user_failed', cause, { userId })
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read businesses for user', cause))
+  }
+}
+
+/** Tenant-scoped read — transactions for user or their business local_ids. */
+export const getTransactionsForUser = async (
+  userId: string
+): Promise<Result<Transaction[], AppError>> => {
+  try {
+    const bizResult = await getBusinessesForUser(userId)
+    const bizIds = new Set(
+      bizResult.ok
+        ? bizResult.value.map(b => b.local_id ?? String(b.id ?? ''))
+        : []
+    )
+    const txs = await db.transactions.orderBy('recorded_at').reverse().toArray()
+    const scoped = txs.filter(t =>
+      t.user_id === userId ||
+      (t.business_id != null && bizIds.has(t.business_id))
+    )
+    return ok(scoped)
+  } catch (cause) {
+    logger.error('repository:get_transactions_for_user_failed', cause, { userId })
+    return err(appError('DEXIE_READ_FAILED', 'Failed to read transactions for user', cause))
+  }
+}
+
 export const addBusiness = async (
   business: Business
 ): Promise<Result<number, AppError>> => {

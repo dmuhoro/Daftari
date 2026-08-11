@@ -138,6 +138,36 @@ describe('syncAllTables', () => {
     expect(result.transactions?.errors[0]).toBe('network error')
   })
 
+  it('marks only succeeded records when an early upsert fails', async () => {
+    const txs = [
+      { id: 1, local_id: 'tx-fail', type: 'income', amount: 100, synced: 0 },
+      { id: 2, local_id: 'tx-ok-1', type: 'income', amount: 200, synced: 0 },
+      { id: 3, local_id: 'tx-ok-2', type: 'income', amount: 300, synced: 0 },
+    ]
+    const modify = vi.fn(() => Promise.resolve(2))
+    const anyOf = vi.fn(() => ({ modify }))
+    mockDb.transactions.where = vi.fn(() => ({
+      equals: vi.fn(() => ({
+        toArray: vi.fn(() => Promise.resolve(txs)),
+      })),
+      anyOf,
+    })) as any
+
+    mockSupabaseUpsert
+      .mockRejectedValueOnce(new Error('first failed'))
+      .mockResolvedValueOnce({ error: null })
+      .mockResolvedValueOnce({ error: null })
+
+    const { syncAllTables } = await import('../syncAll')
+    const result = await syncAllTables()
+
+    expect(result.transactions?.synced).toBe(2)
+    expect(result.transactions?.failed).toBe(1)
+    expect(result.transactions?.succeededIndices).toEqual([1, 2])
+    expect(modify).toHaveBeenCalledWith({ synced: 1 })
+    expect(anyOf).toHaveBeenCalledWith(['tx-ok-1', 'tx-ok-2'])
+  })
+
   it('syncs businesses', async () => {
     const chain = (result: unknown[] = []) => ({
       equals: vi.fn(() => chain(result)),

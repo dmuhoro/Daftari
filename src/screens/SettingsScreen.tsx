@@ -15,6 +15,7 @@ import { pullFromSupabase, syncAllTables } from '../lib/syncAll';
 import { flushQueue } from '../features/sync/syncQueue';
 import { generateReferralUrl, shareViaWhatsApp } from '../lib/referral';
 import { useToast } from '../hooks/useToast';
+import { mapBusinessToStore } from '../lib/businessId';
 import AppearanceSection from '../components/settings/AppearanceSection';
 
 interface SettingsScreenProps {
@@ -132,9 +133,10 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             return (
               <button
                 key={biz.id}
-                onClick={() => {
+                onClick={async () => {
                   useStore.getState().setBusiness(biz);
-                  useStore.getState().setActiveBusinessId(biz.id);
+                  const { data: { user } } = await supabase.auth.getUser();
+                  useStore.getState().setActiveBusinessId(biz.id, user?.id);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors dark:hover:bg-stone-800 border-b border-border dark:border-stone-700 last:border-b-0"
               >
@@ -167,14 +169,14 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               });
               if (result.ok) {
                 const newBiz = {
-                  id: user.id,
+                  id: localId,
                   local_id: localId,
                   name: language === 'sw' ? 'Biashara Mpya' : 'New Business',
                   currency: 'KES',
                 };
                 useStore.getState().addBusiness(newBiz);
                 useStore.getState().setBusiness(newBiz);
-                useStore.getState().setActiveBusinessId(user.id);
+                useStore.getState().setActiveBusinessId(localId, user.id);
                 toast(language === 'sw' ? 'Biashara mpya imeongezwa' : 'New business added', 'success');
                 onNavigate?.('profile');
               }
@@ -250,24 +252,15 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               } else {
                 const msg = restored.join(', ') || (language === 'sw' ? 'Hakuna data kupatikana' : 'No data found');
                 toast(msg, 'success');
-                // Reload transactions from Dexie to reflect restored data
-                const { getAllTransactions, getAllBusinesses } = await import('../lib/repository');
-                const txResult = await getAllTransactions();
-                if (txResult.ok) useStore.getState().setTransactions(txResult.value);
-                const bizResult = await getAllBusinesses();
-                if (bizResult.ok) {
-                  const mapped = bizResult.value.map((b) => ({
-                    id: b.user_id ?? b.local_id ?? String(b.id ?? ''),
-                    local_id: b.local_id,
-                    name: b.name,
-                    owner_name: b.owner_name,
-                    currency: b.currency,
-                    category: b.category,
-                    subcategory: b.subcategory,
-                    payment_methods: b.payment_methods ? JSON.parse(b.payment_methods) : undefined,
-                    products: b.products ? JSON.parse(b.products) : undefined,
-                  }));
-                  useStore.getState().setBusinesses(mapped);
+                const { data: { user } } = await supabase.auth.getUser();
+                const { getTransactionsForUser, getBusinessesForUser } = await import('../lib/repository');
+                if (user) {
+                  const txResult = await getTransactionsForUser(user.id);
+                  if (txResult.ok) useStore.getState().setTransactions(txResult.value);
+                  const bizResult = await getBusinessesForUser(user.id);
+                  if (bizResult.ok) {
+                    useStore.getState().setBusinesses(bizResult.value.map(mapBusinessToStore));
+                  }
                 }
               }
             }} />

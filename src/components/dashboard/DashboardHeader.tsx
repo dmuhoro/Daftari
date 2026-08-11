@@ -1,6 +1,7 @@
 import { ChevronDown, Check, Flame, Zap } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useStore } from '../../lib/store';
+import { supabase } from '../../lib/supabase';
 import { categoryEmoji, BUSINESS_CATEGORIES } from '../../lib/businessCategories';
 import type { BusinessCategoryKey } from '../../lib/businessCategories';
 import SyncDot from '../SyncDot';
@@ -98,9 +99,10 @@ export default function DashboardHeader({ streak, showBizSwitcher, onToggleBizSw
                 return (
                   <button
                     key={biz.id}
-                    onClick={() => {
+                    onClick={async () => {
                       setBusiness(biz);
-                      setActiveBusinessId(biz.id);
+                      const { data: { user } } = await supabase.auth.getUser();
+                      setActiveBusinessId(biz.id, user?.id);
                       onSwitchBusiness(biz);
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${

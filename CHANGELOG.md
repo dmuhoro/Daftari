@@ -5,6 +5,32 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.4] — 2026-08-11
+
+### Added (Phase A — Hardening)
+- `docs/scenario-test-plan.md`: 30 real-world scenarios with pass/fail criteria — launch gate before marketing spend
+- `src/lib/businessId.ts`: canonical business identity (`local_id` as store id), `mapBusinessToStore`, `resolveActiveBusiness`
+- `repository.getBusinessesForUser()` / `getTransactionsForUser()`: tenant-scoped Dexie reads
+- `store.activeBusinessIdByUser`: per-user active business preference survives logout/re-login
+- `store.clearSessionState()`: wipes in-memory session data on sign-out
+
+### Fixed
+- Multi-business identity: store `id` no longer uses Supabase `user_id` (fixes switcher collisions)
+- Cross-user data in UI: App loads only current user's businesses and transactions
+- `syncAll.ts`: only records with successful upserts marked synced (`succeededIndices`, not slice)
+- Onboarding creates business with `local_id` from day one
+
+### Tests
+- `businessId.test.ts`: 6 tests
+- `repository.test.ts`: tenant scoping tests
+- `store.test.ts`: per-user prefs + session cleanup
+- `syncAll.test.ts`: non-consecutive sync failure regression
+
+### Changelog
+- `docs/changelog/sprint-v5-9-4-phase-a-hardening.md`
+
+---
+
 ## [5.9.3] — 2026-07-26
 
 ### Added (Layer 1 — Error Visibility)

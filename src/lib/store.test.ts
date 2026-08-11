@@ -6,6 +6,7 @@ const initialState = {
   business: null,
   businesses: [] as any[],
   activeBusinessId: null,
+  activeBusinessIdByUser: {} as Record<string, string>,
   transactions: [] as any[],
   lastCloseDate: null,
   closePromptDismissedAt: null,
@@ -97,6 +98,27 @@ describe('useStore — sync actions', () => {
   it('setActiveBusinessId updates active id', () => {
     useStore.getState().setActiveBusinessId('b-42')
     expect(useStore.getState().activeBusinessId).toBe('b-42')
+  })
+
+  it('setActiveBusinessId with userId persists per-user preference', () => {
+    useStore.getState().setActiveBusinessId('biz-b', 'user-1')
+    expect(useStore.getState().activeBusinessId).toBe('biz-b')
+    expect(useStore.getState().activeBusinessIdByUser['user-1']).toBe('biz-b')
+  })
+
+  it('getPreferredBusinessId returns per-user map entry', () => {
+    useStore.getState().setActiveBusinessId('biz-a', 'user-1')
+    expect(useStore.getState().getPreferredBusinessId('user-1')).toBe('biz-a')
+  })
+
+  it('clearSessionState clears in-memory session data but keeps per-user prefs', () => {
+    useStore.getState().setActiveBusinessId('biz-a', 'user-1')
+    useStore.getState().setBusiness({ id: 'biz-a', name: 'Shop', currency: 'KES' })
+    useStore.getState().setTransactions([{ local_id: 'tx-1' }])
+    useStore.getState().clearSessionState()
+    expect(useStore.getState().business).toBeNull()
+    expect(useStore.getState().transactions).toEqual([])
+    expect(useStore.getState().activeBusinessIdByUser['user-1']).toBe('biz-a')
   })
 
   it('updateBusiness patches the current business', () => {

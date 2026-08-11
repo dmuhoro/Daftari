@@ -69,7 +69,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         userId = user?.id;
       } catch (e) { captureError(e, { feature: 'onboarding', action: 'get_user' }) }
 
+      const localId = crypto.randomUUID();
       await addBusiness({
+        local_id: localId,
         name,
         currency: 'KES',
         category: selectedCategory ?? undefined,
@@ -82,7 +84,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       });
 
       setBusiness({
-        id: userId ?? '',
+        id: localId,
+        local_id: localId,
         name,
         currency: 'KES',
         category: selectedCategory ?? undefined,
@@ -90,6 +93,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         payment_methods: selectedPayments,
         products: [],
       });
+      if (userId) {
+        useStore.getState().setActiveBusinessId(localId, userId);
+      }
 
       onComplete();
       track(EVENTS.ONBOARDING_COMPLETED, { category: selectedCategory ?? '' })

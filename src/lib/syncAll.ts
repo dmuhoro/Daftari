@@ -8,26 +8,47 @@ interface SyncResult {
   synced: number
   failed: number
   errors: string[]
+  /** Indices into the input array for records that upserted successfully */
+  succeededIndices: number[]
 }
 
 async function upsertToRemote(
   table: string,
   records: Record<string, unknown>[]
 ): Promise<SyncResult> {
-  const result: SyncResult = { synced: 0, failed: 0, errors: [] }
-  for (const record of records) {
+  const result: SyncResult = { synced: 0, failed: 0, errors: [], succeededIndices: [] }
+  for (let i = 0; i < records.length; i++) {
+    const record = records[i]
     try {
       const { error } = await supabase
         .from(table)
         .upsert(record, { onConflict: 'local_id' })
       if (error) throw error
       result.synced++
+      result.succeededIndices.push(i)
     } catch (cause) {
       result.failed++
       result.errors.push(cause instanceof Error ? cause.message : String(cause))
     }
   }
   return result
+}
+
+async function markSyncedByDexieIds(
+  table: 'transactions' | 'business' | 'daily_closes' | 'customers' | 'suppliers' | 'purchase_orders' | 'stock_adjustments',
+  sourceRecords: Array<{ id?: number; local_id?: string }>,
+  succeededIndices: number[],
+  key: 'id' | 'local_id' = 'id'
+): Promise<void> {
+  const keys = succeededIndices
+    .map(i => key === 'local_id' ? sourceRecords[i]?.local_id : sourceRecords[i]?.id)
+    .filter((k): k is string | number => k != null && k !== '')
+  if (keys.length === 0) return
+  // Dexie table types differ per entity; dynamic key selection is safe at runtime.
+  await (db[table] as { where: (field: string) => { anyOf: (values: Array<string | number>) => { modify: (changes: { synced: number }) => Promise<number> } } })
+    .where(key)
+    .anyOf(keys)
+    .modify({ synced: 1 })
 }
 
 export async function syncAllTables(): Promise<Record<string, SyncResult>> {
@@ -37,10 +58,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
   const unsyncedTx = await db.transactions.where('synced').equals(0).toArray()
   if (unsyncedTx.length > 0) {
     results.transactions = await upsertToRemote(TABLES.TRANSACTIONS, unsyncedTx as unknown as Record<string, unknown>[])
-    if (results.transactions.synced > 0) {
-      const ids = unsyncedTx.slice(0, results.transactions.synced).map(t => t.local_id)
-      await db.transactions.where('local_id').anyOf(ids).modify({ synced: 1 })
-    }
+    await markSyncedByDexieIds('transactions', unsyncedTx, results.transactions.succeededIndices, 'local_id')
   }
 
   // Sync businesses
@@ -60,12 +78,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       updated_at: new Date().toISOString(),
     }))
     results.businesses = await upsertToRemote(TABLES.BUSINESSES, payload)
-    if (results.businesses.synced > 0) {
-      const ids = businesses.slice(0, results.businesses.synced).map(b => b.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.business.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('business', businesses, results.businesses.succeededIndices)
   }
 
   // Sync daily closes
@@ -82,12 +95,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       updated_at: new Date().toISOString(),
     }))
     results.daily_closes = await upsertToRemote(TABLES.DAILY_CLOSES, payload)
-    if (results.daily_closes.synced > 0) {
-      const ids = closes.slice(0, results.daily_closes.synced).map(c => c.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.daily_closes.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('daily_closes', closes, results.daily_closes.succeededIndices)
   }
 
   // Sync customers
@@ -105,12 +113,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       updated_at: new Date().toISOString(),
     }))
     results.customers = await upsertToRemote(TABLES.CUSTOMERS, payload)
-    if (results.customers.synced > 0) {
-      const ids = customers.slice(0, results.customers.synced).map(c => c.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.customers.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('customers', customers, results.customers.succeededIndices)
   }
 
   // Sync suppliers
@@ -128,12 +131,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       updated_at: new Date().toISOString(),
     }))
     results.suppliers = await upsertToRemote(TABLES.SUPPLIERS, payload)
-    if (results.suppliers.synced > 0) {
-      const ids = suppliers.slice(0, results.suppliers.synced).map(s => s.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.suppliers.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('suppliers', suppliers, results.suppliers.succeededIndices)
   }
 
   // Sync purchase orders
@@ -151,12 +149,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       updated_at: new Date().toISOString(),
     }))
     results.purchase_orders = await upsertToRemote(TABLES.PURCHASE_ORDERS, payload)
-    if (results.purchase_orders.synced > 0) {
-      const ids = purchaseOrders.slice(0, results.purchase_orders.synced).map(po => po.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.purchase_orders.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('purchase_orders', purchaseOrders, results.purchase_orders.succeededIndices)
   }
 
   // Sync stock adjustments
@@ -174,12 +167,7 @@ export async function syncAllTables(): Promise<Record<string, SyncResult>> {
       created_at: a.created_at,
     }))
     results.stock_adjustments = await upsertToRemote(TABLES.STOCK_ADJUSTMENTS, payload)
-    if (results.stock_adjustments.synced > 0) {
-      const ids = stockAdjustments.slice(0, results.stock_adjustments.synced).map(a => a.id!).filter(Boolean)
-      if (ids.length > 0) {
-        await db.stock_adjustments.where('id').anyOf(ids).modify({ synced: 1 })
-      }
-    }
+    await markSyncedByDexieIds('stock_adjustments', stockAdjustments, results.stock_adjustments.succeededIndices)
   }
 
   logger.info('sync:all_tables_complete', Object.fromEntries(

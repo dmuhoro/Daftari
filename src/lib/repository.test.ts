@@ -204,6 +204,51 @@ describe('getAllBusinesses()', () => {
   })
 })
 
+describe('getBusinessesForUser()', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('returns only businesses for the given user_id', async () => {
+    const { getBusinessesForUser } = await import('./repository')
+    const { db } = await import('./db')
+    vi.mocked(db.business.toArray).mockResolvedValueOnce([
+      { id: 1, local_id: 'b-a', user_id: 'user-1', name: 'A' },
+      { id: 2, local_id: 'b-b', user_id: 'user-2', name: 'B' },
+    ] as any)
+    const result = await getBusinessesForUser('user-1')
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value).toHaveLength(1)
+      expect(result.value[0].local_id).toBe('b-a')
+    }
+  })
+})
+
+describe('getTransactionsForUser()', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+
+  it('returns transactions owned by user or scoped to their businesses', async () => {
+    const { getTransactionsForUser } = await import('./repository')
+    const { db } = await import('./db')
+    vi.mocked(db.business.toArray).mockResolvedValueOnce([
+      { id: 1, local_id: 'biz-1', user_id: 'user-1' },
+    ] as any)
+    const chain = {
+      reverse: vi.fn().mockReturnThis(),
+      toArray: vi.fn().mockResolvedValue([
+        { local_id: 'tx-1', user_id: 'user-1', business_id: 'biz-1', recorded_at: '2024-01-02' },
+        { local_id: 'tx-2', user_id: 'user-2', business_id: 'other', recorded_at: '2024-01-01' },
+        { local_id: 'tx-3', business_id: 'biz-1', recorded_at: '2024-01-03' },
+      ]),
+    }
+    vi.mocked(db.transactions.orderBy).mockReturnValueOnce(chain as any)
+    const result = await getTransactionsForUser('user-1')
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.map(t => t.local_id)).toEqual(['tx-1', 'tx-3'])
+    }
+  })
+})
+
 describe('addBusiness()', () => {
   beforeEach(() => { vi.clearAllMocks() })
 
