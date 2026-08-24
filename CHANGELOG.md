@@ -5,6 +5,26 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [5.9.5] — 2026-08-24
+
+### Added (User-Readiness — all 6 business types)
+- `supabase/migrations/20260824000000_create_push_subscriptions.sql`: `daftari_push_subscriptions` table with RLS (was referenced by repository.ts but missing a migration — push-subscription storage now works).
+- `retail > grocery` (Mboga na Nafaka / Grocery & Cereals) subcategory + template products.
+- `retail > mobile_accessories` (Vifaa vya Simu / Mobile Accessories) subcategory + template products.
+- `services > phone_computer_repair` (Ukarabati wa Simu na Kompyuta) subcategory + template products.
+- `services > cyber_cafe` (Cyber / Intaneti) subcategory + template products.
+
+### Fixed
+- Business-type coverage: cereal/grocery, mobile accessories, phone/computer repair, and cyber cafes were missing or partial — now all 6 target types (food vendors, shopkeepers, grocery, mobile accessories, repair, cyber cafe) can onboard with relevant templates.
+
+### Tests
+- `businessCategories.test.ts`: 14 tests — all 6 target types resolve to category + subcategory with valid template products; category integrity (emoji, dashboard labels, label parity).
+
+### Changelog
+- `docs/changelog/sprint-v5-9-5-user-readiness.md`
+
+---
+
 ## [5.9.4] — 2026-08-11
 
 ### Added (Phase A — Hardening)
