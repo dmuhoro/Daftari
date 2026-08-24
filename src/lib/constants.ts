@@ -7,7 +7,7 @@
 /** App metadata */
 export const APP = {
   NAME:     'Daftari' as const,
-  VERSION:  '5.9.4'  as const,
+  VERSION:  '5.9.5'  as const,
   LOCALE:   'en-KE'  as const,
   TIMEZONE: 'Africa/Nairobi' as const,
 } as const
