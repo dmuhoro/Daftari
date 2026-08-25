@@ -33,13 +33,30 @@ All changes are additive **subcategories** within the existing 7-category ADR-00
 ### Added
 - `src/lib/businessCategories.test.ts`: 14 tests proving all 6 target types resolve to a category + subcategory and each has a non-empty, valid template-product list; plus category integrity (emoji + dashboard label present, `getCategoryLabels` parity).
 
+## Layer 6 — Cloud-sync schema reconciliation (user_id ownership model)
+
+Connecting the Supabase CLI exposed that the remote project's `daftari_businesses` / `daftari_transactions` (and the 5 business-scoped tables) carried a **legacy schema** (`owner_id`, `type`) that did not match what `syncAll.ts` writes (`user_id`, `category`, `products`, `payment_methods`, `business_id` = business `local_id`, ...). As a result, cloud upserts errored and businesses/transactions never backed up.
+
+### Added
+- `supabase/migrations/20260825000000_reconcile_user_id_schema.sql` — idempotent reconciliation:
+  - Adds missing sync columns to `daftari_businesses` (user_id, owner_name, category, subcategory, payment_methods, products, updated_at, synced) and `daftari_transactions` (user_id, synced, payment_method, receipt_id, product_id, cost_price, updated_at).
+  - Drops legacy `NOT NULL` on `owner_id` (app writes `user_id`) and `daftari_transactions.business_id` (app field is optional).
+  - Rewrites RLS to the user_id model: `user_id = auth.uid()` for businesses/transactions/push_subscriptions; `business_id ∈ (user's business local_ids)` for customers, daily_closes, suppliers, purchase_orders, stock_adjustments.
+  - Applied to the live project via the Supabase Management API; verified with functional insert tests (rolled back; no residue).
+
+### Reconciles migration history
+- Recorded all out-of-band-applied migrations into `supabase_migrations.schema_migrations` so future `supabase db push` sees a clean, in-sync state.
+
 ## Verification (all green)
 - `npm run typecheck` ✅
 - `npm run lint` ✅
 - `npx tsx scripts/check-i18n.ts` ✅ (202/202)
 - `npm run test:run` ✅ 362/362 (32 files; +14 new)
 - `npm run build` ✅ (PWA, 42 precache entries)
+- Remote schema: all 10 `daftari_*` tables present, RLS enabled, functional insert tests pass for all 7 sync tables.
 
 ## Deliverables
 - `docs/changelog/sprint-v5-9-5-user-readiness.md`
 - `CHANGELOG.md` — `[5.9.5] — 2026-08-24`
+- `supabase/migrations/20260824000000_create_push_subscriptions.sql`
+- `supabase/migrations/20260825000000_reconcile_user_id_schema.sql`

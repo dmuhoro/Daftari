@@ -9,12 +9,14 @@ Format: [Semantic Versioning](https://semver.org)
 
 ### Added (User-Readiness — all 6 business types)
 - `supabase/migrations/20260824000000_create_push_subscriptions.sql`: `daftari_push_subscriptions` table with RLS (was referenced by repository.ts but missing a migration — push-subscription storage now works).
+- `supabase/migrations/20260825000000_reconcile_user_id_schema.sql`: reconciles remote schema + RLS to the app's `user_id` ownership model so cloud sync works (see Fixed).
 - `retail > grocery` (Mboga na Nafaka / Grocery & Cereals) subcategory + template products.
 - `retail > mobile_accessories` (Vifaa vya Simu / Mobile Accessories) subcategory + template products.
 - `services > phone_computer_repair` (Ukarabati wa Simu na Kompyuta) subcategory + template products.
 - `services > cyber_cafe` (Cyber / Intaneti) subcategory + template products.
 
 ### Fixed
+- **Cloud sync**: remote `daftari_businesses` / `daftari_transactions` (and the 5 business-scoped tables) carried a legacy schema (`owner_id`, `type`) that did not match what the app syncs (`user_id`, `category`, `products`, `payment_methods`, ...). Upserts errored, so businesses/transactions never backed up. Added the missing sync columns, made `owner_id` nullable (app writes `user_id`), and rewrote RLS to `user_id = auth.uid()` (businesses/transactions) and `business_id ∈ user's business local_ids` (customers, daily_closes, suppliers, purchase_orders, stock_adjustments). Verified with functional insert tests on the live DB.
 - Business-type coverage: cereal/grocery, mobile accessories, phone/computer repair, and cyber cafes were missing or partial — now all 6 target types (food vendors, shopkeepers, grocery, mobile accessories, repair, cyber cafe) can onboard with relevant templates.
 
 ### Tests
