@@ -25,6 +25,8 @@ const BatchEntryScreen = lazy(() => import('../screens/BatchEntryScreen'));
 const PosScreen = lazy(() => import('../screens/PosScreen'));
 const HelpScreen = lazy(() => import('../screens/HelpScreen'));
 const AdminScreen = lazy(() => import('../screens/AdminScreen'));
+const AcademyScreen = lazy(() => import('../screens/AcademyScreen'));
+const GrowthShareScreen = lazy(() => import('../screens/GrowthShareScreen'));
 
 const RecordSale = lazy(() => import('../features/transactions/RecordSale'));
 const RecordExpense = lazy(() => import('../features/transactions/RecordExpense'));
@@ -55,7 +57,9 @@ type View =
   | 'batch-entry'
   | 'pos'
   | 'help'
-  | 'admin';
+  | 'admin'
+  | 'academy'
+  | 'growth-share';
 
 type BottomTab = 'dashboard' | 'add' | 'history' | 'settings';
 
@@ -65,7 +69,7 @@ interface AppShellProps {
 
 function activeTab(view: View): BottomTab {
   if (view.startsWith('add')) return 'add';
-  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos') return 'settings';
+  if (view === 'catalog' || view === 'customers' || view === 'monthly-report' || view === 'product-profitability' || view === 'suppliers' || view === 'purchase-orders' || view === 'stock-adjustments' || view === 'batch-entry' || view === 'pos' || view === 'academy' || view === 'growth-share') return 'settings';
   if (view === 'profile') return 'settings';
   return view as BottomTab;
 }
@@ -94,6 +98,8 @@ function viewTitle(view: View, t: (k: TranslationKey) => string, language: strin
     case 'pos': return t('pos') || 'POS';
     case 'help': return language === 'sw' ? 'Msaada' : 'Help';
     case 'admin': return 'Admin';
+    case 'academy': return 'Daftari Academy';
+    case 'growth-share': return 'Brianna Growth Engine';
   }
 }
 
@@ -112,7 +118,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
   const selfManagedViews = new Set<View>([
     'catalog', 'profile', 'monthly-report', 'product-profitability',
     'suppliers', 'purchase-orders', 'stock-adjustments', 'batch-entry',
-    'pos', 'help', 'admin',
+    'pos', 'help', 'admin', 'academy', 'growth-share',
   ]);
   const hideNav = selfManagedViews.has(view);
 
@@ -236,6 +242,8 @@ export default function AppShell({ onSignOut }: AppShellProps) {
           {view === 'pos' && <ErrorBoundary key="pos"><PosScreen onBack={() => setView('settings')} /></ErrorBoundary>}
           {view === 'help' && <ErrorBoundary key="help"><HelpScreen onBack={() => setView('settings')} /></ErrorBoundary>}
           {view === 'admin' && <ErrorBoundary key="admin"><AdminScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'academy' && <ErrorBoundary key="academy"><AcademyScreen onBack={() => setView('settings')} /></ErrorBoundary>}
+          {view === 'growth-share' && <ErrorBoundary key="growth-share"><GrowthShareScreen onBack={() => setView('settings')} /></ErrorBoundary>}
         </main>
       </Suspense>
 

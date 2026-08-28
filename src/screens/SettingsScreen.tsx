@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, ChevronDown, Building2, Package, Check, BarChart3, FileDown, Download, RefreshCw, Plus, Building, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2, LogOut } from 'lucide-react';
+import { ChevronRight, ChevronDown, Building2, Package, Check, BarChart3, FileDown, Download, RefreshCw, Plus, Building, ShoppingCart, ClipboardList, Zap, HelpCircle, Share2, LogOut, GraduationCap, Sparkles } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import Card from '../components/ui/Card';
@@ -27,6 +27,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
   const { t, language } = useTranslation();
   const business = useStore((s) => s.business);
   const businesses = useStore((s) => s.businesses);
+  const completedLessonIds = useStore((s) => s.completedLessonIds || []);
   const { canInstall, install } = usePWAInstall();
   const [syncing, setSyncing] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -89,6 +90,38 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-4">
+      {/* Daftari Academy & Brianna Growth Banner */}
+      {onNavigate && (
+        <div>
+          <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 mt-2 dark:text-stone-400">
+            {language === 'sw' ? 'Masomo na Ukuaji' : 'Education & Growth'}
+          </p>
+          <Card padding="none" overflow>
+            <NavRow
+              icon={<GraduationCap className="w-4 h-4 text-emerald-600" />}
+              label="Daftari Academy"
+              desc={
+                language === 'sw'
+                  ? `Masomo mafupi ya biashara (${completedLessonIds.length}/4 zimekamilika)`
+                  : `Micro-business lessons (${completedLessonIds.length}/4 completed)`
+              }
+              onClick={() => onNavigate('academy')}
+            />
+            <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            <NavRow
+              icon={<Sparkles className="w-4 h-4 text-amber-500" />}
+              label="Brianna Growth Engine"
+              desc={
+                language === 'sw'
+                  ? 'Tengeneza na ushiriki hadithi za kukuza biashara'
+                  : 'Generate build-in-public social growth stories'
+              }
+              onClick={() => onNavigate('growth-share')}
+            />
+          </Card>
+        </div>
+      )}
+
       {/* Business section */}
       <div>
         <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 mt-2 dark:text-stone-400">
