@@ -5,6 +5,80 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [6.3.0] — 2026-08-28
+
+### Added (Brianna OS & Automated Build-in-Public Content Engine)
+- **Brianna Growth Engine Screen (`src/screens/GrowthShareScreen.tsx`)**: In-app build-in-public growth hub converting daily merchant ledger activity into shareable social stories.
+- **Story Generator Engine (`src/features/marketing/briannaContent.ts`)**: 4 story angles (*Daily Milestone*, *Debt Recovery Victory*, *Academy Hero*, *Founder Build in Public*) available in Swahili & English.
+- **Multi-Channel Distribution**: 1-Click WhatsApp Status sharing, clipboard copying with toast notifications, Twitter/X intent, and LinkedIn integration.
+- **`src/screens/GrowthShareScreen.test.tsx`**: Integration test suite verifying real-time stats calculation and WhatsApp sharing.
+
+### Changed
+- `src/components/AppShell.tsx`: Registered `'growth-share'` route and lazy loading.
+- `src/screens/SettingsScreen.tsx`: Added Brianna Growth Engine entry card under Education & Growth.
+
+### Changelog
+- `docs/changelog/sprint-v6-3-0-brianna-os-and-viral-marketing.md`
+- `sprints/sprint_4_brianna_os_and_viral_marketing.md`
+
+---
+
+## [6.2.0] — 2026-08-28
+
+### Added (Daftari Academy & EasyTutor Micro-Learning Engine)
+- **Daftari Academy Screen (`src/screens/AcademyScreen.tsx`)**: In-app micro-learning hub providing 1-2 minute practical business lessons for Kenyan duka owners.
+- **Micro-Business Curriculum (`src/features/academy/lessons.ts`)**: 4 bilingual micro-lessons covering debt recovery without lost customers, cash separation, stock alerting, and offline M-Pesa parsing.
+- **Interactive Micro-Quiz Engine**: End-of-lesson knowledge checks with real-time feedback and explanation notes.
+- **`src/screens/AcademyScreen.test.tsx`**: Unit and integration tests verifying lesson filtering, modal reader, and quiz validation.
+
+### Changed
+- `src/lib/store.ts`: Added `completedLessonIds` persistence and `markLessonCompleted` action.
+- `src/components/AppShell.tsx`: Registered `'academy'` route and lazy loading.
+- `src/screens/SettingsScreen.tsx`: Added Daftari Academy navigation card under Learning & Education.
+
+### Changelog
+- `docs/changelog/sprint-v6-2-0-daftari-academy-and-easytutor.md`
+- `sprints/sprint_3_daftari_academy_and_easytutor.md`
+
+---
+
+## [6.1.0] — 2026-08-28
+
+### Added (WhatsApp Debt Receipts & Viral Growth Loop)
+- **1-Click WhatsApp Debt Collector Modal**: Added interactive debt collection modal in `CustomerDetailScreen.tsx` allowing merchants to send custom debt reminders (*deni*) directly via WhatsApp.
+- **Enhanced WhatsApp Utilities**: Added `formatDebtReminderText()` supporting Till/Paybill/Pochi payment instructions, customer name, and debt amount in Swahili and English.
+- **Viral Growth Footer**: Embedded branded referral link (`https://daftari.co.ke`) in all WhatsApp receipts, daily close summaries, and debt reminders.
+- **`src/screens/CustomerDetailScreen.test.tsx`**: Integration test suite verifying debt collection modal, input validation, and WhatsApp trigger.
+- **7 i18n Keys**: Added to `src/i18n/sw.json` and `src/i18n/en.json`.
+
+### Changed
+- `src/lib/whatsapp.ts`: Added phone number sanitation (`07...` → `2547...`), debt reminder formatting, and viral referral link.
+- `src/components/Receipt.tsx`: Upgraded share button to use `MessageCircle` icon with fallback WhatsApp share action.
+
+### Changelog
+- `docs/changelog/sprint-v6-1-0-whatsapp-receipts-and-viral-loop.md`
+- `sprints/sprint_2_whatsapp_receipts_and_viral_loop.md`
+
+---
+
+## [6.0.0] — 2026-08-28
+
+### Added (Quiz-Based Onboarding & Yes-Set Psychology)
+- **Interactive Quiz Diagnostic**: Shifted onboarding from static form inputs to a 3-minute diagnostic assessment (*"What is your #1 headache right now?"*, *"How do you track money today?"*).
+- **"Yes-Set" Psychological Micro-Cards**: 3 rapid micro-affirmation cards (*"Ndio, Hakika!"* / *"Yes, Absolutely!"*) to lower cognitive friction and build user momentum.
+- **Personalized Growth Plan Reveal**: Animated calculation effect displaying custom business benefits based on selected trade and pain points.
+- **`src/screens/OnboardingScreen.test.tsx`**: Unit and integration test suite covering all quiz diagnostic steps, Yes-Set card progression, and business creation.
+- **22 i18n Keys**: Added to `src/i18n/sw.json` and `src/i18n/en.json` with 1:1 parity.
+
+### Changed
+- `src/screens/OnboardingScreen.tsx`: Complete rewrite with quiz flow, Yes-Set progress indicators, custom plan reveal, payment methods, and notification permission prompt.
+
+### Changelog
+- `docs/changelog/sprint-v6-0-0-quiz-onboarding-and-yes-set.md`
+- `sprints/sprint_1_quiz_onboarding_and_yes_set.md`
+
+---
+
 ## [5.9.5] — 2026-08-24
 
 ### Added (User-Readiness — all 6 business types)
