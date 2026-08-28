@@ -31,6 +31,7 @@ interface AppStore {
   lastCloseDate: string | null;
   closePromptDismissedAt: number | null;
   theme: Theme;
+  completedLessonIds: string[];
   setLanguage: (language: 'sw' | 'en') => void;
   setBusiness: (business: Business | null) => void;
   setBusinesses: (businesses: Business[]) => void;
@@ -46,6 +47,7 @@ interface AppStore {
   setLastCloseDate: (date: string) => void;
   dismissClosePrompt: () => void;
   setTheme: (theme: Theme) => void;
+  markLessonCompleted: (lessonId: string) => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -60,6 +62,7 @@ export const useStore = create<AppStore>()(
       lastCloseDate: null,
       closePromptDismissedAt: null,
       theme: 'system',
+      completedLessonIds: [],
       setLanguage: (language) => set({ language }),
       setBusiness: (business) => set({ business }),
       setBusinesses: (businesses) => set({ businesses }),
@@ -189,6 +192,11 @@ export const useStore = create<AppStore>()(
       setLastCloseDate: (date) => set({ lastCloseDate: date, closePromptDismissedAt: null }),
       dismissClosePrompt: () => set({ closePromptDismissedAt: Date.now() }),
       setTheme: (theme) => set({ theme }),
+      markLessonCompleted: (lessonId) => set((state) => ({
+        completedLessonIds: state.completedLessonIds.includes(lessonId)
+          ? state.completedLessonIds
+          : [...state.completedLessonIds, lessonId],
+      })),
     }),
     {
       name: 'daftari-store',
@@ -201,6 +209,7 @@ export const useStore = create<AppStore>()(
         lastCloseDate: state.lastCloseDate,
         closePromptDismissedAt: state.closePromptDismissedAt,
         theme: state.theme,
+        completedLessonIds: state.completedLessonIds,
       }),
     }
   )
