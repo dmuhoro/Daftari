@@ -47,6 +47,12 @@ jobs:
         env:
           VITE_E2E: 'true'
 
+      # Production-build verification: installability (PNG manifest) + offline behavior
+      - name: Run production-build E2E tests
+        run: npm run test:e2e:prod
+        env:
+          VITE_E2E: 'true'
+
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: check
