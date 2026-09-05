@@ -1,19 +1,19 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// PRODUCTION-BUILD specs: prove installability + offline behavior against the shipped `vite build`
+// output (SW registered, PNG manifest served, app shell + IndexedDB work offline), served via
+// `vite preview`. This is the real boundary — the dev-mode suite explicitly has no SW.
 export default defineConfig({
   testDir: './e2e',
-  // Production-build specs run under playwright.prod.config.ts (npm run test:e2e:prod);
-  // the dev suite here must never collect them or it asserts SW behavior that
-  // dev mode intentionally does not have.
-  testIgnore: /.*prod\.spec\.ts/,
-  fullyParallel: true,
+  testMatch: /.*prod\.spec\.ts/,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  workers: 1,
   reporter: process.env.CI ? 'github' : 'list',
-  timeout: 30000,
+  timeout: 45000,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:4173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     launchOptions: {
@@ -27,8 +27,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev:e2e',
-    url: 'http://localhost:5173',
+    command: 'npm run preview -- --port 4173 --strictPort',
+    url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
