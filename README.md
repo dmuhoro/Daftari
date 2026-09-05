@@ -16,7 +16,8 @@ Built with React, TypeScript, Vite, Supabase, and Dexie.js.
 - **Dark Mode** — Light, dark, and system-follow themes
 - **Fuliza Tracking** — Track Fuliza debt against daily revenue
 - **Daily Close** — Automated end-of-day prompts with profit summary
-- **PWA** — Install on your phone's home screen for app-like experience
+- **PWA** — Install on your phone's home screen for app-like experience (PNG manifest icons
+  verified; offline behavior proven at the production-build boundary — `docs/offline-verified.md`)
 - **Error Tracking** — Sentry integration with production error capture
 - **Analytics** — Privacy-first event analytics via Supabase (no third-party trackers)
 - **Digital Receipts** — Auto-generated receipt numbers (`REC-YYMMDD-XXXX`) for every sale

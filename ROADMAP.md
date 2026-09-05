@@ -21,6 +21,8 @@ Nothing moves to the next phase until this gate is cleared.
 - New screens
 - New payment integrations
 - New business categories
+- **Platform expansion** (Android TWA/native, iOS installed app, desktop shell) — planned in
+  `docs/platform-expansion.md` + ADR-011, built only when pilot evidence demands it
 - Any feature not requested by a real pilot user
 
 ## Phase 2: Prove Retention (October–December 2026)

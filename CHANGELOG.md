@@ -5,6 +5,34 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [6.4.0] — 2026-09-05
+
+### Fixed (Installable PWA + Offline Verification)
+- **PNG manifest icons**: replaced SVG-only icons with real 8-bit PNGs (`pwa-192x192.png`,
+  `pwa-512x512.png` + `maskable` 512, `apple-touch-icon-180.png` linked in `index.html`). Android
+  Chrome requires PNG for installability — this is what turns "add to home screen" from a browser
+  shortcut into a standalone app.
+- **Production-build e2e** (`e2e/pwa-prod.spec.ts`, `playwright.prod.config.ts`): PNG manifest,
+  SW registration + page control, offline shell reload, offline sale persisted (`synced=0`) and
+  surviving reload + sync failure. Wired into CI (`npm run test:e2e:prod`).
+
+### Changed
+- **Growth Engine rename**: `src/features/marketing/briannaContent.ts` →
+  `src/features/marketing/growthContent.ts`; `BRIANNA_STORY_TEMPLATES` → `GROWTH_STORY_TEMPLATES`;
+  "Brianna" removed from UI labels (`GrowthShareScreen`, `SettingsScreen`, `AppShell` → "Growth
+  Engine"). Historical sprint/changelog docs unchanged (they record what shipped at the time).
+- `package.json` version → `6.4.0`; new `test:e2e:prod` script.
+
+### Documented
+- `docs/adr/ADR-010-installable-pwa-png-icons-offline-verified.md` (decision + honest boundaries)
+- `docs/adr/ADR-011-daftari-platforms-future-plan.md` (TWA/native/iOS/desktop — future, gated)
+- `docs/offline-verified.md` (evidence + manual on-device checklist)
+- `docs/hardening.md` (anti-fragility audit: proven at boundary vs needs credentials)
+- `docs/platform-expansion.md` (future platform record)
+- `docs/changelog/sprint-v6-4-0-pwa-installability-and-hardening.md`
+
+---
+
 ## [6.3.0] — 2026-08-28
 
 ### Added (Brianna OS & Automated Build-in-Public Content Engine)
