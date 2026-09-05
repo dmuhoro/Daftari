@@ -36,8 +36,32 @@ Verified 2026-09-05 via read-only REST probes (anon key):
   `"new row violates row-level security policy"` — the `user_id = auth.uid()` policies
   (owner_only_*) are live and fail-closed.
 
-So no migration pending. If a schema drift is ever suspected, re-run with a logged-in CLI
+So no pending schema migration. If a schema drift is ever suspected, re-run with a logged-in CLI
 (`supabase db push` applies everything under `supabase/migrations/`, all idempotent `IF NOT EXISTS`).
+The one pending action is a **realtime publication** change (2026-09-05):
+
+### 3.1 Enable realtime for multi-device live updates
+
+`useRealtimeSync` (shipped `69bf17a`) subscribes to `postgres_changes` on
+`daftari_transactions` and `daftari_businesses`. A subscription will report
+`SUBSCRIBED` even when a table is **not** in the `supabase_realtime` publication —
+but then **no events are delivered**. RLS still scopes the stream; enabling the
+publication only turns on the WAL feed and does NOT weaken tenant isolation.
+
+Apply ONE of:
+
+- **Dashboard → Database → Replication** (`/project/rjedivbpldkroffswoyb/database/replication`):
+  tick **supabase_realtime** for both tables.
+- **SQL editor** — `supabase/migrations/20260905210000_enable_realtime_tables.sql`:
+  ```sql
+  alter publication supabase_realtime add table public.daftari_transactions;
+  alter publication supabase_realtime add table public.daftari_businesses;
+  ```
+  (idempotent; safe to re-run.)
+
+Verify after applying (browser on prod, signed in): record a sale on the phone, watch
+the browser dashboard update in-place without a reload. That in-place delivery is the
+B1 exit test.
 
 Enable in the Dashboard (project `rjedivbpldkroffswoyb`):
 - Go to **Authentication → Sign In / Providers** (`/project/rjedivbpldkroffswoyb/auth/providers`).
