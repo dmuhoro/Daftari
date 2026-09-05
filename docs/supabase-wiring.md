@@ -1,0 +1,82 @@
+# Supabase sync — wiring, migrations, and live verification
+
+This is the "make offline→Supabase real" runbook. The sync **code** (offline→IndexedDB→upsert on
+`local_id`→mark `synced`, RLS-scoped pull while online) is complete and unit-tested. What was
+missing is machine truth: the **deployed build was compiled WITHOUT the Supabase project env**, so
+production served a `createClient('http://localhost:0', …)` no-op and sync silently never reached a
+real column. This runbook makes that gap impossible to repeat.
+
+## 1. The only required inputs (client-safe; the Postgres URL is NOT needed)
+
+- `VITE_SUPABASE_URL` — the project URL `https://<ref>.supabase.co` (anon/public, safe to ship).
+- `VITE_SUPABASE_ANON_KEY` — the anon/public key (safe to ship; protected by RLS on the server).
+- The app never sees the Postgres connection string or the service-role key.
+
+## 2. Where each value lives
+
+| Secret | GitHub (used? build≠Vercel) | Vercel (the REAL build env) | Local dev |
+|--------|----------------------------|------------------------------|-----------|
+| `VITE_SUPABASE_URL` | set on `dmuhoro/Daftari` | **MISSING — this is the gap** | `.env` / `.env.local` |
+| `VITE_SUPABASE_ANON_KEY` | set on `dmuhoro/Daftari` | **MISSING — this is the gap** | `.env` / `.env.local` |
+
+The GH secrets exist but the **Vercel build** is the one that compiles the production bundle, and
+Vercel's env list for the `dmuhor01/daftari` project is **empty**. That is exactly why `dist`
+contained `local-dev-only` / `localhost:0`.
+
+## 3. Apply migrations (schema already mostly live)
+
+All sync tables already exist in the project
+(`daftari_transactions/businesses/customers/daily_closes/suppliers/purchase_orders/stock_adjustments/analytics`).
+One migration is not yet applied — `push_subscriptions` (web-push, not data-sync).
+
+With a logged-in CLI, in the repo root:
+
+```bash
+supabase login            # supplies SUPABASE_ACCESS_TOKEN interactively (once)
+supabase link --project-ref <your-ref>   # e.g. rjedivbpldkroffswoyb
+supabase db push          # applies everything under supabase/migrations/, incl. push_subscriptions
+```
+
+Enable in the Dashboard: **Authentication → Providers → Email** → allow both "Email" and the
+auto-confirm toggle that matches normal user signup.
+
+## 4. Live verification (no browser)
+
+```bash
+# optional: activate your local env that holds a real project pair
+set -a; . ./.env; set +a
+
+VITE_VERIFY=true npm run verify:sync:live
+```
+
+This script uses the app's **own anon bearer path** and, with `VITE_VERIFY=true`, performs a
+write→read→delete round-trip against `daftari_transactions`:
+- **exit 0** → full round-trip proven on a real project.
+- **exit 1** → env not configured (the build is NOT wired).
+- **exit 2** → a live network/RLS failure (details printed).
+
+> Note: anon signup can be rate-limited ("email rate limit exceeded"). That is a dashboard limit on
+> throwaway signups, not a fault in the app path — wait for the window to clear and re-run once.
+
+## 5. Rebuild and ship so the bundle carries the real client
+
+1. Add both values to **Vercel** for the `dmuhor01/daftari` project (Production), not GitHub —
+   Vercel is the compiler:
+   ```bash
+   cd <linked daftari clone>
+   vercel env add VITE_SUPABASE_URL production
+   vercel env add VITE_SUPABASE_ANON_KEY production
+   ```
+2. Push `main` → Vercel redeploys with the real client baked in.
+3. Re-verify the deployed bundle:
+   ```bash
+   curl -s https://daftari-amber.vercel.app/ | grep -o '/assets/index-[^"]*\.js' \
+     | while read a; do curl -s "https://daftari-amber.vercel.app$a" | grep -c "supabase.co"; done
+   ```
+4. `node scripts/verify-sync-live.ts` exit 0 on the live bundle.
+
+## 6. Client guard (in code)
+
+`src/lib/supabase.ts` exports `isSyncConfigured` (true only when both env vars are real). The
+Settings screen surfaces it ("Cloud sync is ready on this build" / "not configured") so a
+misconfigured build is **visible**, not silent — no more LOCALHOST-FALLBACK-masks-real-sync.

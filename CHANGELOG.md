@@ -5,6 +5,33 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [Unreleased] — 6.5.0 (Install Hardening + Sync Wiring Seam)
+
+### Added
+- **Global install banner** (`InstallBanner.tsx`): persistent top-bar CTA on non-installed mobile
+  browsers — an install button on Android/Chrome and Share→Add to Home Screen guidance on iOS
+  Safari, with a one-tap dismiss. Auto-hidden once running installed (`display-mode: standalone` /
+  `navigator.standalone === true`). 7 new jsdom tests.
+- **Dead-button guarantee** in `usePWAInstall`: after any prompt outcome (accepted or dismissed) the
+  deferred prompt is consumed and `canInstall` is cleared immediately — no more a no-op install
+  button.
+- **Visible sync config state**: `isSyncConfigured` exported from `src/lib/supabase.ts` (true only
+  when both env vars are real, never the `localhost:0` fallback). Settings shows a colored dot +
+  "Cloud sync is ready on this build" / "not configured".
+- **Live sync verification** (`scripts/verify-sync-live.ts`, `npm run verify:sync:live`):
+  real-network write→read→delete round-trip on the anon bearer path. Exit 0 = proven, 1 = not
+  configured (the production gap), 2 = live failure.
+- **Wiring runbook** (`docs/supabase-wiring.md`): the permanent sequence to set Vercel env (the real
+  production compiler), apply migrations, rebuild, and verify the deployed bundle carries the real
+  Supabase client.
+
+### Fixed
+- The silent gap where a production bundle could ship the `localhost:0` no-op client and still
+  claim "syncs to cloud" — now surfaced in UI and caught by the verify script.
+
+### Changed
+- Version → 6.5.0.
+
 ## [6.4.0] — 2026-09-05
 
 ### Fixed (Installable PWA + Offline Verification)
