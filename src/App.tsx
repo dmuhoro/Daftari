@@ -3,6 +3,8 @@ import { supabase } from './lib/supabase';
 import { getTransactionsForUser, getBusinessesForUser } from './lib/repository';
 import { useStore } from './lib/store';
 import { mapBusinessToStore, resolveActiveBusiness } from './lib/businessId';
+import { adoptOrphanedRecords } from './features/sync/adoptOrphans';
+import { logger } from './lib/logger';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
 import AuthScreen from './screens/AuthScreen';
@@ -85,6 +87,21 @@ export default function App() {
           setLoadingBusiness(false);
           setLoadingDexie(false);
           return;
+        }
+
+        // Claim any records captured before a session existed (sign-up with
+        // pending email confirmation, older builds, E2E). Runs BEFORE the
+        // tenant-scoped read so orphaned data is visible to its new owner
+        // and re-enters the sync path instead of dying in the RLS void.
+        try {
+          const adopted = await adoptOrphanedRecords(user.id);
+          if (adopted.transactions > 0 || adopted.businesses > 0) {
+            logger.info('sync:adopted_orphans_on_session', adopted);
+          }
+        } catch (cause) {
+          // Adoption is best-effort healing: a failure must not strand the
+          // user on a loading spinner; tenant load below still proceeds.
+          logger.warn('sync:adopt_orphans_failed_on_session', { error: cause instanceof Error ? cause.message : String(cause) });
         }
 
         const [txResult, bizResult] = await Promise.all([

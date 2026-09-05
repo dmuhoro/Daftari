@@ -224,5 +224,8 @@
   "yes_set_title": "Ready for your Daftari plan?",
   "yes_set_q1": "Do you remember every debt a customer owes you, right now?",
   "yes_set_q2": "Do you know today's exact profit, without checking notes?",
-  "yes_set_q3": "Do you know which items are running out — before they sell out?"
+  "yes_set_q3": "Do you know which items are running out — before they sell out?",
+  "confirm_email_title": "Check your email",
+  "confirm_email_instructions": "We sent a confirmation link. Tap it to activate your account, then sign in.",
+  "resend_confirmation_email": "Resend confirmation email"
 }

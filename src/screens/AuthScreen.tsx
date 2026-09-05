@@ -4,7 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import Card from '../components/ui/Card';
 import TextField from '../components/ui/TextField';
-import { BookOpen, AlertCircle, Eye, EyeOff, ChevronLeft, CheckCircle } from 'lucide-react';
+import { BookOpen, AlertCircle, Eye, EyeOff, ChevronLeft, CheckCircle, Mail } from 'lucide-react';
 import { track, EVENTS } from '../lib/analytics';
 
 interface AuthScreenProps {
@@ -22,6 +22,7 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
+  const [confirmSent, setConfirmSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -30,10 +31,19 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
 
     try {
       if (mode === 'signup') {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const { data, error: err } = await supabase.auth.signUp({ email, password });
         if (err) throw err;
         track(EVENTS.SIGNUP_COMPLETED)
-        onAuth();
+        // With email confirmation enabled, signUp returns NO session until the
+        // link is tapped. Entering the shell without one would stamp records
+        // with undefined user_id (the pre-login data orphan). Only authenticate
+        // when a real session exists; otherwise tell the user to confirm email.
+        if (data?.session) {
+          onAuth();
+        } else {
+          setError('');
+          setConfirmSent(true);
+        }
       } else if (mode === 'reset') {
         const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/auth/recovery`,
@@ -124,6 +134,35 @@ export default function AuthScreen({ onAuth, mode: initialMode }: AuthScreenProp
                 <button
                   onClick={() => { setMode('signin'); setResetSent(false); }}
                   className="text-sm text-primary-600 font-semibold hover:text-primary-700 transition-colors mt-2"
+                >
+                  {t('continue')}
+                </button>
+              </div>
+            ) : mode === 'signup' && confirmSent ? (
+              <div className="flex flex-col items-center gap-4 py-4">
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <Mail className="w-7 h-7 text-green-600" />
+                </div>
+                <p className="text-base font-semibold text-ink dark:text-stone-100 text-center">
+                  {t('confirm_email_title') || 'Check your email'}
+                </p>
+                <p className="text-sm text-muted dark:text-stone-400 text-center">
+                  {t('confirm_email_instructions') || 'We sent a confirmation link. Tap it to activate your account, then sign in.'}
+                </p>
+                <button
+                  onClick={async () => {
+                    setLoading(true);
+                    const { error: err } = await supabase.auth.resend({ type: 'signup', email });
+                    if (err) setError(t('error_generic'));
+                    setLoading(false);
+                  }}
+                  className="text-sm text-primary-600 font-semibold hover:text-primary-700 transition-colors mt-2"
+                >
+                  {t('resend_confirmation_email') || 'Resend confirmation email'}
+                </button>
+                <button
+                  onClick={() => { setMode('signin'); setConfirmSent(false); setEmail(''); setPassword(''); }}
+                  className="text-sm text-stone-500 dark:text-stone-400 font-medium hover:text-stone-700 transition-colors"
                 >
                   {t('continue')}
                 </button>

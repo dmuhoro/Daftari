@@ -224,5 +224,8 @@
   "yes_set_title": "Uko tayari kupata mpango wako wa Daftari?",
   "yes_set_q1": "Unakumbuka kila deni la mteja sasa hivi?",
   "yes_set_q2": "Unajua faida halisi ya leo, bila kuangalia daftari?",
-  "yes_set_q3": "Unajua bidhaa zipi zinakaribia kuisha — kabla hazijauzika?"
+  "yes_set_q3": "Unajua bidhaa zipi zinakaribia kuisha — kabla hazijauzika?",
+  "confirm_email_title": "Angalia barua pepe yako",
+  "confirm_email_instructions": "Tumekutumia kiungo cha kuthibitisha. Bonyeza ili kuwasha akaunti yako, kisha ingia.",
+  "resend_confirmation_email": "Tuma tena barua ya uthibitishaji"
 }

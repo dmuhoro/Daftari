@@ -21,6 +21,7 @@ export const mockDb = {
   transactions: {
     add: vi.fn(() => Promise.resolve(1)),
     put: vi.fn(() => Promise.resolve()),
+    toArray: vi.fn(() => Promise.resolve([])),
     orderBy: vi.fn(() => ({
       reverse: vi.fn(() => ({
         toArray: vi.fn(() => Promise.resolve([])),
