@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['pwa-192x192.svg', 'favicon.svg'],
+      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'apple-touch-icon-180.png', 'favicon.svg'],
       manifest: {
         name: 'Daftari',
         short_name: 'Daftari',
@@ -20,15 +20,22 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: 'pwa-192x192.svg',
+            src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/svg+xml',
+            type: 'image/png',
+            purpose: 'any',
           },
           {
-            src: 'pwa-192x192.svg',
+            src: 'pwa-512x512.png',
             sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },
