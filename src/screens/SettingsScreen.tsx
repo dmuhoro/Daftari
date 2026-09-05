@@ -90,7 +90,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-2 pb-4">
-      {/* Daftari Academy & Brianna Growth Banner */}
+      {/* Daftari Academy & Growth Banner */}
       {onNavigate && (
         <div>
           <p className="text-xs font-medium text-muted uppercase tracking-widest mb-2 mt-2 dark:text-stone-400">
@@ -110,7 +110,7 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
             <div className="h-px bg-border mx-4 dark:bg-stone-700" />
             <NavRow
               icon={<Sparkles className="w-4 h-4 text-amber-500" />}
-              label="Brianna Growth Engine"
+              label="Growth Engine"
               desc={
                 language === 'sw'
                   ? 'Tengeneza na ushiriki hadithi za kukuza biashara'

@@ -6,10 +6,10 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../lib/store';
 import Card from '../components/ui/Card';
 import {
-  BRIANNA_STORY_TEMPLATES,
+  GROWTH_STORY_TEMPLATES,
   type StoryTemplateId,
   type StoryParams
-} from '../features/marketing/briannaContent';
+} from '../features/marketing/growthContent';
 import { shareViaWhatsApp } from '../lib/whatsapp';
 import { useToast } from '../hooks/useToast';
 import { track, EVENTS } from '../lib/analytics';
@@ -44,7 +44,7 @@ export default function GrowthShareScreen({ onBack }: GrowthShareScreenProps) {
     lang: language as 'sw' | 'en',
   };
 
-  const activeTemplate = BRIANNA_STORY_TEMPLATES.find((t) => t.id === selectedTemplateId) || BRIANNA_STORY_TEMPLATES[0];
+  const activeTemplate = GROWTH_STORY_TEMPLATES.find((t) => t.id === selectedTemplateId) || GROWTH_STORY_TEMPLATES[0];
   const generatedText = activeTemplate.generateText(storyParams);
 
   async function handleCopy() {
@@ -91,7 +91,7 @@ export default function GrowthShareScreen({ onBack }: GrowthShareScreenProps) {
               <Sparkles className="w-4 h-4" />
             </div>
             <span className="font-bold text-ink dark:text-stone-100 text-base">
-              Brianna Growth Engine
+              Growth Engine
             </span>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function GrowthShareScreen({ onBack }: GrowthShareScreenProps) {
             {isSw ? 'Chagua Mada ya Hadithi' : 'Select Story Angle'}
           </p>
           <div className="flex flex-col gap-2">
-            {BRIANNA_STORY_TEMPLATES.map((tmpl) => {
+            {GROWTH_STORY_TEMPLATES.map((tmpl) => {
               const isSelected = selectedTemplateId === tmpl.id;
               return (
                 <button

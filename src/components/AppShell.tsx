@@ -99,7 +99,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string, language: strin
     case 'help': return language === 'sw' ? 'Msaada' : 'Help';
     case 'admin': return 'Admin';
     case 'academy': return 'Daftari Academy';
-    case 'growth-share': return 'Brianna Growth Engine';
+    case 'growth-share': return 'Growth Engine';
   }
 }
 
