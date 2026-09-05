@@ -2,7 +2,7 @@ import { db } from '../../lib/db'
 import { logger } from '../../lib/logger'
 import { captureError } from '../../lib/sentry'
 
-export interface AdoptResult {
+export type AdoptResult = {
   transactions: number
   businesses: number
   queue: number
