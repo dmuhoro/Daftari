@@ -5,7 +5,7 @@ import { useStore } from '../lib/store';
 import Card from '../components/ui/Card';
 import { BUSINESS_CATEGORIES } from '../lib/businessCategories';
 import type { BusinessCategoryKey } from '../lib/businessCategories';
-import { supabase } from '../lib/supabase';
+import { supabase, isSyncConfigured } from '../lib/supabase';
 import { addBusiness } from '../lib/repository';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { track, EVENTS } from '../lib/analytics';
@@ -319,6 +319,15 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
               </div>
               {syncing && <div className="w-4 h-4 border-2 border-cyan-600 border-t-transparent rounded-full animate-spin" />}
             </button>
+            <div className="h-px bg-border mx-4 dark:bg-stone-700" />
+            <div className="flex items-center gap-3 px-4 py-3">
+              <span aria-hidden className={`w-2.5 h-2.5 rounded-full ${isSyncConfigured ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-xs text-muted dark:text-stone-400">
+                {isSyncConfigured
+                  ? (language === 'sw' ? 'Sawazishaji wa wavuti umewashwa' : 'Cloud sync is ready on this build')
+                  : (language === 'sw' ? 'Mawasiliano ya wavuti hayajasanidiwa' : 'Cloud sync is not configured on this build')}
+              </span>
+            </div>
           </Card>
         )}
       </div>
