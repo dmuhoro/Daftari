@@ -66,6 +66,10 @@ for (const k of tCalls) {
 // Keys used dynamically (assigned to a variable then passed to t())
 const DYNAMIC_KEYS = new Set([
   'sale_recorded', 'expense_recorded', 'withdrawal_recorded',
+  // OnboardingScreen option cards assign these to `labelKey` (typed TranslationKey)
+  // and render via t(card.labelKey) — the regex cannot see them as t('...').
+  'pain_uncollected_debts', 'pain_unknown_profit', 'pain_mixed_money', 'pain_stock_loss',
+  'method_paper_book', 'method_memory', 'method_mpesa_sms', 'method_none',
 ])
 
 for (const k of DYNAMIC_KEYS) {

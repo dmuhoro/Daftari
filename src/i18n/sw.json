@@ -200,6 +200,26 @@
   "sync_offline": "Hakuna Mtandao",
   "sync_online": "Mtandaoni",
   "pending_sync": "Inasubiri kulandanishwa",
-  "sync_dead_letter_tip": "Baadhi ya data haikuweza kulandanishwa. Angalia muunganisho wako."
+  "sync_dead_letter_tip": "Baadhi ya data haikuweza kulandanishwa. Angalia muunganisho wako.",
+  "pain_uncollected_debts": "Madeni ambayo hayajalipwa (mauzo ya mkopo)",
+  "pain_unknown_profit": "Sijui faida yangu ya kila siku",
+  "pain_mixed_money": "Pesa za biashara na za nyumbani zimechanganyika",
+  "pain_stock_loss": "Bidhaa zinapotea (wizi/hasara)",
+  "method_paper_book": "Dafla la karatasi",
+  "method_memory": "Kumbukumbu / kichwani",
+  "method_mpesa_sms": "SMS ya M-Pesa / simu",
+  "method_none": "Hakuna — nakisia tu",
+  "yes_answer": "Ndiyo, nionyeshe mpango wangu",
+  "analyzing_business_plan": "Tunaunda mpango wako wa mafanikio…",
+  "plan_ready": "Mpango wako wa Daftari uko tayari!",
+  "plan_benefit_1": "Jua faida yako halisi kila siku",
+  "plan_benefit_2": "Kusanya pesa zilizopotea kwenye mauzo ya mkopo",
+  "plan_benefit_3": "Epuka bidhaa na bili zikikuacha ukiwa",
+  "onboarding_diagnostic_sub": "Jibu maswali mafupi — tutaunda mpango kwa ajili ya biashara yako.",
+  "onboarding_pain_point_q": "Ni lipi kati ya haya linaloikwaza biashara yako sasa?",
+  "onboarding_current_method_q": "Kwa sasa unaifuatiliaje pesa yako?",
+  "yes_set_title": "Uko tayari kupata mpango wako wa Daftari?",
+  "yes_set_q1": "Unakumbuka kila deni la mteja sasa hivi?",
+  "yes_set_q2": "Unajua faida halisi ya leo, bila kuangalia daftari?",
+  "yes_set_q3": "Unajua bidhaa zipi zinakaribia kuisha — kabla hazijauzika?"
 }
-

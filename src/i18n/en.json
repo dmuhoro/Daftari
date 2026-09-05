@@ -200,6 +200,26 @@
   "sync_offline": "No Internet",
   "sync_online": "Online",
   "pending_sync": "Pending sync",
-  "sync_dead_letter_tip": "Some data failed to sync. Check your connection."
+  "sync_dead_letter_tip": "Some data failed to sync. Check your connection.",
+  "pain_uncollected_debts": "Unpaid debts (credit sales)",
+  "pain_unknown_profit": "I don't know my daily profit",
+  "pain_mixed_money": "Business and home money mixed",
+  "pain_stock_loss": "Stock goes missing (theft/loss)",
+  "method_paper_book": "Paper notebook",
+  "method_memory": "Memory / head",
+  "method_mpesa_sms": "M-Pesa SMS / phone",
+  "method_none": "Nothing — I just guess",
+  "yes_answer": "Yes, show me my plan",
+  "analyzing_business_plan": "Building your Daftari success plan…",
+  "plan_ready": "Your Daftari plan is ready!",
+  "plan_benefit_1": "Know your real profit every single day",
+  "plan_benefit_2": "Reclaim the money lost in credit sales",
+  "plan_benefit_3": "Never let stock or bills catch you off guard",
+  "onboarding_diagnostic_sub": "Answer a few quick questions — we'll build a plan around your day.",
+  "onboarding_pain_point_q": "Which of these hurts your business most right now?",
+  "onboarding_current_method_q": "How do you currently track your money?",
+  "yes_set_title": "Ready for your Daftari plan?",
+  "yes_set_q1": "Do you remember every debt a customer owes you, right now?",
+  "yes_set_q2": "Do you know today's exact profit, without checking notes?",
+  "yes_set_q3": "Do you know which items are running out — before they sell out?"
 }
-
