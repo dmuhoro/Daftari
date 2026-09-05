@@ -41,6 +41,7 @@ export const mockDb = {
   },
   business: {
     add: vi.fn(() => Promise.resolve(1)),
+    put: vi.fn(() => Promise.resolve()),
     update: vi.fn(() => Promise.resolve()),
     toCollection: vi.fn(() => ({
       first: vi.fn(() => Promise.resolve(null)),

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
-import { getTransactionsForUser, getBusinessesForUser } from './lib/repository';
 import { useStore } from './lib/store';
-import { mapBusinessToStore, resolveActiveBusiness } from './lib/businessId';
 import { adoptOrphanedRecords } from './features/sync/adoptOrphans';
+import { loadTenantState } from './lib/tenantLoader';
 import { logger } from './lib/logger';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/Toast';
@@ -27,13 +26,8 @@ export default function App() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'reset' | 'recovery'>('signin');
   const [loadingDexie, setLoadingDexie] = useState(!IS_E2E);
   const [loadingBusiness, setLoadingBusiness] = useState(!IS_E2E);
-  const setTransactions = useStore((s) => s.setTransactions);
   const business = useStore((s) => s.business);
-  const setBusiness = useStore((s) => s.setBusiness);
-  const setBusinesses = useStore((s) => s.setBusinesses);
-  const setActiveBusinessId = useStore((s) => s.setActiveBusinessId);
   const clearSessionState = useStore((s) => s.clearSessionState);
-  const getPreferredBusinessId = useStore((s) => s.getPreferredBusinessId);
   const theme = useStore((s) => s.theme);
 
   // Dark mode: apply resolved theme to document
@@ -104,26 +98,8 @@ export default function App() {
           logger.warn('sync:adopt_orphans_failed_on_session', { error: cause instanceof Error ? cause.message : String(cause) });
         }
 
-        const [txResult, bizResult] = await Promise.all([
-          getTransactionsForUser(user.id),
-          getBusinessesForUser(user.id),
-        ]);
-
-        if (txResult.ok) setTransactions(txResult.value);
+        await loadTenantState(user.id);
         setLoadingDexie(false);
-
-        const mapped = (bizResult.ok ? bizResult.value : []).map(mapBusinessToStore);
-        setBusinesses(mapped);
-
-        const preferredId = getPreferredBusinessId(user.id);
-        const target = resolveActiveBusiness(mapped, preferredId);
-        if (target) {
-          setBusiness(target);
-          setActiveBusinessId(target.id, user.id);
-        } else {
-          setBusiness(null);
-          setActiveBusinessId(null);
-        }
         setLoadingBusiness(false);
       })();
     } else {
@@ -133,12 +109,7 @@ export default function App() {
     }
   }, [
     session,
-    setBusiness,
-    setBusinesses,
-    setActiveBusinessId,
-    setTransactions,
     clearSessionState,
-    getPreferredBusinessId,
   ]);
 
   function handleSignOut() {

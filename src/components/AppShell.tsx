@@ -3,6 +3,7 @@ import { Home, PlusCircle, ClipboardList, Settings, ChevronLeft } from 'lucide-r
 import { useTranslation } from '../hooks/useTranslation';
 import type { TranslationKey } from '../hooks/useTranslation';
 import { useSync } from '../hooks/useSync';
+import { useRealtimeSync } from '../hooks/useRealtimeSync';
 import { useStore } from '../lib/store';
 import { todayNairobi, nairobiHour } from '../lib/dates';
 import DailyClose from '../features/close/DailyClose';
@@ -107,6 +108,7 @@ function viewTitle(view: View, t: (k: TranslationKey) => string, language: strin
 export default function AppShell({ onSignOut }: AppShellProps) {
   const { t, language } = useTranslation();
   const { isOnline } = useSync();
+  useRealtimeSync(true);
   const transactions = useStore((s) => s.transactions);
   const lastCloseDate = useStore((s) => s.lastCloseDate);
   const closePromptDismissedAt = useStore((s) => s.closePromptDismissedAt);
