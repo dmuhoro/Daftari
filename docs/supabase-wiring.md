@@ -64,8 +64,8 @@ write→read→delete round-trip against `daftari_transactions`:
    Vercel is the compiler:
    ```bash
    cd <linked daftari clone>
-   vercel env add VITE_SUPABASE_URL production
-   vercel env add VITE_SUPABASE_ANON_KEY production
+   vercel env add VITE_SUPABASE_URL production --type config
+   vercel env add VITE_SUPABASE_ANON_KEY production --type config
    ```
 2. Push `main` → Vercel redeploys with the real client baked in.
 3. Re-verify the deployed bundle:
@@ -74,6 +74,11 @@ write→read→delete round-trip against `daftari_transactions`:
      | while read a; do curl -s "https://daftari-amber.vercel.app$a" | grep -c "supabase.co"; done
    ```
 4. `node scripts/verify-sync-live.ts` exit 0 on the live bundle.
+
+> **Status (2026-09-05):** the Production env on `dmuhor01/daftari` **is now set** for both
+> `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, and a redeploy from the corrected source verified
+> the live bundle embeds `https://rjedivbpldkroffswoyb.supabase.co` with **zero** `localhost:0`
+> fallback. The deployed manifest is PNG (`standalone`, 192/512/maskable), not the stale SVG variant.
 
 ## 6. Client guard (in code)
 
