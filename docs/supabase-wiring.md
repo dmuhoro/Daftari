@@ -23,19 +23,21 @@ The GH secrets exist but the **Vercel build** is the one that compiles the produ
 Vercel's env list for the `dmuhor01/daftari` project is **empty**. That is exactly why `dist`
 contained `local-dev-only` / `localhost:0`.
 
-## 3. Apply migrations (schema already mostly live)
+## 3. Migrations (verified applied on live)
 
-All sync tables already exist in the project
-(`daftari_transactions/businesses/customers/daily_closes/suppliers/purchase_orders/stock_adjustments/analytics`).
-One migration is not yet applied — `push_subscriptions` (web-push, not data-sync).
+All sync tables exist and are RLS-enforced on the live project
+(`daftari_transactions/businesses/customers/daily_closes/suppliers/purchase_orders/stock_adjustments/analytics`),
+including `daftari_push_subscriptions`.
 
-With a logged-in CLI, in the repo root:
+Verified 2026-09-05 via read-only REST probes (anon key):
+- every table above returns HTTP 200 for `select` of its own columns;
+- `daftari_push_subscriptions` exposes `id,user_id,subscription,created_at` (the migration's shape);
+- anon `INSERT` on `daftari_push_subscriptions` and `daftari_transactions` is refused:
+  `"new row violates row-level security policy"` — the `user_id = auth.uid()` policies
+  (owner_only_*) are live and fail-closed.
 
-```bash
-supabase login            # supplies SUPABASE_ACCESS_TOKEN interactively (once)
-supabase link --project-ref <your-ref>   # e.g. rjedivbpldkroffswoyb
-supabase db push          # applies everything under supabase/migrations/, incl. push_subscriptions
-```
+So no migration pending. If a schema drift is ever suspected, re-run with a logged-in CLI
+(`supabase db push` applies everything under `supabase/migrations/`, all idempotent `IF NOT EXISTS`).
 
 Enable in the Dashboard: **Authentication → Providers → Email** → allow both "Email" and the
 auto-confirm toggle that matches normal user signup.
