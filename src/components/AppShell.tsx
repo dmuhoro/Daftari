@@ -7,6 +7,7 @@ import { useStore } from '../lib/store';
 import { todayNairobi, nairobiHour } from '../lib/dates';
 import DailyClose from '../features/close/DailyClose';
 import OfflineBanner from './OfflineBanner';
+import InstallBanner from './InstallBanner';
 import ErrorBoundary from './ErrorBoundary';
 
 const DashboardScreen = lazy(() => import('../screens/DashboardScreen'));
@@ -170,6 +171,7 @@ export default function AppShell({ onSignOut }: AppShellProps) {
   return (
     <div className="min-h-dvh flex flex-col bg-background dark:bg-stone-950 max-w-lg mx-auto">
       {!isOnline && <OfflineBanner />}
+      <InstallBanner />
 
       {/* Header */}
       {view !== 'dashboard' && view !== 'history' && view !== 'add' && view !== 'settings' && !selfManagedViews.has(view) && !isSubView && (

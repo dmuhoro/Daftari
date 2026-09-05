@@ -21,13 +21,14 @@ export function usePWAInstall() {
   }, []);
 
   const install = async () => {
-    if (!deferredPrompt.current) return;
+    if (!deferredPrompt.current) return false;
     deferredPrompt.current.prompt();
     const { outcome } = await deferredPrompt.current.userChoice;
-    if (outcome === 'accepted') {
-      setCanInstall(false);
-    }
+    // Whether the user installs or dismisses the prompt, the deferred prompt is
+    // single-use — clear it AND the banner CTA so we never show a dead button.
     deferredPrompt.current = null;
+    setCanInstall(false);
+    return outcome === 'accepted';
   };
 
   return { canInstall, install };
