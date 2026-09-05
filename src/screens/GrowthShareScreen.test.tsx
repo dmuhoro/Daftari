@@ -43,7 +43,7 @@ vi.mock('../lib/analytics', () => ({
   EVENTS: { REFERRAL_LINK_SHARED: 'referral_link_shared' },
 }));
 
-describe('GrowthShareScreen (Brianna OS Viral Engine)', () => {
+describe('GrowthShareScreen (Growth Engine)', () => {
   const onBackMock = vi.fn();
 
   beforeEach(() => {
@@ -53,7 +53,7 @@ describe('GrowthShareScreen (Brianna OS Viral Engine)', () => {
   it('renders header, real-time stats, and story options', () => {
     render(<GrowthShareScreen onBack={onBackMock} />);
 
-    expect(screen.getByText('Brianna Growth Engine')).toBeDefined();
+    expect(screen.getByText('Growth Engine')).toBeDefined();
     expect(screen.getByText('KES 5,000')).toBeDefined(); // 3500 + 1500
     expect(screen.getByText('2')).toBeDefined(); // 2 sales txs
     expect(screen.getByText('2/4')).toBeDefined(); // 2 academy lessons completed
@@ -65,7 +65,7 @@ describe('GrowthShareScreen (Brianna OS Viral Engine)', () => {
     const debtOption = screen.getByText('Ushindi wa Madeni: Kumbukumbu za WhatsApp');
     fireEvent.click(debtOption);
 
-    expect(screen.getByText(/Duka la Mama Amina inafuatilia madeni kwa njia ya kisasa/i)).toBeDefined();
+    expect(screen.getByText(/Duka la Mama Amina\*? inafuatilia madeni kwa njia ya kisasa/i)).toBeDefined();
   });
 
   it('triggers WhatsApp share when WhatsApp status button is clicked', () => {

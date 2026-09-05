@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import AcademyScreen from './AcademyScreen';
 
-const mockMarkLessonCompleted = vi.fn();
+// vi.hoisted: the mock factory is hoisted above top-level consts, so a
+// top-level `const mockX = vi.fn()` is unreachable from inside the factory.
+const { mockMarkLessonCompleted } = vi.hoisted(() => ({ mockMarkLessonCompleted: vi.fn() }));
 
 vi.mock('../lib/store', () => {
   const storeState = {
