@@ -39,8 +39,18 @@ Verified 2026-09-05 via read-only REST probes (anon key):
 So no migration pending. If a schema drift is ever suspected, re-run with a logged-in CLI
 (`supabase db push` applies everything under `supabase/migrations/`, all idempotent `IF NOT EXISTS`).
 
-Enable in the Dashboard: **Authentication → Providers → Email** → allow both "Email" and the
-auto-confirm toggle that matches normal user signup.
+Enable in the Dashboard (project `rjedivbpldkroffswoyb`):
+- Go to **Authentication → Sign In / Providers** (`/project/rjedivbpldkroffswoyb/auth/providers`).
+- The **Email** provider is enabled by default. Set **Confirm email** to ON under the Email
+  provider card (this is the production posture; the app now handles `session === null`
+  gracefully with a check-your-inbox state and resend).
+- **Authentication → URL Configuration**: set **Site URL** to `https://daftari-amber.vercel.app`
+  and add that origin to **Redirect URLs**. Supabase sends the confirmation redirect there
+  with `#access_token=...`; the SPA client (implicit flow) picks the session up on load.
+- Note: the default Supabase SMTP is a **dev-only 2 emails/hour** limit (this is the
+  `email rate limit exceeded` error `verify:sync:live` hit). For real user signups, configure
+  a custom SMTP (Resend/SendGrid/Postmark) under Project Settings → Auth → SMTP before
+  inviting beta users.
 
 ## 4. Live verification (no browser)
 
