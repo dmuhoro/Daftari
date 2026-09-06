@@ -17,6 +17,9 @@ import { generateReferralUrl, shareViaWhatsApp } from '../lib/referral';
 import { useToast } from '../hooks/useToast';
 import { mapBusinessToStore } from '../lib/businessId';
 import AppearanceSection from '../components/settings/AppearanceSection';
+import NotificationsSection from '../components/settings/NotificationsSection';
+import PrivacySection from '../components/settings/PrivacySection';
+import { APP } from '../lib/constants';
 
 interface SettingsScreenProps {
   onSignOut: () => void;
@@ -228,6 +231,10 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
 
       <AppearanceSection />
 
+      <NotificationsSection />
+
+      <PrivacySection />
+
       {/* Zana za Biashara — collapsed by default */}
       <div>
         <button
@@ -397,7 +404,9 @@ export default function SettingsScreen({ onSignOut, onNavigate }: SettingsScreen
         </Card>
       </div>
 
-      <p className="text-center text-xs text-muted pb-4 dark:text-stone-400">{t('made_in_kenya')}</p>
+      <p className="text-center text-xs text-muted pb-4 dark:text-stone-400">
+        {t('made_in_kenya')} · Daftari v{APP.VERSION}
+      </p>
     </div>
   );
 }

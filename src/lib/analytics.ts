@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { logger } from './logger'
+import { useStore } from './store'
 
 interface AnalyticsEvent {
   event: string
@@ -8,12 +9,23 @@ interface AnalyticsEvent {
 
 const queue: AnalyticsEvent[] = []
 
+/**
+ * Fail-closed telemetry: events never leave the device unless the user has
+ * explicitly opted in (Settings → Privacy → "Share anonymous usage stats").
+ * Consent is ON only while telemetryEnabled is true; when off, events are
+ * still written to the local log but never buffered or sent.
+ */
+const telemetryEnabled = (): boolean => useStore.getState().telemetryEnabled
+
 export const track = (
   event: string,
   properties?: Record<string, string | number | boolean>
 ): void => {
-  queue.push({ event, properties })
   logger.track(event, properties)
+
+  if (!telemetryEnabled()) return
+
+  queue.push({ event, properties })
 
   if (queue.length >= 10) {
     void flush()
@@ -22,6 +34,11 @@ export const track = (
 
 export const flush = async (): Promise<void> => {
   if (queue.length === 0) return
+  if (!telemetryEnabled()) {
+    // Fail closed — never push buffered events without consent.
+    queue.length = 0
+    return
+  }
   const events = queue.splice(0, queue.length)
 
   try {

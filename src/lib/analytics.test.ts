@@ -22,15 +22,35 @@ vi.mock('./logger', () => ({
 }))
 
 import { track, flush, EVENTS } from './analytics'
+import { useStore } from './store'
 
 describe('analytics', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockInsert.mockResolvedValue({ error: null })
+    // Telemetry is fail-closed by default; the network-path tests opt in.
+    useStore.getState().setTelemetryEnabled(true)
+  })
+
+  describe('consent gate (fail-closed)', () => {
+    it('never buffers or sends events without explicit telemetry consent', () => {
+      useStore.getState().setTelemetryEnabled(false)
+      for (let i = 0; i < 12; i++) {
+        track(`event_${i}`)
+      }
+      expect(mockInsert).not.toHaveBeenCalled()
+    })
+
+    it('drops buffered events when consent is revoked before flush', async () => {
+      track('queued_before_revoke')
+      useStore.getState().setTelemetryEnabled(false)
+      await flush()
+      expect(mockInsert).not.toHaveBeenCalled()
+    })
   })
 
   describe('track', () => {
-    it('logs event via logger.track', () => {
+    it('logs event via logger.track regardless of consent', () => {
       track('test_event', { key: 'value' })
       expect(mockLoggerTrack).toHaveBeenCalledWith('test_event', { key: 'value' })
     })

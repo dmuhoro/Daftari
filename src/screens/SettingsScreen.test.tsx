@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import SettingsScreen from './SettingsScreen'
 
 vi.mock('../lib/store', () => {
@@ -11,6 +11,7 @@ vi.mock('../lib/store', () => {
     businesses: [{ id: 'biz-1', name: 'Duka Bora', currency: 'KES', category: 'retail', subcategory: 'general_retail', payment_methods: ['cash', 'mpesa'] }],
     activeBusinessId: 'biz-1', setBusiness: vi.fn(), setActiveBusinessId: vi.fn(),
     transactions: [],
+    telemetryEnabled: false, setTelemetryEnabled: vi.fn(),
   }
   const useStoreMock = Object.assign(
     vi.fn((s?: (state: Record<string, unknown>) => unknown) => s ? s(storeState as unknown as Record<string, unknown>) : storeState),
@@ -71,5 +72,25 @@ describe('SettingsScreen', () => {
   it('shows sign out button', () => {
     render(<SettingsScreen onSignOut={onSignOut} />)
     expect(screen.getByText('sign_out')).toBeDefined()
+  })
+
+  it('renders the Notifications section with reminder notice state', () => {
+    render(<SettingsScreen onSignOut={onSignOut} />)
+    expect(screen.getByText('notifications')).toBeDefined()
+    // jsdom has no Notification API -> the reminder row reports unavailability
+    expect(screen.getByText(/not available on this device|hazipatikani kwenye hili kifaa/i)).toBeDefined()
+  })
+
+  it('expands Privacy & Data to reveal the statement and telemetry toggle', async () => {
+    render(<SettingsScreen onSignOut={onSignOut} />)
+    const trigger = screen.getByRole('button', { name: /privacy/i })
+    fireEvent.click(trigger)
+    expect(screen.getByText('share_usage_stats')).toBeDefined()
+    expect(screen.getByLabelText('share_usage_stats')).toBeDefined()
+  })
+
+  it('shows the shipped version number in the footer', () => {
+    render(<SettingsScreen onSignOut={onSignOut} />)
+    expect(screen.getByText(/Daftari v6\.5\.0/)).toBeDefined()
   })
 })

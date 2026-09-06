@@ -32,6 +32,8 @@ interface AppStore {
   closePromptDismissedAt: number | null;
   theme: Theme;
   completedLessonIds: string[];
+  /** Fail-closed telemetry: usage events only leave the device when the user opts in. */
+  telemetryEnabled: boolean;
   setLanguage: (language: 'sw' | 'en') => void;
   setBusiness: (business: Business | null) => void;
   setBusinesses: (businesses: Business[]) => void;
@@ -48,6 +50,7 @@ interface AppStore {
   dismissClosePrompt: () => void;
   setTheme: (theme: Theme) => void;
   markLessonCompleted: (lessonId: string) => void;
+  setTelemetryEnabled: (enabled: boolean) => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -61,9 +64,10 @@ export const useStore = create<AppStore>()(
       transactions: [],
       lastCloseDate: null,
       closePromptDismissedAt: null,
-      theme: 'system',
-      completedLessonIds: [],
-      setLanguage: (language) => set({ language }),
+theme: 'system',
+  completedLessonIds: [],
+  telemetryEnabled: false,
+  setLanguage: (language) => set({ language }),
       setBusiness: (business) => set({ business }),
       setBusinesses: (businesses) => set({ businesses }),
       addBusiness: (business) => set((state) => ({
@@ -197,6 +201,7 @@ export const useStore = create<AppStore>()(
           ? state.completedLessonIds
           : [...state.completedLessonIds, lessonId],
       })),
+      setTelemetryEnabled: (enabled) => set({ telemetryEnabled: enabled }),
     }),
     {
       name: 'daftari-store',
@@ -210,6 +215,7 @@ export const useStore = create<AppStore>()(
         closePromptDismissedAt: state.closePromptDismissedAt,
         theme: state.theme,
         completedLessonIds: state.completedLessonIds,
+        telemetryEnabled: state.telemetryEnabled,
       }),
     }
   )

@@ -7,7 +7,8 @@
 /** App metadata */
 export const APP = {
   NAME:     'Daftari' as const,
-  VERSION:  '5.9.5'  as const,
+  // Must match package.json "version" — sentry release + monitoring key off it.
+  VERSION:  '6.5.0'  as const,
   LOCALE:   'en-KE'  as const,
   TIMEZONE: 'Africa/Nairobi' as const,
 } as const

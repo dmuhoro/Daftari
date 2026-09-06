@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 vi.mock('./repository', () => ({
   upsertPushSubscription: vi.fn().mockResolvedValue({ ok: true }),
@@ -101,6 +101,86 @@ describe('pushNotifications', () => {
       const { subscribeToPush } = await import('./pushNotifications')
       const result = await subscribeToPush()
       expect(result).toBeNull()
+    })
+  })
+
+  describe('getPushStatus', () => {
+    const originalKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+
+    beforeEach(() => {
+      // Default test state: VAPID configured so the fail-closed path is opt-in.
+      ;(import.meta.env as any).VITE_VAPID_PUBLIC_KEY = 'dummy-public-key'
+    })
+
+    afterEach(() => {
+      ;(import.meta.env as any).VITE_VAPID_PUBLIC_KEY = originalKey
+    })
+
+    it('returns unsupported when the Notification API is missing', async () => {
+      const original = (window as any).Notification
+      delete (window as any).Notification
+      const { getPushStatus } = await import('./pushNotifications')
+      expect(await getPushStatus()).toBe('unsupported')
+      ;(window as any).Notification = original
+    })
+
+    it('fails closed as unconfigured when VAPID is not present', async () => {
+      ;(import.meta.env as any).VITE_VAPID_PUBLIC_KEY = ''
+      ;(window as any).Notification = { permission: 'granted', requestPermission: vi.fn() }
+      const { getPushStatus } = await import('./pushNotifications')
+      expect(await getPushStatus()).toBe('unconfigured')
+    })
+
+    it('returns denied when permission was refused', async () => {
+      ;(window as any).Notification = { permission: 'denied', requestPermission: vi.fn() }
+      const { getPushStatus } = await import('./pushNotifications')
+      expect(await getPushStatus()).toBe('denied')
+    })
+
+    it('returns granted when an active subscription exists', async () => {
+      ;(window as any).Notification = { permission: 'granted', requestPermission: vi.fn() }
+      const mockGetSubscription = vi.fn().mockResolvedValue({ endpoint: 'https://active' })
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { ready: Promise.resolve({ pushManager: { getSubscription: mockGetSubscription } }) },
+        configurable: true,
+      })
+      const { getPushStatus } = await import('./pushNotifications')
+      expect(await getPushStatus()).toBe('granted')
+    })
+
+    it('returns not-subscribed when granted but no subscription exists', async () => {
+      ;(window as any).Notification = { permission: 'granted', requestPermission: vi.fn() }
+      const mockGetSubscription = vi.fn().mockResolvedValue(null)
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { ready: Promise.resolve({ pushManager: { getSubscription: mockGetSubscription } }) },
+        configurable: true,
+      })
+      const { getPushStatus } = await import('./pushNotifications')
+      expect(await getPushStatus()).toBe('not-subscribed')
+    })
+  })
+
+  describe('getPushSubscriptionEndpoint', () => {
+    afterEach(() => {
+      Object.defineProperty(navigator, 'serviceWorker', { value: { ready: Promise.resolve({}) }, configurable: true })
+    })
+
+    it('returns null when serviceWorker is unavailable', async () => {
+      const original = navigator.serviceWorker
+      Object.defineProperty(navigator, 'serviceWorker', { value: undefined, configurable: true })
+      const { getPushSubscriptionEndpoint } = await import('./pushNotifications')
+      expect(await getPushSubscriptionEndpoint()).toBeNull()
+      Object.defineProperty(navigator, 'serviceWorker', { value: original, configurable: true })
+    })
+
+    it('returns the endpoint of the active subscription', async () => {
+      const mockGetSubscription = vi.fn().mockResolvedValue({ endpoint: 'https://sub.esp' })
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: { ready: Promise.resolve({ pushManager: { getSubscription: mockGetSubscription } }) },
+        configurable: true,
+      })
+      const { getPushSubscriptionEndpoint } = await import('./pushNotifications')
+      expect(await getPushSubscriptionEndpoint()).toBe('https://sub.esp')
     })
   })
 
